@@ -1,6 +1,7 @@
 import { useStoryStore } from '../../stores/storyStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { GameFrame } from '../ui/GameFrame'
+import { playSfx } from '../../audio/sfx'
 
 export function StoryScreen() {
   const currentText = useStoryStore((state) => state.currentText)
@@ -8,11 +9,21 @@ export function StoryScreen() {
   const choose = useStoryStore((state) => state.choose)
   const selectLocation = useNavigationStore((state) => state.selectLocation)
 
+  const handleBack = () => {
+    playSfx('cancel')
+    selectLocation(null)
+  }
+
+  const handleChoose = (index: number) => {
+    playSfx('select')
+    choose(index)
+  }
+
   return (
     <GameFrame>
       <div className="mx-auto flex max-w-2xl flex-col">
         <button
-          onClick={() => selectLocation(null)}
+          onClick={handleBack}
           className="font-display self-start text-xs uppercase tracking-wider text-neutral-500 transition-colors hover:text-cyan-300"
         >
           ◄ Back
@@ -30,7 +41,7 @@ export function StoryScreen() {
           {currentChoices.map((choice) => (
             <button
               key={choice.index}
-              onClick={() => choose(choice.index)}
+              onClick={() => handleChoose(choice.index)}
               className="group flex w-full items-center gap-3 rounded-md border border-neutral-800 bg-neutral-900/60 p-3 text-left transition-all duration-150 hover:border-cyan-400/50 hover:bg-neutral-900 hover:shadow-[0_0_18px_-8px_rgba(34,211,238,0.5)]"
             >
               <span className="font-display text-cyan-500/70 transition-colors group-hover:text-cyan-300">

@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, CSSProperties, MouseEvent, ReactNode } from 'react'
+import { playSfx, type SfxName } from '../../audio/sfx'
 import btnPrimaryNormal from '../../assets/ui/Interactive_Buttons/Primary_Button/Btn_Primary_Normal.png'
 import btnPrimaryHover from '../../assets/ui/Interactive_Buttons/Primary_Button/Btn_Primary_Hover.png'
 import btnPrimaryPressed from '../../assets/ui/Interactive_Buttons/Primary_Button/Btn_Primary_Pressed.png'
@@ -10,6 +11,14 @@ import './uiChrome.css'
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
+  sound?: SfxName
+}
+
+const DEFAULT_SOUND: Record<string, SfxName> = {
+  primary: 'select',
+  secondary: 'select',
+  ghost: 'cancel',
+  danger: 'error',
 }
 
 const CHROME_ART: Record<string, CSSProperties> = {
@@ -36,15 +45,25 @@ const VARIANTS: Record<string, string> = {
 export function Button({
   children,
   variant = 'primary',
+  sound,
   className = '',
   style,
+  onClick,
   ...rest
 }: ButtonProps) {
   const chromeStyle = CHROME_ART[variant]
+  const resolvedSound = sound ?? DEFAULT_SOUND[variant]
+
+  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+    playSfx(resolvedSound)
+    onClick?.(event)
+  }
+
   return (
     <button
       className={`rounded-sm px-4 py-2 font-display text-sm font-semibold uppercase tracking-wider transition-all duration-150 disabled:opacity-30 disabled:shadow-none disabled:cursor-not-allowed ${VARIANTS[variant]} ${className}`}
       style={chromeStyle ? { ...chromeStyle, ...style } : style}
+      onClick={handleClick}
       {...rest}
     >
       {children}

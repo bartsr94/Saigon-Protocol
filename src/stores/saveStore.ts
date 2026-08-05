@@ -1,10 +1,11 @@
 import { useCharacterStore } from './characterStore'
 import { useStoryStore } from './storyStore'
 import { useNavigationStore } from './navigationStore'
+import { validateSaveBlob } from '../engine/saveValidation'
 
 const SAVE_KEY = 'saigon-protocol-save'
 
-interface SaveBlob {
+export interface SaveBlob {
   version: 1
   character: ReturnType<typeof useCharacterStore.getState>['character']
   inkState: string | null
@@ -33,7 +34,14 @@ export function saveGame(): void {
 export function loadGame(): SaveBlob | null {
   const raw = localStorage.getItem(SAVE_KEY)
   if (!raw) return null
-  return JSON.parse(raw) as SaveBlob
+
+  try {
+    return validateSaveBlob(JSON.parse(raw))
+  } catch (error) {
+    console.error('Discarding corrupt or incompatible save.', error)
+    localStorage.removeItem(SAVE_KEY)
+    return null
+  }
 }
 
 export function hasSave(): boolean {

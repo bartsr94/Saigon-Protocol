@@ -1,5 +1,6 @@
 import type { CharacterState } from '../stores/characterStore'
 import { attributeForSkill } from '../content/skills'
+import type { CheckTier } from './resolution'
 import { attributeModifier, resolveSkillCheck, roll2d6 } from './resolution'
 
 const ATTACK_TARGET_NUMBER = 8
@@ -54,6 +55,8 @@ export interface AttackOutcome {
   damage: number
   total: number
   targetNumber: number
+  tier: CheckTier
+  dice: [number, number]
 }
 
 export function resolveAttack(attacker: CombatProfile): AttackOutcome {
@@ -68,5 +71,7 @@ export function resolveAttack(attacker: CombatProfile): AttackOutcome {
     damage: result.success ? attacker.damage : 0,
     total: result.total,
     targetNumber: result.targetNumber,
+    tier: result.tier,
+    dice: result.roll,
   }
 }

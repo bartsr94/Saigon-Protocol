@@ -1,4 +1,5 @@
 import type { Attributes } from '../stores/characterStore'
+import { assertUniqueIds } from './uniqueId'
 
 export interface SkillDefinition {
   name: string
@@ -29,6 +30,8 @@ export const SKILLS: SkillDefinition[] = [
   { name: 'Bribery', attribute: 'socialStanding' },
   { name: 'Leadership', attribute: 'socialStanding' },
 ]
+
+assertUniqueIds('skill', SKILLS, (s) => s.name)
 
 export function attributeForSkill(skillName: string): keyof Attributes | null {
   return SKILLS.find((skill) => skill.name === skillName)?.attribute ?? null

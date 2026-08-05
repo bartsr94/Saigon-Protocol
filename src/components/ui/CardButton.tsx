@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, CSSProperties, MouseEvent, ReactNode } from 'react'
+import { playSfx } from '../../audio/sfx'
 import btnPrimaryHover from '../../assets/ui/Interactive_Buttons/Primary_Button/Btn_Primary_Hover.png'
 import btnSecondaryNormal from '../../assets/ui/Interactive_Buttons/Secondary_Button/Btn_Secondary_Normal.png'
 import btnSecondaryHover from '../../assets/ui/Interactive_Buttons/Secondary_Button/Btn_Secondary_Hover.png'
@@ -25,6 +26,8 @@ export function CardButton({
   className = '',
   disabled,
   style,
+  onClick,
+  onMouseEnter,
   ...rest
 }: CardButtonProps) {
   const chromeStyle: CSSProperties = {
@@ -34,6 +37,16 @@ export function CardButton({
     ...style,
   } as CSSProperties
 
+  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+    if (!disabled) playSfx('select')
+    onClick?.(event)
+  }
+
+  const handleMouseEnter = (event: MouseEvent<HTMLButtonElement>) => {
+    if (!disabled) playSfx('cursor')
+    onMouseEnter?.(event)
+  }
+
   return (
     <button
       disabled={disabled}
@@ -41,6 +54,8 @@ export function CardButton({
         disabled ? 'opacity-40 cursor-not-allowed' : selected ? 'card-chrome--selected' : ''
       } ${className}`}
       style={chromeStyle}
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
       {...rest}
     >
       {children}

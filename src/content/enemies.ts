@@ -1,3 +1,5 @@
+import { assertUniqueIds } from './uniqueId'
+
 export interface EnemyTemplate {
   id: string
   name: string
@@ -19,3 +21,5 @@ export const ENEMIES: Record<string, EnemyTemplate> = {
     initiativeModifier: 1,
   },
 }
+
+assertUniqueIds('enemy', Object.values(ENEMIES), (e) => e.id)

@@ -1,4 +1,5 @@
 import type { LocationMeta } from '../stores/navigationStore'
+import { assertUniqueIds } from './uniqueId'
 
 export const LOCATIONS: LocationMeta[] = [
   {
@@ -8,3 +9,5 @@ export const LOCATIONS: LocationMeta[] = [
     thumbnail: '',
   },
 ]
+
+assertUniqueIds('location', LOCATIONS, (l) => l.id)

@@ -87,6 +87,7 @@ export function CharacterCreationScreen() {
             <Button
               disabled={!name.trim()}
               onClick={() => setStep('attributes')}
+              sound="swipe"
               className="mt-5"
             >
               Continue
@@ -115,10 +116,14 @@ export function CharacterCreationScreen() {
             </div>
 
             <div className="mt-5 flex gap-3">
-              <Button variant="secondary" onClick={() => setAttributes(rollAttributeSet())}>
+              <Button
+                variant="secondary"
+                sound="cursor"
+                onClick={() => setAttributes(rollAttributeSet())}
+              >
                 {attributes ? 'Reroll' : 'Roll'}
               </Button>
-              <Button disabled={!attributes} onClick={() => setStep('archetype')}>
+              <Button disabled={!attributes} onClick={() => setStep('archetype')} sound="swipe">
                 Continue
               </Button>
             </div>
@@ -145,7 +150,12 @@ export function CharacterCreationScreen() {
               ))}
             </div>
 
-            <Button disabled={!archetype} onClick={() => setStep('review')} className="mt-5">
+            <Button
+              disabled={!archetype}
+              onClick={() => setStep('review')}
+              sound="swipe"
+              className="mt-5"
+            >
               Continue
             </Button>
           </div>

@@ -1,13 +1,43 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useCombatStore } from '../../stores/combatStore'
+import type { Combatant, LogEntry } from '../../stores/combatStore'
 import { useStoryStore } from '../../stores/storyStore'
+import { isSuccess } from '../../engine/resolution'
 import { GameFrame } from '../ui/GameFrame'
 import { Eyebrow, Title } from '../ui/Screen'
 import { Button } from '../ui/Button'
 import { StatBar } from '../ui/StatBar'
+import { DiceRoll } from '../ui/DiceRoll'
+import { playSfx } from '../../audio/sfx'
 
 interface CombatScreenProps {
   enemyId: string
+}
+
+// Sound reflects whether the outcome is good news for the player, not raw
+// attacker success — an enemy missing is good for the player even though it's
+// a "failure" tier, so it must not play the same cue as the player missing.
+function playOutcomeSfx(entry: LogEntry, player?: Combatant): void {
+  if (!entry.tier) return
+  const attackerIsPlayer = player ? entry.message.startsWith(player.name) : true
+  const goodForPlayer = attackerIsPlayer ? isSuccess(entry.tier) : !isSuccess(entry.tier)
+
+  if (!goodForPlayer) {
+    playSfx('error')
+  } else if (entry.tier === 'critSuccess') {
+    playSfx('select')
+  }
+}
+
+function toneForEntry(entry: LogEntry, player?: Combatant): string {
+  if (entry.tier === 'critSuccess') return 'text-cyan-300 text-glow-cyan'
+  if (entry.tier === 'critFailure') return 'text-fuchsia-500'
+  if (entry.tier === 'success') {
+    return player && entry.message.startsWith(player.name) ? 'text-cyan-400' : 'text-fuchsia-500/80'
+  }
+  if (entry.tier === 'failure') return 'text-neutral-600'
+  if (entry.message.includes('goes down')) return 'text-fuchsia-400'
+  return 'text-neutral-500'
 }
 
 export function CombatScreen({ enemyId }: CombatScreenProps) {
@@ -26,19 +56,46 @@ export function CombatScreen({ enemyId }: CombatScreenProps) {
   const started = useRef(false)
   const logEndRef = useRef<HTMLDivElement>(null)
 
+  const [visibleLog, setVisibleLog] = useState<LogEntry[]>([])
+  const [pendingEntry, setPendingEntry] = useState<LogEntry | null>(null)
+
   useEffect(() => {
     if (started.current) return
     started.current = true
+    playSfx('popup-open')
     startCombat(enemyId)
   }, [enemyId, startCombat])
 
   useEffect(() => {
+    if (result === 'loss') playSfx('glitch', { maxDurationMs: 1200 })
+  }, [result])
+
+  // Reveal new log entries one at a time: rolls with dice pause on a DiceRoll
+  // animation before settling into the permanent log, plain lines append at once.
+  useEffect(() => {
+    if (log.length < visibleLog.length) {
+      setVisibleLog([])
+      setPendingEntry(null)
+      return
+    }
+    if (pendingEntry || visibleLog.length >= log.length) return
+
+    const next = log[visibleLog.length]
+    if (next.dice && next.tier) {
+      setPendingEntry(next)
+    } else {
+      setVisibleLog((v) => [...v, next])
+    }
+  }, [log, visibleLog, pendingEntry])
+
+  useEffect(() => {
     logEndRef.current?.scrollIntoView({ block: 'end' })
-  }, [log])
+  }, [visibleLog, pendingEntry])
 
   const player = combatants.find((c) => c.isPlayer)
   const enemies = combatants.filter((c) => !c.isPlayer)
   const isPlayerTurn = active && turnOrder[currentTurnIndex] === 'player'
+  const logRevealed = !pendingEntry && visibleLog.length >= log.length
 
   const handleContinue = () => {
     if (!result) return
@@ -137,23 +194,24 @@ export function CombatScreen({ enemyId }: CombatScreenProps) {
         </div>
 
         <div className="mt-6 h-40 space-y-1.5 overflow-y-auto rounded-md border border-neutral-800 bg-neutral-950/70 p-4 font-mono text-xs">
-          {log.map((message, index) => {
-            const tone = message.includes('goes down')
-              ? 'text-fuchsia-400'
-              : message.includes('misses')
-                ? 'text-neutral-600'
-                : message.includes('hits')
-                  ? player && message.startsWith(player.name)
-                    ? 'text-cyan-400'
-                    : 'text-fuchsia-500/80'
-                  : 'text-neutral-500'
-            return (
-              <div key={index} className={tone}>
-                {'> '}
-                {message}
-              </div>
-            )
-          })}
+          {visibleLog.map((entry) => (
+            <div key={entry.id} className={toneForEntry(entry, player)}>
+              {'> '}
+              {entry.message}
+            </div>
+          ))}
+          {pendingEntry && pendingEntry.dice && pendingEntry.tier && (
+            <DiceRoll
+              dice={pendingEntry.dice}
+              tier={pendingEntry.tier}
+              message={pendingEntry.message}
+              onSettled={() => {
+                playOutcomeSfx(pendingEntry, player)
+                setVisibleLog((v) => [...v, pendingEntry])
+                setPendingEntry(null)
+              }}
+            />
+          )}
           <div ref={logEndRef} />
         </div>
 
@@ -163,7 +221,7 @@ export function CombatScreen({ enemyId }: CombatScreenProps) {
           </p>
         )}
 
-        {result && (
+        {result && logRevealed && (
           <div className="mt-6 rounded-md border border-neutral-800 bg-neutral-900/60 p-5 text-center">
             <p
               className={`font-display text-2xl font-bold uppercase tracking-wide ${
@@ -172,7 +230,7 @@ export function CombatScreen({ enemyId }: CombatScreenProps) {
             >
               {result === 'win' ? 'Victory' : 'You Went Down'}
             </p>
-            <Button onClick={handleContinue} className="mt-4">
+            <Button onClick={handleContinue} sound="popup-close" className="mt-4">
               Continue
             </Button>
           </div>

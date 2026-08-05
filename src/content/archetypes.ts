@@ -1,4 +1,5 @@
 import type { EquipmentItem, Skill } from '../stores/characterStore'
+import { assertUniqueIds } from './uniqueId'
 
 export interface Archetype {
   id: string
@@ -126,3 +127,5 @@ export const ARCHETYPES: Archetype[] = [
     careerEvent: 'Came upriver into the SEZ when the salvage dried up.',
   },
 ]
+
+assertUniqueIds('archetype', ARCHETYPES, (a) => a.id)

@@ -1,8 +1,10 @@
 import { create } from 'zustand'
 import { useCharacterStore } from './characterStore'
 import { ENEMIES } from '../content/enemies'
+import type { CheckTier } from '../engine/resolution'
 import { attributeModifier } from '../engine/resolution'
 import { getPlayerCombatProfile, resolveAttack, rollInitiativeOrder } from '../engine/combat'
+import type { AttackOutcome } from '../engine/combat'
 
 export interface Combatant {
   id: string
@@ -18,21 +20,43 @@ export interface Combatant {
 
 export type CombatResult = 'win' | 'loss' | null
 
+export interface LogEntry {
+  id: number
+  message: string
+  tier?: CheckTier
+  dice?: [number, number]
+}
+
 interface CombatStore {
   active: boolean
   combatants: Combatant[]
   round: number
   turnOrder: string[]
   currentTurnIndex: number
-  log: string[]
+  log: LogEntry[]
   result: CombatResult
   startCombat: (enemyId: string) => void
   playerAttack: (targetId: string) => void
   endCombat: () => void
 }
 
+let nextLogId = 0
+
+function attackMessage(attackerName: string, targetName: string, outcome: AttackOutcome): string {
+  if (outcome.tier === 'critSuccess') {
+    return `${attackerName} lands a critical hit on ${targetName} for ${outcome.damage}!`
+  }
+  if (outcome.tier === 'critFailure') {
+    return `${attackerName} fumbles the attack on ${targetName}.`
+  }
+  return outcome.hit
+    ? `${attackerName} hits ${targetName} for ${outcome.damage} (rolled ${outcome.total} vs ${outcome.targetNumber}).`
+    : `${attackerName} misses ${targetName} (rolled ${outcome.total} vs ${outcome.targetNumber}).`
+}
+
 export const useCombatStore = create<CombatStore>((set, get) => {
-  const pushLog = (message: string) => set((state) => ({ log: [...state.log, message] }))
+  const pushLog = (message: string, meta?: { tier?: CheckTier; dice?: [number, number] }) =>
+    set((state) => ({ log: [...state.log, { id: nextLogId++, message, ...meta }] }))
 
   const applyDamage = (id: string, amount: number) => {
     if (amount <= 0) return
@@ -86,13 +110,12 @@ export const useCombatStore = create<CombatStore>((set, get) => {
       const player = state.combatants.find((c) => c.isPlayer)
       if (!enemy || !player) return
 
-      const { hit, damage, total, targetNumber } = resolveAttack(enemy)
-      applyDamage('player', damage)
-      pushLog(
-        hit
-          ? `${enemy.name} hits ${player.name} for ${damage} (rolled ${total} vs ${targetNumber}).`
-          : `${enemy.name} misses ${player.name} (rolled ${total} vs ${targetNumber}).`,
-      )
+      const outcome = resolveAttack(enemy)
+      applyDamage('player', outcome.damage)
+      pushLog(attackMessage(enemy.name, player.name, outcome), {
+        tier: outcome.tier,
+        dice: outcome.dice,
+      })
 
       if (checkOutcome()) return
       advanceTurn()
@@ -147,7 +170,7 @@ export const useCombatStore = create<CombatStore>((set, get) => {
         round: 1,
         turnOrder,
         currentTurnIndex: 0,
-        log: [`${first?.name ?? 'Combat'} acts first.`],
+        log: [{ id: nextLogId++, message: `${first?.name ?? 'Combat'} acts first.` }],
         result: null,
       })
 
@@ -163,13 +186,12 @@ export const useCombatStore = create<CombatStore>((set, get) => {
       const target = state.combatants.find((c) => c.id === targetId)
       if (!attacker || !target || target.health <= 0) return
 
-      const { hit, damage, total, targetNumber } = resolveAttack(attacker)
-      applyDamage(targetId, damage)
-      pushLog(
-        hit
-          ? `${attacker.name} hits ${target.name} for ${damage} (rolled ${total} vs ${targetNumber}).`
-          : `${attacker.name} misses ${target.name} (rolled ${total} vs ${targetNumber}).`,
-      )
+      const outcome = resolveAttack(attacker)
+      applyDamage(targetId, outcome.damage)
+      pushLog(attackMessage(attacker.name, target.name, outcome), {
+        tier: outcome.tier,
+        dice: outcome.dice,
+      })
 
       if (checkOutcome()) return
       advanceTurn()
