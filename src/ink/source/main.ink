@@ -1,5 +1,7 @@
 EXTERNAL skillCheck(skillName, targetNumber)
 
+VAR combatResult = ""
+
 -> intro
 
 === intro ===
@@ -36,6 +38,23 @@ You clock the posture before the face — ex-corpo security, now freelance. This
 === tense_approach ===
 You can't place them. Corpo enforcer? Rival fixer? You close the distance carefully, one hand near your jacket.
 
-They watch you approach without moving. "Relax," they finally say. "You're the one I'm here for."
+They watch you approach without moving. Then their hand drops to their hip. # combat: corpo-enforcer
+
+-> await_combat
+
+=== await_combat ===
+{ combatResult == "win":
+    -> combat_won
+- else:
+    -> combat_lost
+}
+
+=== combat_won ===
+The enforcer drops. You catch your breath, pulse hammering, and check the pier. Still quiet.
+
+-> END
+
+=== combat_lost ===
+Pain blooms white behind your eyes. The last thing you register is the wet ferrocrete rushing up to meet you.
 
 -> END
