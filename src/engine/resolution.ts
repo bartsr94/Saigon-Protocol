@@ -21,6 +21,16 @@ export function roll2d6(): [number, number] {
   return [rollD6(), rollD6()]
 }
 
+export function attributeModifier(value: number): number {
+  if (value <= 0) return -3
+  if (value <= 2) return -2
+  if (value <= 5) return -1
+  if (value <= 8) return 0
+  if (value <= 11) return 1
+  if (value <= 14) return 2
+  return 3
+}
+
 export function resolveSkillCheck({
   skillLevel,
   attributeModifier,
