@@ -1,5 +1,6 @@
 import { useStoryStore } from '../../stores/storyStore'
 import { useNavigationStore } from '../../stores/navigationStore'
+import { GameFrame } from '../ui/GameFrame'
 
 export function StoryScreen() {
   const currentText = useStoryStore((state) => state.currentText)
@@ -8,18 +9,18 @@ export function StoryScreen() {
   const selectLocation = useNavigationStore((state) => state.selectLocation)
 
   return (
-    <div className="min-h-svh bg-neutral-950 text-neutral-100 p-8 flex flex-col">
-      <div className="mx-auto max-w-2xl w-full flex-1">
+    <GameFrame>
+      <div className="mx-auto flex max-w-2xl flex-col">
         <button
           onClick={() => selectLocation(null)}
-          className="text-sm text-neutral-500 hover:text-neutral-300"
+          className="font-display self-start text-xs uppercase tracking-wider text-neutral-500 transition-colors hover:text-cyan-300"
         >
-          ← Back
+          ◄ Back
         </button>
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-6 space-y-4 border-l-2 border-cyan-400/20 pl-5">
           {currentText.map((paragraph, index) => (
-            <p key={index} className="text-neutral-200 leading-relaxed">
+            <p key={index} className="leading-relaxed text-neutral-200">
               {paragraph}
             </p>
           ))}
@@ -30,13 +31,16 @@ export function StoryScreen() {
             <button
               key={choice.index}
               onClick={() => choose(choice.index)}
-              className="block w-full text-left rounded-lg border border-neutral-800 bg-neutral-900 p-3 hover:border-neutral-600 hover:bg-neutral-800 transition-colors"
+              className="group flex w-full items-center gap-3 rounded-md border border-neutral-800 bg-neutral-900/60 p-3 text-left transition-all duration-150 hover:border-cyan-400/50 hover:bg-neutral-900 hover:shadow-[0_0_18px_-8px_rgba(34,211,238,0.5)]"
             >
-              {choice.text}
+              <span className="font-display text-cyan-500/70 transition-colors group-hover:text-cyan-300">
+                ▸
+              </span>
+              <span className="text-neutral-200">{choice.text}</span>
             </button>
           ))}
         </div>
       </div>
-    </div>
+    </GameFrame>
   )
 }

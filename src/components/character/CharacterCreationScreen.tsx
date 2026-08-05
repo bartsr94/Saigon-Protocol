@@ -3,6 +3,10 @@ import type { Attributes } from '../../stores/characterStore'
 import { useCharacterStore } from '../../stores/characterStore'
 import { ARCHETYPES } from '../../content/archetypes'
 import { rollAttributeSet, buildCharacterFromArchetype } from '../../engine/chargen'
+import { GameFrame } from '../ui/GameFrame'
+import { Eyebrow, Title } from '../ui/Screen'
+import { Button } from '../ui/Button'
+import { CardButton } from '../ui/CardButton'
 
 const ATTRIBUTE_LABELS: Record<keyof Attributes, string> = {
   strength: 'STR',
@@ -14,6 +18,37 @@ const ATTRIBUTE_LABELS: Record<keyof Attributes, string> = {
 }
 
 type Step = 'name' | 'attributes' | 'archetype' | 'review'
+const STEPS: Step[] = ['name', 'attributes', 'archetype', 'review']
+const STEP_LABELS: Record<Step, string> = {
+  name: 'Identity',
+  attributes: 'Attributes',
+  archetype: 'Background',
+  review: 'Dossier',
+}
+
+function StepProgress({ step }: { step: Step }) {
+  const currentIndex = STEPS.indexOf(step)
+  return (
+    <div className="mt-6 flex items-center gap-2">
+      {STEPS.map((s, index) => (
+        <div key={s} className="flex items-center gap-2">
+          <div
+            className={`flex h-6 items-center rounded-full border px-3 font-display text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+              index === currentIndex
+                ? 'border-cyan-400/70 bg-cyan-400/10 text-cyan-300 shadow-[0_0_14px_-4px_rgba(34,211,238,0.7)]'
+                : index < currentIndex
+                  ? 'border-neutral-700 text-neutral-400'
+                  : 'border-neutral-800 text-neutral-600'
+            }`}
+          >
+            {STEP_LABELS[s]}
+          </div>
+          {index < STEPS.length - 1 && <div className="h-px w-4 bg-neutral-800" />}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export function CharacterCreationScreen() {
   const setCharacter = useCharacterStore((state) => state.setCharacter)
@@ -31,135 +66,146 @@ export function CharacterCreationScreen() {
   }
 
   return (
-    <div className="min-h-svh bg-neutral-950 text-neutral-100 p-8">
+    <GameFrame>
       <div className="mx-auto max-w-2xl">
-        <h1 className="text-2xl font-semibold tracking-tight">New Runner</h1>
-        <p className="mt-1 text-neutral-400">Saigon SEZ, 2226.</p>
+        <Eyebrow>Saigon SEZ // 2226</Eyebrow>
+        <Title className="mt-1">New Runner</Title>
+        <StepProgress step={step} />
 
         {step === 'name' && (
-          <div className="mt-6">
-            <label className="block text-sm text-neutral-400">Name</label>
+          <div className="mt-8">
+            <label className="font-display text-xs uppercase tracking-wider text-neutral-500">
+              Identify Yourself
+            </label>
             <input
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-neutral-800 bg-neutral-900 p-3 text-neutral-100 outline-none focus:border-neutral-600"
+              className="mt-2 w-full rounded-md border border-neutral-800 bg-neutral-900/60 p-3 font-display text-lg tracking-wide text-neutral-100 outline-none transition-colors focus:border-cyan-400/60 focus:shadow-[0_0_18px_-6px_rgba(34,211,238,0.6)]"
               placeholder="What do people call you?"
             />
-            <button
+            <Button
               disabled={!name.trim()}
               onClick={() => setStep('attributes')}
-              className="mt-4 rounded-lg bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-950 disabled:opacity-40"
+              className="mt-5"
             >
               Continue
-            </button>
+            </Button>
           </div>
         )}
 
         {step === 'attributes' && (
-          <div className="mt-6">
-            <p className="text-neutral-400 text-sm">2d6 per attribute, rolled cold.</p>
+          <div className="mt-8">
+            <p className="text-sm text-neutral-400">2d6 per attribute, rolled cold.</p>
 
             <div className="mt-4 grid grid-cols-3 gap-3">
               {(Object.keys(ATTRIBUTE_LABELS) as (keyof Attributes)[]).map((key) => (
                 <div
                   key={key}
-                  className="rounded-lg border border-neutral-800 bg-neutral-900 p-4 text-center"
+                  className="rounded-md border border-neutral-800 bg-neutral-900/60 p-4 text-center"
                 >
-                  <div className="text-xs text-neutral-500">{ATTRIBUTE_LABELS[key]}</div>
-                  <div className="mt-1 text-2xl font-semibold">{attributes?.[key] ?? '—'}</div>
+                  <div className="font-display text-xs tracking-wider text-neutral-500">
+                    {ATTRIBUTE_LABELS[key]}
+                  </div>
+                  <div className="mt-1 font-display text-3xl font-bold text-cyan-300 text-glow-cyan">
+                    {attributes?.[key] ?? '—'}
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-4 flex gap-3">
-              <button
-                onClick={() => setAttributes(rollAttributeSet())}
-                className="rounded-lg border border-neutral-700 px-4 py-2 text-sm hover:border-neutral-500"
-              >
+            <div className="mt-5 flex gap-3">
+              <Button variant="secondary" onClick={() => setAttributes(rollAttributeSet())}>
                 {attributes ? 'Reroll' : 'Roll'}
-              </button>
-              <button
-                disabled={!attributes}
-                onClick={() => setStep('archetype')}
-                className="rounded-lg bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-950 disabled:opacity-40"
-              >
+              </Button>
+              <Button disabled={!attributes} onClick={() => setStep('archetype')}>
                 Continue
-              </button>
+              </Button>
             </div>
           </div>
         )}
 
         {step === 'archetype' && (
-          <div className="mt-6">
-            <p className="text-neutral-400 text-sm">Who were you before this?</p>
+          <div className="mt-8">
+            <p className="text-sm text-neutral-400">Who were you before this?</p>
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {ARCHETYPES.map((a) => (
-                <button
+                <CardButton
                   key={a.id}
+                  selected={archetypeId === a.id}
                   onClick={() => setArchetypeId(a.id)}
-                  className={`text-left rounded-lg border p-4 transition-colors ${
-                    archetypeId === a.id
-                      ? 'border-neutral-400 bg-neutral-800'
-                      : 'border-neutral-800 bg-neutral-900 hover:border-neutral-600'
-                  }`}
                 >
-                  <div className="font-medium">{a.name}</div>
-                  <div className="mt-1 text-sm text-neutral-400">{a.blurb}</div>
-                </button>
+                  <div className="font-display font-semibold tracking-wide">{a.name}</div>
+                  <div className="mt-0.5 font-display text-[10px] uppercase tracking-wider text-cyan-500/80">
+                    {a.career}
+                  </div>
+                  <div className="mt-2 text-sm leading-relaxed text-neutral-400">{a.blurb}</div>
+                </CardButton>
               ))}
             </div>
 
-            <button
-              disabled={!archetype}
-              onClick={() => setStep('review')}
-              className="mt-4 rounded-lg bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-950 disabled:opacity-40"
-            >
+            <Button disabled={!archetype} onClick={() => setStep('review')} className="mt-5">
               Continue
-            </button>
+            </Button>
           </div>
         )}
 
         {step === 'review' && attributes && archetype && (
-          <div className="mt-6">
-            <div className="rounded-lg border border-neutral-800 bg-neutral-900 p-4">
-              <div className="text-lg font-medium">{name}</div>
-              <div className="text-sm text-neutral-400">{archetype.name}</div>
-
-              <div className="mt-3 grid grid-cols-6 gap-2 text-center">
-                {(Object.keys(ATTRIBUTE_LABELS) as (keyof Attributes)[]).map((key) => (
-                  <div key={key}>
-                    <div className="text-xs text-neutral-500">{ATTRIBUTE_LABELS[key]}</div>
-                    <div className="font-semibold">{attributes[key]}</div>
-                  </div>
-                ))}
+          <div className="mt-8">
+            <div className="rounded-md border border-cyan-400/30 bg-neutral-900/60 shadow-[0_0_30px_-10px_rgba(34,211,238,0.5)]">
+              <div className="flex items-center justify-between border-b border-neutral-800 bg-neutral-900/80 px-4 py-2">
+                <span className="font-display text-[10px] uppercase tracking-[0.25em] text-cyan-400">
+                  Operator Dossier
+                </span>
+                <span className="font-display text-[10px] uppercase tracking-wider text-neutral-600">
+                  SEZ-PROTOCOL
+                </span>
               </div>
 
-              <div className="mt-4 text-sm">
-                <div className="text-neutral-500">Skills</div>
-                <div className="mt-1 text-neutral-300">
-                  {archetype.skills.map((s) => `${s.name} ${s.level}`).join(', ')}
+              <div className="p-4">
+                <div className="font-display text-xl font-semibold tracking-wide">{name}</div>
+                <div className="text-sm text-neutral-400">{archetype.name}</div>
+
+                <div className="mt-4 grid grid-cols-6 gap-2 text-center">
+                  {(Object.keys(ATTRIBUTE_LABELS) as (keyof Attributes)[]).map((key) => (
+                    <div key={key} className="rounded border border-neutral-800 bg-neutral-950/60 py-2">
+                      <div className="font-display text-[10px] text-neutral-500">
+                        {ATTRIBUTE_LABELS[key]}
+                      </div>
+                      <div className="font-display font-semibold text-cyan-300">
+                        {attributes[key]}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
 
-              <div className="mt-3 text-sm">
-                <div className="text-neutral-500">Equipment</div>
-                <div className="mt-1 text-neutral-300">
-                  {archetype.equipment.map((e) => e.name).join(', ')}
+                <div className="mt-4 text-sm">
+                  <div className="font-display text-[10px] uppercase tracking-wider text-neutral-500">
+                    Skills
+                  </div>
+                  <div className="mt-1 text-neutral-300">
+                    {archetype.skills.map((s) => `${s.name} ${s.level}`).join(', ')}
+                  </div>
+                </div>
+
+                <div className="mt-3 text-sm">
+                  <div className="font-display text-[10px] uppercase tracking-wider text-neutral-500">
+                    Equipment
+                  </div>
+                  <div className="mt-1 text-neutral-300">
+                    {archetype.equipment.map((e) => e.name).join(', ')}
+                  </div>
                 </div>
               </div>
             </div>
 
-            <button
-              onClick={confirm}
-              className="mt-4 rounded-lg bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-950"
-            >
+            <Button onClick={confirm} className="mt-5">
               Start
-            </button>
+            </Button>
           </div>
         )}
       </div>
-    </div>
+    </GameFrame>
   )
 }
