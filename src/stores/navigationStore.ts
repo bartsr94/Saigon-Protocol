@@ -7,13 +7,17 @@ export interface LocationMeta {
   thumbnail: string
 }
 
-interface NavigationStore {
+interface NavigationSnapshot {
   unlockedLocationIds: string[]
   selectedLocationId: string | null
   flags: Record<string, boolean>
+}
+
+interface NavigationStore extends NavigationSnapshot {
   unlockLocation: (id: string) => void
   selectLocation: (id: string | null) => void
   setFlag: (key: string, value: boolean) => void
+  restore: (snapshot: NavigationSnapshot) => void
 }
 
 export const useNavigationStore = create<NavigationStore>((set) => ({
@@ -32,4 +36,6 @@ export const useNavigationStore = create<NavigationStore>((set) => ({
 
   setFlag: (key, value) =>
     set((state) => ({ flags: { ...state.flags, [key]: value } })),
+
+  restore: (snapshot) => set(snapshot),
 }))

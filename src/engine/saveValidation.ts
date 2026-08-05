@@ -108,6 +108,7 @@ export function validateSaveBlob(value: unknown): SaveBlob {
 
   const character = state.character === null ? null : validateCharacter(state.character, 'save.character')
   const inkState = nullableString(state.inkState, 'save.inkState')
+  const storyText = stringArray(state.storyText, 'save.storyText')
   const unlockedLocationIds = stringArray(state.unlockedLocationIds, 'save.unlockedLocationIds')
   const selectedLocationId = nullableString(state.selectedLocationId, 'save.selectedLocationId')
   const flags = validateBooleanRecord(state.flags, 'save.flags')
@@ -116,6 +117,7 @@ export function validateSaveBlob(value: unknown): SaveBlob {
     version: 1,
     character,
     inkState,
+    storyText,
     unlockedLocationIds,
     selectedLocationId,
     flags,

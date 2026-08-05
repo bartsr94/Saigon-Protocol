@@ -15,6 +15,14 @@ function tierFromMargin(margin: number): CheckTier {
   return 'failure'
 }
 
+function tierForRoll(natural: number, total: number, targetNumber: number): CheckTier {
+  let tier = tierFromMargin(total - targetNumber)
+  // A natural 2 is always at least a failure; a natural 12 is always at least a success.
+  if (natural === 2 && isSuccess(tier)) tier = 'failure'
+  if (natural === 12 && !isSuccess(tier)) tier = 'success'
+  return tier
+}
+
 export interface SkillCheckParams {
   skillLevel: number
   attributeModifier: number
@@ -58,19 +66,37 @@ export function resolveSkillCheck({
   const roll = roll2d6()
   const natural = roll[0] + roll[1]
   const total = natural + skillLevel + attributeModifier + situationalModifier
-  const margin = total - targetNumber
-
-  let tier = tierFromMargin(margin)
-  // A natural 2 is always at least a failure; a natural 12 is always at least a success.
-  if (natural === 2 && isSuccess(tier)) tier = 'failure'
-  if (natural === 12 && !isSuccess(tier)) tier = 'success'
+  const tier = tierForRoll(natural, total, targetNumber)
 
   return {
     roll,
     total,
     targetNumber,
     success: isSuccess(tier),
-    effect: margin,
+    effect: total - targetNumber,
     tier,
   }
+}
+
+/** Pre-roll pass odds for the same modifiers `resolveSkillCheck` would use,
+ * enumerated across all 36 fixed 2d6 outcomes so preview odds and the actual
+ * roll can never disagree. */
+export function passProbability({
+  skillLevel,
+  attributeModifier,
+  targetNumber,
+  situationalModifier = 0,
+}: SkillCheckParams): number {
+  const modifier = skillLevel + attributeModifier + situationalModifier
+  let passing = 0
+
+  for (let a = 1; a <= 6; a++) {
+    for (let b = 1; b <= 6; b++) {
+      const natural = a + b
+      const total = natural + modifier
+      if (isSuccess(tierForRoll(natural, total, targetNumber))) passing++
+    }
+  }
+
+  return passing / 36
 }

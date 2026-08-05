@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useCharacterStore } from '../../stores/characterStore'
+import { saveGame } from '../../stores/saveStore'
 import { LOCATIONS } from '../../content/locations'
 import { GameFrame } from '../ui/GameFrame'
 import { Eyebrow, Title } from '../ui/Screen'
+import { Button } from '../ui/Button'
 import { CardButton } from '../ui/CardButton'
 import { StatBar } from '../ui/StatBar'
 
@@ -11,9 +14,17 @@ export function OverworldScreen() {
   const selectLocation = useNavigationStore((state) => state.selectLocation)
   const character = useCharacterStore((state) => state.character)
 
+  const [justSaved, setJustSaved] = useState(false)
+
   const unlockedLocations = LOCATIONS.filter((location) =>
     unlockedLocationIds.includes(location.id),
   )
+
+  const handleSave = () => {
+    saveGame()
+    setJustSaved(true)
+    setTimeout(() => setJustSaved(false), 1500)
+  }
 
   return (
     <GameFrame>
@@ -24,19 +35,32 @@ export function OverworldScreen() {
           <p className="mt-1 text-sm text-neutral-400">Choose where to go.</p>
         </div>
 
-        {character && (
-          <div className="w-full shrink-0 rounded-md border border-neutral-800 bg-neutral-900/60 p-3 sm:w-56">
-            <div className="font-display text-sm font-semibold tracking-wide text-neutral-100">
-              {character.name}
+        <div className="flex w-full shrink-0 flex-col items-end gap-2 sm:w-56">
+          {character && (
+            <div className="w-full rounded-md border border-neutral-800 bg-neutral-900/60 p-3">
+              <div className="font-display text-sm font-semibold tracking-wide text-neutral-100">
+                {character.name}
+              </div>
+              <StatBar
+                value={character.health}
+                max={character.maxHealth}
+                label="Condition"
+                className="mt-2"
+              />
             </div>
-            <StatBar
-              value={character.health}
-              max={character.maxHealth}
-              label="Condition"
-              className="mt-2"
-            />
+          )}
+
+          <div className="flex items-center gap-2">
+            {justSaved && (
+              <span className="font-display text-[10px] uppercase tracking-wider text-cyan-400">
+                Saved
+              </span>
+            )}
+            <Button variant="secondary" sound="select" onClick={handleSave}>
+              Save
+            </Button>
           </div>
-        )}
+        </div>
       </div>
 
       <div className="mx-auto mt-6 grid max-w-3xl gap-4 sm:grid-cols-2">
