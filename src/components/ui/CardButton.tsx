@@ -1,4 +1,8 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react'
+import btnPrimaryHover from '../../assets/ui/Interactive_Buttons/Primary_Button/Btn_Primary_Hover.png'
+import btnSecondaryNormal from '../../assets/ui/Interactive_Buttons/Secondary_Button/Btn_Secondary_Normal.png'
+import btnSecondaryHover from '../../assets/ui/Interactive_Buttons/Secondary_Button/Btn_Secondary_Hover.png'
+import './uiChrome.css'
 
 interface CardButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
@@ -6,22 +10,12 @@ interface CardButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   accent?: 'cyan' | 'magenta' | 'amber'
 }
 
-const ACCENT: Record<string, { border: string; glow: string; hover: string }> = {
-  cyan: {
-    border: 'border-cyan-400/70',
-    glow: 'shadow-[0_0_24px_-6px_rgba(34,211,238,0.6)]',
-    hover: 'hover:border-cyan-500/50 hover:shadow-[0_0_18px_-8px_rgba(34,211,238,0.5)]',
-  },
-  magenta: {
-    border: 'border-fuchsia-400/70',
-    glow: 'shadow-[0_0_24px_-6px_rgba(232,121,249,0.6)]',
-    hover: 'hover:border-fuchsia-500/50 hover:shadow-[0_0_18px_-8px_rgba(232,121,249,0.5)]',
-  },
-  amber: {
-    border: 'border-amber-400/70',
-    glow: 'shadow-[0_0_24px_-6px_rgba(251,191,36,0.6)]',
-    hover: 'hover:border-amber-500/50 hover:shadow-[0_0_18px_-8px_rgba(251,191,36,0.5)]',
-  },
+// The source art is a single cyan neon design; other accents are approximated
+// by hue-rotating it rather than shipping separate art per color.
+const ACCENT_FILTER: Record<string, string> = {
+  cyan: 'none',
+  magenta: 'hue-rotate(120deg) saturate(1.3)',
+  amber: 'hue-rotate(-140deg) saturate(1.4)',
 }
 
 export function CardButton({
@@ -30,19 +24,23 @@ export function CardButton({
   accent = 'cyan',
   className = '',
   disabled,
+  style,
   ...rest
 }: CardButtonProps) {
-  const a = ACCENT[accent]
+  const chromeStyle: CSSProperties = {
+    '--chrome-img-normal': `url(${selected ? btnPrimaryHover : btnSecondaryNormal})`,
+    '--chrome-img-hover': `url(${btnSecondaryHover})`,
+    filter: disabled ? undefined : ACCENT_FILTER[accent],
+    ...style,
+  } as CSSProperties
+
   return (
     <button
       disabled={disabled}
-      className={`text-left rounded-md border bg-neutral-900/60 p-4 backdrop-blur-sm transition-all duration-150 ${
-        disabled
-          ? 'border-neutral-800/60 opacity-40 cursor-not-allowed'
-          : selected
-            ? `${a.border} ${a.glow} bg-neutral-900`
-            : `border-neutral-800 ${a.hover}`
+      className={`card-chrome text-left transition-all duration-150 ${
+        disabled ? 'opacity-40 cursor-not-allowed' : selected ? 'card-chrome--selected' : ''
       } ${className}`}
+      style={chromeStyle}
       {...rest}
     >
       {children}

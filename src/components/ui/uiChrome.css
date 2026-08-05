@@ -1,0 +1,35 @@
+/* Border-image chrome shared by Button and CardButton, driven by the
+   --chrome-img-* custom properties each component sets inline. Corners are
+   a real 45deg chamfer in the source art (measured ~70px inset on a
+   1024px-wide asset), so border-image-slice keeps them crisp at any size
+   instead of stretching them like a background-image would. */
+
+.btn-chrome {
+  border-style: solid;
+  border-width: 10px;
+  border-image-slice: 70;
+  border-image-repeat: stretch;
+  border-image-source: var(--chrome-img-normal);
+  background-color: #161d2c;
+}
+
+.btn-chrome:hover:not(:disabled) {
+  border-image-source: var(--chrome-img-hover);
+}
+
+.btn-chrome:active:not(:disabled) {
+  border-image-source: var(--chrome-img-pressed);
+}
+
+.card-chrome {
+  border-style: solid;
+  border-width: 14px;
+  border-image-slice: 70;
+  border-image-repeat: stretch;
+  border-image-source: var(--chrome-img-normal);
+  background-color: #161d2c;
+}
+
+.card-chrome:hover:not(:disabled):not(.card-chrome--selected) {
+  border-image-source: var(--chrome-img-hover);
+}
