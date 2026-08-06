@@ -7,13 +7,18 @@ import { create } from 'zustand'
 import { Story } from 'inkjs'
 import type { Choice } from 'inkjs/engine/Choice'
 import { bindCheckFunctions, bindWellbeingFunctions, syncInsightVariables } from '../engine/storyEngine'
+import { parseLineSpeaker, type LineSpeaker } from '../engine/contentTags'
 import type { CheckResult } from '../engine/checkResolution'
 import { useInsightStore } from './insightStore'
 
+export interface StoryLine {
+  text: string
+  speaker: LineSpeaker
+}
+
 interface StoryState {
   story: Story | null
-  currentText: string[]
-  currentTags: string[]
+  currentLines: StoryLine[]
   currentChoices: Choice[]
   canContinue: boolean
   ended: boolean
@@ -33,17 +38,17 @@ function advance(story: Story, set: (partial: Partial<StoryState>) => void): voi
   // if a check actually fires during this pass).
   set({ lastCheckResult: null })
 
-  const text: string[] = []
-  const tags: string[] = []
+  // Read story.currentTags right after each line's own Continue() call — it
+  // reflects only that line's tags and gets overwritten by the next one, so
+  // tags must be captured per-line here rather than flattened across the batch.
+  const lines: StoryLine[] = []
   while (story.canContinue) {
     const line = story.Continue()
-    if (line !== null) text.push(line)
-    if (story.currentTags) tags.push(...story.currentTags)
+    if (line !== null) lines.push({ text: line, speaker: parseLineSpeaker(story.currentTags ?? []) })
   }
   const currentChoices = story.currentChoices
   set({
-    currentText: text,
-    currentTags: tags,
+    currentLines: lines,
     currentChoices,
     canContinue: story.canContinue,
     ended: !story.canContinue && currentChoices.length === 0,
@@ -52,8 +57,7 @@ function advance(story: Story, set: (partial: Partial<StoryState>) => void): voi
 
 export const useStoryStore = create<StoryState>((set, get) => ({
   story: null,
-  currentText: [],
-  currentTags: [],
+  currentLines: [],
   currentChoices: [],
   canContinue: false,
   ended: false,
@@ -100,8 +104,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
     unsubscribeInsight = null
     set({
       story: null,
-      currentText: [],
-      currentTags: [],
+      currentLines: [],
       currentChoices: [],
       canContinue: false,
       ended: false,

@@ -3,35 +3,83 @@
 // left three-quarters, the scrolling dialogue log/choices/check-result
 // panel is the right quarter.
 //
-// storyStore only ever exposes "the text since the last choice," not a
+// storyStore only ever exposes "the lines since the last choice," not a
 // full transcript (Architecture §3) — the scrollback log below is this
 // screen's own bookkeeping, appending each new batch as it arrives. A
 // persistent transcript belongs in storyStore itself if another screen
 // ever needs it too; this is a presentational accumulation, not new
 // simulation state.
 //
-// Real per-line speaker/Insight-interjection metadata and per-choice
-// mechanical tags (UI_DESIGN §4/§5) depend on an ink content-tagging
-// convention that doesn't exist yet (Architecture §6, still open) — lines
-// render as plain narration and choices as untagged rows until that lands.
+// Per-line speaker rendering and per-choice mechanical tags follow the ink
+// content-tagging convention (docs/INK_CONTENT_TAGGING_SPEC.md, Architecture
+// §6): storyStore.currentLines carries a parsed LineSpeaker per line, and
+// each choice's raw inkjs tags are parsed here via parseChoiceTags.
 
 import { useEffect, useRef, useState } from 'react'
 import { useInsightStore } from '../../stores/insightStore'
-import { useStoryStore } from '../../stores/storyStore'
+import { useStoryStore, type StoryLine } from '../../stores/storyStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSettingsStore, TEXT_SPEED_MS } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { LOCATIONS } from '../../content/locations'
 import { ARCHETYPES } from '../../content/archetypes'
-import { NPCS } from '../../content/npcs'
+import { NPCS, type NpcId } from '../../content/npcs'
+import { INSIGHTS } from '../../content/insights'
+import { parseChoiceTags } from '../../engine/contentTags'
 import type { CheckResult } from '../../engine/checkResolution'
-import { CheckResultBlock, ChoiceRow, Panel, PipTrack, PortraitFrame } from '../ui'
+import { CheckResultBlock, ChoiceRow, InsightChip, Panel, PipTrack, PortraitFrame } from '../ui'
 import { NavRail } from './NavRail'
 
 interface LogEntry {
   id: number
-  text: string
+  lines: StoryLine[]
   checkResult: CheckResult | null
+}
+
+/** Joiner between lines in one batch, matching how they'd read as separate paragraphs. */
+const LINE_JOINER = '\n\n'
+
+function fullBatchText(lines: StoryLine[]): string {
+  return lines.map((l) => l.text).join(LINE_JOINER)
+}
+
+/** Slices each line's text down to what `typedChars` has revealed so far, in reading order. */
+function revealLines(lines: StoryLine[], typedChars: number): { line: StoryLine; text: string }[] {
+  const revealed: { line: StoryLine; text: string }[] = []
+  let offset = 0
+  for (const line of lines) {
+    const remaining = typedChars - offset
+    if (remaining <= 0) break
+    revealed.push({ line, text: line.text.slice(0, Math.min(remaining, line.text.length)) })
+    offset += line.text.length + LINE_JOINER.length
+  }
+  return revealed
+}
+
+function StoryLineEntry({ line, text }: { line: StoryLine; text: string }) {
+  if (text.length === 0) return null
+
+  if (line.speaker.type === 'insight') {
+    const insight = INSIGHTS[line.speaker.insightId]
+    return (
+      <div className="space-y-1">
+        <InsightChip name={insight.name} color={insight.color} glitchOnMount />
+        <p className="whitespace-pre-wrap pl-6 font-body text-base text-white/90">{text}</p>
+      </div>
+    )
+  }
+
+  if (line.speaker.type === 'npc') {
+    const npc = NPCS[line.speaker.npcId]
+    return (
+      <div className="space-y-1">
+        <span className="font-display text-xs font-bold uppercase tracking-widest text-chrome-primary">{npc.name}</span>
+        <p className="whitespace-pre-wrap font-body text-base text-white">{text}</p>
+      </div>
+    )
+  }
+
+  return <p className="whitespace-pre-wrap font-body text-base text-white">{text}</p>
 }
 
 export function DialogueScreen() {
@@ -40,7 +88,7 @@ export function DialogueScreen() {
   const composure = useInsightStore((s) => s.composure)
 
   const storyInstance = useStoryStore((s) => s.story)
-  const currentText = useStoryStore((s) => s.currentText)
+  const currentLines = useStoryStore((s) => s.currentLines)
   const currentChoices = useStoryStore((s) => s.currentChoices)
   const ended = useStoryStore((s) => s.ended)
   const lastCheckResult = useStoryStore((s) => s.lastCheckResult)
@@ -57,25 +105,31 @@ export function DialogueScreen() {
   const [log, setLog] = useState<LogEntry[]>([])
   const nextId = useRef(0)
   const logRef = useRef<HTMLDivElement>(null)
+  const [activeNpcId, setActiveNpcId] = useState<NpcId | null>(null)
 
-  // A new Story instance means a new scene — start the transcript over.
+  // A new Story instance means a new scene — start the transcript and center stage over.
   useEffect(() => {
     setLog([])
     nextId.current = 0
+    setActiveNpcId(null)
   }, [storyInstance])
 
-  // Every advance() call replaces currentText with a fresh batch; append it
-  // as one transcript entry, carrying whatever check fired during that pass.
+  // Every advance() call replaces currentLines with a fresh batch; append it
+  // as one transcript entry, carrying whatever check fired during that pass,
+  // and follow the center-stage portrait to the batch's last NPC speaker.
   useEffect(() => {
-    if (currentText.length === 0) return
-    const entry: LogEntry = { id: nextId.current++, text: currentText.join('\n\n'), checkResult: lastCheckResult }
+    if (currentLines.length === 0) return
+    const entry: LogEntry = { id: nextId.current++, lines: currentLines, checkResult: lastCheckResult }
     setLog((prev) => [...prev, entry])
-    // currentText is the real per-turn trigger; lastCheckResult only ever
-    // changes in the same synchronous batch as currentText (see storyStore).
+    const npcLines = currentLines.filter((l): l is StoryLine & { speaker: { type: 'npc'; npcId: NpcId } } => l.speaker.type === 'npc')
+    if (npcLines.length > 0) setActiveNpcId(npcLines[npcLines.length - 1].speaker.npcId)
+    // currentLines is the real per-turn trigger; lastCheckResult only ever
+    // changes in the same synchronous batch as currentLines (see storyStore).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentText])
+  }, [currentLines])
 
   const latestEntry = log[log.length - 1] ?? null
+  const latestEntryText = latestEntry ? fullBatchText(latestEntry.lines) : ''
   const [typedChars, setTypedChars] = useState(0)
 
   useEffect(() => {
@@ -83,17 +137,17 @@ export function DialogueScreen() {
   }, [latestEntry?.id])
 
   useEffect(() => {
-    if (!latestEntry || instantText || typedChars >= latestEntry.text.length) return
+    if (!latestEntry || instantText || typedChars >= latestEntryText.length) return
     const timeout = setTimeout(() => setTypedChars((c) => c + 1), TEXT_SPEED_MS[textSpeed])
     return () => clearTimeout(timeout)
-  }, [typedChars, latestEntry, instantText, textSpeed])
+  }, [typedChars, latestEntry, latestEntryText, instantText, textSpeed])
 
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
   }, [log, typedChars])
 
   function handleSkip() {
-    if (latestEntry && typedChars < latestEntry.text.length) setTypedChars(latestEntry.text.length)
+    if (latestEntry && typedChars < latestEntryText.length) setTypedChars(latestEntryText.length)
   }
 
   function handleReturnToOverworld() {
@@ -132,48 +186,66 @@ export function DialogueScreen() {
         </div>
 
         {/*
-          Test render of a real NPC portrait in the center stage (UI_DESIGN
-          §3, UI_VISUAL_STYLE_SPEC §5.2). Hardcoded to Mei Hong — there's no
-          per-line speaker metadata yet (Architecture §6, still open), so
-          this isn't "whoever is speaking," just proof the art slot works.
+          Center stage (UI_DESIGN §3): the active NPC's portrait, tracked
+          from the most recent `# speaker: npc:<id>` line tag. No character
+          art shows until a scene actually names one, per §3's "location
+          establishing art can render here when no character is present."
         */}
         <div className="flex h-full flex-col items-center justify-center gap-3">
-          <div
-            className="relative h-[420px] w-[300px] overflow-hidden bg-black/40"
-            style={{
-              clipPath: 'polygon(28px 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%, 0 28px)',
-              border: '2px solid color-mix(in srgb, var(--color-chrome-primary) 50%, transparent)',
-              boxShadow:
-                '0 0 30px color-mix(in srgb, var(--color-chrome-primary) 20%, transparent), inset 0 0 40px color-mix(in srgb, var(--color-chrome-primary) 10%, transparent)',
-            }}
-          >
-            <img src={NPCS.meiHong.portraitSrc} alt={NPCS.meiHong.name} className="h-full w-full object-cover" />
-          </div>
-          <span className="font-display text-xs uppercase tracking-widest text-white/40">{locationName}</span>
+          {activeNpcId && (
+            <div
+              className="relative h-[420px] w-[300px] overflow-hidden bg-black/40"
+              style={{
+                clipPath: 'polygon(28px 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%, 0 28px)',
+                border: '2px solid color-mix(in srgb, var(--color-chrome-primary) 50%, transparent)',
+                boxShadow:
+                  '0 0 30px color-mix(in srgb, var(--color-chrome-primary) 20%, transparent), inset 0 0 40px color-mix(in srgb, var(--color-chrome-primary) 10%, transparent)',
+              }}
+            >
+              <img src={NPCS[activeNpcId].portraitSrc} alt={NPCS[activeNpcId].name} className="h-full w-full object-cover" />
+            </div>
+          )}
+          <span className="font-display text-xs uppercase tracking-widest text-white/40">
+            {activeNpcId ? NPCS[activeNpcId].name : locationName}
+          </span>
         </div>
       </div>
 
       {/* Right quarter: dialogue panel */}
       <Panel size="lg" className="flex w-[28%] min-w-[380px] shrink-0 flex-col gap-3 p-4" onClick={handleSkip}>
         <div ref={logRef} className="flex-1 space-y-3 overflow-y-auto pr-1">
-          {log.map((entry, i) => (
-            <div key={entry.id}>
-              <p className="whitespace-pre-wrap font-body text-base text-white">
-                {i === log.length - 1 ? entry.text.slice(0, typedChars) : entry.text}
-              </p>
-              {entry.checkResult && <CheckResultBlock insightName="CHECK" result={entry.checkResult} />}
-            </div>
-          ))}
+          {log.map((entry, i) => {
+            const isLatest = i === log.length - 1
+            const revealed = isLatest ? revealLines(entry.lines, typedChars) : entry.lines.map((line) => ({ line, text: line.text }))
+            return (
+              <div key={entry.id} className="space-y-2">
+                {revealed.map((r, j) => (
+                  <StoryLineEntry key={j} line={r.line} text={r.text} />
+                ))}
+                {entry.checkResult && <CheckResultBlock insightName="CHECK" result={entry.checkResult} />}
+              </div>
+            )
+          })}
           {ended && <p className="font-body text-xs uppercase tracking-widest text-white/40">— scene ended —</p>}
         </div>
 
-        {currentChoices.length > 0 && (!latestEntry || typedChars >= latestEntry.text.length) && (
+        {currentChoices.length > 0 && (!latestEntry || typedChars >= latestEntryText.length) && (
           <div className="flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1" onClick={(e) => e.stopPropagation()}>
-            {currentChoices.map((choice) => (
-              <ChoiceRow key={choice.index} onClick={() => choose(choice.index)}>
-                {choice.text}
-              </ChoiceRow>
-            ))}
+            {currentChoices.map((choice) => {
+              const tagInfo = parseChoiceTags(choice.tags)
+              const insight = tagInfo.insightId ? INSIGHTS[tagInfo.insightId] : null
+              return (
+                <ChoiceRow
+                  key={choice.index}
+                  onClick={() => choose(choice.index)}
+                  tagVariant={tagInfo.variant}
+                  tagLabel={tagInfo.variant === 'locked' ? tagInfo.lockedReason : insight?.name}
+                  insightColor={insight?.color}
+                >
+                  {choice.text}
+                </ChoiceRow>
+              )
+            })}
           </div>
         )}
       </Panel>

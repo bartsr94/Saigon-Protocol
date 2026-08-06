@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
+import type { ChoiceTagVariant } from '../../engine/contentTags'
 
-export type ChoiceTagVariant = 'none' | 'insight-gated' | 'white-check' | 'red-check' | 'locked'
+export type { ChoiceTagVariant }
 
 export interface ChoiceRowProps {
   children: ReactNode
