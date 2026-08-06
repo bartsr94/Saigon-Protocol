@@ -51,8 +51,8 @@ describe('storyStore', () => {
     useStoryStore.getState().loadStory(compileToJson(DEMO_INK))
 
     const state = useStoryStore.getState()
-    expect(state.currentText.join(' ')).toContain('You approach the checkpoint.')
-    expect(state.currentText.join(' ')).toContain('The Ledger hums with leverage.')
+    expect(state.currentLines.map((l) => l.text).join(' ')).toContain('You approach the checkpoint.')
+    expect(state.currentLines.map((l) => l.text).join(' ')).toContain('The Ledger hums with leverage.')
     expect(state.currentChoices).toHaveLength(1)
     expect(state.ended).toBe(false)
   })
@@ -67,8 +67,8 @@ describe('storyStore', () => {
 
     const composureBefore = useInsightStore.getState().composure.current
     const state = useStoryStore.getState()
-    expect(state.currentText.join(' ')).toContain('You bluff your way past.')
-    expect(state.currentText.join(' ')).toContain('The scene ends.')
+    expect(state.currentLines.map((l) => l.text).join(' ')).toContain('You bluff your way past.')
+    expect(state.currentLines.map((l) => l.text).join(' ')).toContain('The scene ends.')
     expect(state.lastCheckResult?.success).toBe(true)
     expect(useInsightStore.getState().composure.current).toBe(composureBefore)
     expect(useInsightStore.getState().isRedCheckConsumed('checkpoint-talk')).toBe(true)
@@ -84,7 +84,7 @@ describe('storyStore', () => {
     useStoryStore.getState().choose(0)
 
     const state = useStoryStore.getState()
-    expect(state.currentText.join(' ')).toContain('They see through it.')
+    expect(state.currentLines.map((l) => l.text).join(' ')).toContain('They see through it.')
     expect(state.lastCheckResult?.doubles).toBe('critFail')
     expect(state.lastCheckResult?.success).toBe(false)
     expect(useInsightStore.getState().composure.current).toBe(maxComposure - 1)
@@ -127,16 +127,33 @@ The end.
     vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5) // non-double, comfortable success
 
     useStoryStore.getState().loadStory(demoStoryJson)
-    const opening = useStoryStore.getState().currentText.join(' ')
+    const openingState = useStoryStore.getState()
+    const opening = openingState.currentLines.map((l) => l.text).join(' ')
     expect(opening).toContain('Rain on corrugated steel.')
     expect(opening).toContain("Muscle Memory clocks the drone's blind spot")
-    expect(useStoryStore.getState().currentChoices).toHaveLength(1)
+    expect(openingState.currentChoices).toHaveLength(1)
 
     useStoryStore.getState().choose(0)
     const state = useStoryStore.getState()
-    expect(state.currentText.join(' ')).toContain('The drone hesitates')
-    expect(state.currentText.join(' ')).toContain('The moment passes, one way or another.')
+    expect(state.currentLines.map((l) => l.text).join(' ')).toContain('The drone hesitates')
+    expect(state.currentLines.map((l) => l.text).join(' ')).toContain('The moment passes, one way or another.')
     expect(state.ended).toBe(true)
     expect(useInsightStore.getState().isRedCheckConsumed('checkpoint-stare-down')).toBe(true)
+  })
+
+  it('tags an Insight interjection and an NPC line with their respective speakers, per line', () => {
+    useInsightStore.getState().selectArchetype('enforcer')
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5) // non-double, comfortable success
+
+    useStoryStore.getState().loadStory(demoStoryJson)
+    const opening = useStoryStore.getState().currentLines
+
+    const insightLine = opening.find((l) => l.text.includes("clocks the drone's blind spot"))
+    expect(insightLine?.speaker).toEqual({ type: 'insight', insightId: 'muscleMemory' })
+
+    useStoryStore.getState().choose(0)
+    const afterChoice = useStoryStore.getState().currentLines
+    const npcLine = afterChoice.find((l) => l.text.includes('steam curling off her collar'))
+    expect(npcLine?.speaker).toEqual({ type: 'npc', npcId: 'meiHong' })
   })
 })
