@@ -90,6 +90,38 @@ describe('storyStore', () => {
     expect(useInsightStore.getState().composure.current).toBe(maxComposure - 1)
   })
 
+  it('clears lastCheckResult on a later turn that rolls no check, instead of showing a stale result', () => {
+    const TWO_TURN_INK = `
+EXTERNAL is_red_check_consumed(checkId)
+EXTERNAL roll_check(insight, targetNumber, checkId, risk)
+EXTERNAL damage_composure(amount)
+
+VAR ledger = 0
+
+Turn one.
+* [Roll a check]
+    ~ temp result = roll_check("hustle", 4, "turn-one-check", "white")
+    Rolled.
+    -> next
+== next ==
+Turn two, no check here.
+* [Just continue]
+    -> done
+== done ==
+The end.
+-> END
+`
+    useInsightStore.getState().selectArchetype('hustler')
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5) // comfortable success, non-double
+
+    useStoryStore.getState().loadStory(compileToJson(TWO_TURN_INK))
+    useStoryStore.getState().choose(0) // rolls the check
+    expect(useStoryStore.getState().lastCheckResult).not.toBeNull()
+
+    useStoryStore.getState().choose(0) // "Just continue" — no check this turn
+    expect(useStoryStore.getState().lastCheckResult).toBeNull()
+  })
+
   it('runs the real compiled demo content end-to-end', () => {
     useInsightStore.getState().selectArchetype('enforcer') // strength: muscleMemory, matching the demo's check
     vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5) // non-double, comfortable success

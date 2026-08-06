@@ -28,6 +28,11 @@ interface StoryState {
 let unsubscribeInsight: (() => void) | null = null
 
 function advance(story: Story, set: (partial: Partial<StoryState>) => void): void {
+  // Cleared before the pass so a turn with no check doesn't keep showing a
+  // stale result from an earlier turn (onCheckResult below overwrites this
+  // if a check actually fires during this pass).
+  set({ lastCheckResult: null })
+
   const text: string[] = []
   const tags: string[] = []
   while (story.canContinue) {

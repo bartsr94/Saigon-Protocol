@@ -6,6 +6,7 @@ import { useNavigationStore } from '../../stores/navigationStore'
 import { useStoryStore } from '../../stores/storyStore'
 import { LOCATIONS, LOCATION_IDS } from '../../content/locations'
 import demoStoryJson from '../../../content/ink/demo.json'
+import { GlitchText, Panel } from '../ui'
 
 export function NavigationHarness() {
   const unlockedLocationIds = useNavigationStore((s) => s.unlockedLocationIds)
@@ -19,24 +20,26 @@ export function NavigationHarness() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-8">
-      <h2 className="text-sm font-medium text-neutral-200">Overworld</h2>
+      <h2 className="font-display text-sm font-bold uppercase tracking-widest text-chrome-primary">
+        <GlitchText text="Overworld" />
+      </h2>
       <div className="grid grid-cols-2 gap-3">
         {LOCATION_IDS.map((id) => {
           const def = LOCATIONS[id]
           const unlocked = unlockedLocationIds.has(id)
           return (
-            <button
-              key={id}
-              type="button"
-              disabled={!unlocked}
-              onClick={() => handleSelect(id)}
-              className="rounded border border-neutral-700 p-4 text-left hover:border-emerald-400 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-neutral-700"
-            >
-              <div className="font-medium text-neutral-100">
-                {def.name}
-                {!unlocked && <span className="text-neutral-500"> (locked)</span>}
-              </div>
-              <div className="mt-1 text-xs text-neutral-400">{def.blurb}</div>
+            <button key={id} type="button" disabled={!unlocked} onClick={() => handleSelect(id)} className="text-left disabled:cursor-not-allowed">
+              <Panel
+                size="sm"
+                accent={unlocked ? 'var(--color-chrome-primary)' : 'rgba(255,255,255,0.15)'}
+                className={`h-full p-4 transition-colors ${unlocked ? 'hover:!border-chrome-secondary' : 'opacity-40'}`}
+              >
+                <div className="font-display text-sm font-bold uppercase tracking-wide text-white">
+                  {def.name}
+                  {!unlocked && <span className="text-white/50"> (locked)</span>}
+                </div>
+                <div className="mt-1 font-body text-xs text-white/60">{def.blurb}</div>
+              </Panel>
             </button>
           )
         })}
