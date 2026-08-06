@@ -1,0 +1,110 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { Compiler } from 'inkjs/full'
+import { useStoryStore } from './storyStore'
+import { useInsightStore } from './insightStore'
+import demoStoryJson from '../../content/ink/demo.json'
+
+function compileToJson(inkSource: string): Record<string, unknown> {
+  const story = new Compiler(inkSource).Compile()
+  return JSON.parse(story.ToJson() as string)
+}
+
+const DEMO_INK = `
+EXTERNAL is_red_check_consumed(checkId)
+EXTERNAL roll_check(insight, targetNumber, checkId, risk)
+EXTERNAL damage_composure(amount)
+
+VAR ledger = 0
+
+You approach the checkpoint.
+{ledger >= 3: The Ledger hums with leverage.|Nothing useful comes to mind.}
+
+* [Try to talk your way through]
+    ~ temp result = roll_check("hustle", 4, "checkpoint-talk", "red")
+    { result:
+        You bluff your way past.
+    - else:
+        They see through it.
+        ~ damage_composure(1)
+    }
+    -> done
+
+== done ==
+The scene ends.
+-> END
+`
+
+describe('storyStore', () => {
+  beforeEach(() => {
+    useInsightStore.setState(useInsightStore.getInitialState(), true)
+    useStoryStore.getState().reset()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('loads a story, syncs Insight variables, and surfaces opening text plus the choice', () => {
+    useInsightStore.getState().selectArchetype('hustler')
+    useInsightStore.getState().spendFreePoint('ledger') // baseline 2 -> 3, crosses the ink conditional's threshold
+
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK))
+
+    const state = useStoryStore.getState()
+    expect(state.currentText.join(' ')).toContain('You approach the checkpoint.')
+    expect(state.currentText.join(' ')).toContain('The Ledger hums with leverage.')
+    expect(state.currentChoices).toHaveLength(1)
+    expect(state.ended).toBe(false)
+  })
+
+  it('a successful check advances past the branch with no composure damage, and consumes the Red check in insightStore', () => {
+    useInsightStore.getState().selectArchetype('hustler') // hustle is the strength insight, baseline 4
+    // non-double dice roll (3, 4) so the doubles rule can't override a comfortable success
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5)
+
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK))
+    useStoryStore.getState().choose(0)
+
+    const composureBefore = useInsightStore.getState().composure.current
+    const state = useStoryStore.getState()
+    expect(state.currentText.join(' ')).toContain('You bluff your way past.')
+    expect(state.currentText.join(' ')).toContain('The scene ends.')
+    expect(state.lastCheckResult?.success).toBe(true)
+    expect(useInsightStore.getState().composure.current).toBe(composureBefore)
+    expect(useInsightStore.getState().isRedCheckConsumed('checkpoint-talk')).toBe(true)
+  })
+
+  it('a critical failure (natural 2) damages Composure through the wellbeing EXTERNAL, regardless of modifier', () => {
+    useInsightStore.getState().selectArchetype('hustler')
+    const maxComposure = useInsightStore.getState().composure.max
+    // both dice show 1 -> doubles critFail, overriding the +4 hustle modifier
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0).mockReturnValueOnce(0)
+
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK))
+    useStoryStore.getState().choose(0)
+
+    const state = useStoryStore.getState()
+    expect(state.currentText.join(' ')).toContain('They see through it.')
+    expect(state.lastCheckResult?.doubles).toBe('critFail')
+    expect(state.lastCheckResult?.success).toBe(false)
+    expect(useInsightStore.getState().composure.current).toBe(maxComposure - 1)
+  })
+
+  it('runs the real compiled demo content end-to-end', () => {
+    useInsightStore.getState().selectArchetype('enforcer') // strength: muscleMemory, matching the demo's check
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5) // non-double, comfortable success
+
+    useStoryStore.getState().loadStory(demoStoryJson)
+    const opening = useStoryStore.getState().currentText.join(' ')
+    expect(opening).toContain('Rain on corrugated steel.')
+    expect(opening).toContain("Muscle Memory clocks the drone's blind spot")
+    expect(useStoryStore.getState().currentChoices).toHaveLength(1)
+
+    useStoryStore.getState().choose(0)
+    const state = useStoryStore.getState()
+    expect(state.currentText.join(' ')).toContain('The drone hesitates')
+    expect(state.currentText.join(' ')).toContain('The moment passes, one way or another.')
+    expect(state.ended).toBe(true)
+    expect(useInsightStore.getState().isRedCheckConsumed('checkpoint-stare-down')).toBe(true)
+  })
+})
