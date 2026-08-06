@@ -85,4 +85,29 @@ describe('insightStore', () => {
     useInsightStore.getState().healVitality(999)
     expect(useInsightStore.getState().vitality.current).toBe(vitality.max)
   })
+
+  it('hydrate bulk-restores state from a save blob, including rebuilding consumedRedChecks as a Set', () => {
+    useInsightStore.getState().hydrate({
+      archetype: 'wire',
+      playerName: 'Restored Name',
+      levels: { ledger: 2, graft: 4, muscleMemory: 2, root: 2, static: 2, hustle: 2, mask: 1 },
+      freePointsRemaining: 1,
+      vitality: { current: 5, max: 12 },
+      composure: { current: 3, max: 10 },
+      consumedRedChecks: ['checkA', 'checkB'],
+      failState: 'composure',
+    })
+
+    const state = useInsightStore.getState()
+    expect(state.archetype).toBe('wire')
+    expect(state.playerName).toBe('Restored Name')
+    expect(state.levels.graft).toBe(4)
+    expect(state.freePointsRemaining).toBe(1)
+    expect(state.vitality).toEqual({ current: 5, max: 12 })
+    expect(state.composure).toEqual({ current: 3, max: 10 })
+    expect(state.isRedCheckConsumed('checkA')).toBe(true)
+    expect(state.isRedCheckConsumed('checkB')).toBe(true)
+    expect(state.isRedCheckConsumed('checkC')).toBe(false)
+    expect(state.failState).toBe('composure')
+  })
 })

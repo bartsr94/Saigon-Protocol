@@ -6,6 +6,7 @@ import { INSIGHT_IDS, INSIGHT_MAX, type InsightId } from '../content/insights'
 import { ARCHETYPES, type ArchetypeId } from '../content/archetypes'
 import { computeMaxComposure, computeMaxVitality } from '../content/wellbeing'
 import { resolveCheck, type CheckResult } from '../engine/checkResolution'
+import type { SerializedInsightState } from '../engine/saveEngine'
 
 export type CheckRisk = 'white' | 'red'
 export type FailStateCause = 'vitality' | 'composure' | null
@@ -58,6 +59,9 @@ interface InsightState {
   healVitality: (amount: number) => void
   damageComposure: (amount: number) => void
   healComposure: (amount: number) => void
+
+  /** Bulk-restores state from a save blob (Save/Persistence Layer). */
+  hydrate: (state: SerializedInsightState) => void
 }
 
 const UNINITIALIZED_LEVELS: Record<InsightId, number> = Object.fromEntries(
@@ -154,5 +158,18 @@ export const useInsightStore = create<InsightState>((set, get) => ({
   healComposure: (amount) => {
     const { composure } = get()
     set({ composure: { ...composure, current: Math.min(composure.max, composure.current + amount) } })
+  },
+
+  hydrate: (state) => {
+    set({
+      archetype: state.archetype,
+      playerName: state.playerName,
+      levels: state.levels,
+      freePointsRemaining: state.freePointsRemaining,
+      vitality: state.vitality,
+      composure: state.composure,
+      consumedRedChecks: new Set(state.consumedRedChecks),
+      failState: state.failState,
+    })
   },
 }))

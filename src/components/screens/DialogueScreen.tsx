@@ -19,6 +19,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useInsightStore } from '../../stores/insightStore'
 import { useStoryStore, type StoryLine } from '../../stores/storyStore'
 import { useNavigationStore } from '../../stores/navigationStore'
+import { useSaveStore } from '../../stores/saveStore'
 import { useSettingsStore, TEXT_SPEED_MS } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { LOCATIONS } from '../../content/locations'
@@ -153,6 +154,9 @@ export function DialogueScreen() {
   function handleReturnToOverworld() {
     returnToOverworld()
     resetStory()
+    // Autosave checkpoint (Save/Persistence Layer): capture the "back on
+    // the Overworld, no active scene" state.
+    useSaveStore.getState().autosave()
   }
 
   if (!archetype || !storyInstance) return null

@@ -1,15 +1,24 @@
-// Title/Boot (UI_DESIGN §6.1 / UI_VISUAL_STYLE_SPEC §5.5). No save layer
-// exists yet (Architecture §5, still open) so Continue has nothing to load
-// — disabled rather than faked. No key art asset exists yet either (art
-// direction is a separate pass); the gradient below is a stand-in, not a
-// claim of finished art.
+// Title/Boot (UI_DESIGN §6.1 / UI_VISUAL_STYLE_SPEC §5.5). Continue loads the
+// most recently written save slot (Save/Persistence Layer, docs/
+// SAVE_PERSISTENCE_SPEC.md) — disabled when none exists rather than faked.
+// No key art asset exists yet either (art direction is a separate pass);
+// the gradient below is a stand-in, not a claim of finished art.
 
 import { CyberButton, GlitchText } from '../ui'
 import { useUiStore } from '../../stores/uiStore'
+import { useSaveStore } from '../../stores/saveStore'
 
 export function TitleScreen() {
   const goToChargen = useUiStore((s) => s.goToChargen)
+  const goToGame = useUiStore((s) => s.goToGame)
   const openOverlay = useUiStore((s) => s.openOverlay)
+  const hasAnySave = useSaveStore((s) => s.hasAnySave)
+  const loadMostRecent = useSaveStore((s) => s.loadMostRecent)
+  const canContinue = hasAnySave()
+
+  function handleContinue() {
+    if (loadMostRecent()) goToGame()
+  }
 
   return (
     <div
@@ -24,7 +33,7 @@ export function TitleScreen() {
         <CyberButton tag="NG.01" onClick={goToChargen}>
           New Game
         </CyberButton>
-        <CyberButton tag="LD.02" disabled title="No save data yet">
+        <CyberButton tag="LD.02" disabled={!canContinue} title={canContinue ? undefined : 'No save data yet'} onClick={handleContinue}>
           Continue
         </CyberButton>
         <CyberButton tag="CFG.03" onClick={() => openOverlay('settings')}>
