@@ -1,8 +1,11 @@
 // Dev harness only — exercises storyStore + storyEngine (the ink<->TS boundary)
 // end to end before any real Story Engine screen gets built on top of them.
+// Loading is driven by NavigationHarness (Architecture §2's Overworld->Story
+// Engine handoff) — this component only renders the active run and its exits.
 
 import { useInsightStore } from '../../stores/insightStore'
 import { useStoryStore } from '../../stores/storyStore'
+import { useNavigationStore } from '../../stores/navigationStore'
 import demoStoryJson from '../../../content/ink/demo.json'
 
 export function StoryHarness() {
@@ -10,6 +13,7 @@ export function StoryHarness() {
   const vitality = useInsightStore((s) => s.vitality)
   const composure = useInsightStore((s) => s.composure)
   const story = useStoryStore()
+  const returnToOverworld = useNavigationStore((s) => s.returnToOverworld)
 
   if (!archetype) {
     return (
@@ -17,6 +21,11 @@ export function StoryHarness() {
         Pick an archetype above to enable the story demo.
       </div>
     )
+  }
+
+  function handleReturnToOverworld() {
+    returnToOverworld()
+    story.reset()
   }
 
   return (
@@ -28,13 +37,11 @@ export function StoryHarness() {
             className="rounded border border-emerald-500 px-3 py-1 text-xs text-emerald-300"
             onClick={() => story.loadStory(demoStoryJson)}
           >
-            {story.story ? 'Restart' : 'Load demo story'}
+            Restart
           </button>
-          {story.story && (
-            <button className="rounded border border-neutral-700 px-3 py-1 text-xs" onClick={() => story.reset()}>
-              Reset
-            </button>
-          )}
+          <button className="rounded border border-neutral-700 px-3 py-1 text-xs" onClick={handleReturnToOverworld}>
+            Return to Overworld
+          </button>
         </div>
       </div>
 
