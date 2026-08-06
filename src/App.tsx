@@ -3,7 +3,7 @@ import { useUiStore } from './stores/uiStore'
 import { useSettingsStore } from './stores/settingsStore'
 import { useNavigationStore } from './stores/navigationStore'
 import { TitleScreen } from './components/screens/TitleScreen'
-import { ArchetypePicker } from './components/screens/ArchetypePicker'
+import { CharacterCreationScreen } from './components/screens/CharacterCreationScreen'
 import { OverworldScreen } from './components/screens/OverworldScreen'
 import { DialogueScreen } from './components/screens/DialogueScreen'
 import { OverlayHost } from './components/screens/OverlayHost'
@@ -24,7 +24,7 @@ function App() {
   return (
     <main className="min-h-svh bg-bg text-white" style={{ filter: highContrast ? 'contrast(1.18) saturate(1.1)' : undefined }}>
       {screen === 'title' && <TitleScreen />}
-      {screen === 'chargen' && <ArchetypePicker />}
+      {screen === 'chargen' && <CharacterCreationScreen />}
       {screen === 'game' && (selectedLocationId ? <DialogueScreen /> : <OverworldScreen />)}
       <OverlayHost />
     </main>

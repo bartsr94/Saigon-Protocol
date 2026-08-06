@@ -35,6 +35,8 @@ function clampToNewMax(
 
 interface InsightState {
   archetype: ArchetypeId | null
+  /** Set during Character Creation's confirm step (UI_DESIGN §6.2 step 3). */
+  playerName: string
   levels: Record<InsightId, number>
   freePointsRemaining: number
   vitality: WellbeingTrack
@@ -44,6 +46,7 @@ interface InsightState {
   failState: FailStateCause
 
   selectArchetype: (id: ArchetypeId) => void
+  setPlayerName: (name: string) => void
   spendFreePoint: (id: InsightId) => void
   refundFreePoint: (id: InsightId) => void
 
@@ -63,6 +66,7 @@ const UNINITIALIZED_LEVELS: Record<InsightId, number> = Object.fromEntries(
 
 export const useInsightStore = create<InsightState>((set, get) => ({
   archetype: null,
+  playerName: '',
   levels: UNINITIALIZED_LEVELS,
   freePointsRemaining: 0,
   vitality: { current: 0, max: 0 },
@@ -85,6 +89,8 @@ export const useInsightStore = create<InsightState>((set, get) => ({
       failState: null,
     })
   },
+
+  setPlayerName: (name) => set({ playerName: name }),
 
   spendFreePoint: (id) => {
     const { levels, freePointsRemaining, vitality, composure } = get()

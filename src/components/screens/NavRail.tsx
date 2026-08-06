@@ -1,19 +1,20 @@
 // The left-edge vertical icon rail (UI_VISUAL_STYLE_SPEC §5.3) shared by the
 // Overworld and Dialogue/Scene screens. Presentational — callbacks in, no
-// store imports; screens wire it to navigationStore/uiStore. "Char"
-// (Character/Insights overlay, UI_DESIGN §6.4) isn't built yet, so it's
-// omitted rather than rendered as a dead button.
+// store imports; screens wire it to navigationStore/uiStore. Button order
+// (Char/Case/Map/Menu) follows the reference screenshot.
 
 export interface NavRailProps {
+  onChar?: () => void
   onMap?: () => void
   onCase?: () => void
   onMenu?: () => void
   className?: string
 }
 
-export function NavRail({ onMap, onCase, onMenu, className = '' }: NavRailProps) {
+export function NavRail({ onChar, onMap, onCase, onMenu, className = '' }: NavRailProps) {
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
+      {onChar && <RailButton label="CHAR" title="Character" onClick={onChar} />}
       {onMap && <RailButton label="MAP" title="Overworld" onClick={onMap} />}
       {onCase && <RailButton label="CASE" title="Casefile" onClick={onCase} />}
       {onMenu && <RailButton label="MENU" title="Settings" onClick={onMenu} />}

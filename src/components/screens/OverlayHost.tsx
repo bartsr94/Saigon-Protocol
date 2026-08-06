@@ -4,6 +4,7 @@
 import { useUiStore } from '../../stores/uiStore'
 import { SettingsOverlay } from './SettingsOverlay'
 import { CasefileOverlay } from './CasefileOverlay'
+import { CharacterOverlay } from './CharacterOverlay'
 
 export function OverlayHost() {
   const activeOverlay = useUiStore((s) => s.activeOverlay)
@@ -15,6 +16,7 @@ export function OverlayHost() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={closeOverlay}>
       {activeOverlay === 'settings' && <SettingsOverlay />}
       {activeOverlay === 'casefile' && <CasefileOverlay />}
+      {activeOverlay === 'character' && <CharacterOverlay />}
     </div>
   )
 }

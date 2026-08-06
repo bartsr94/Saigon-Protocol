@@ -17,6 +17,11 @@ describe('insightStore', () => {
     expect(state.composure.current).toBe(state.composure.max)
   })
 
+  it('setPlayerName stores the name entered during Character Creation confirm', () => {
+    useInsightStore.getState().setPlayerName('Mai Trần')
+    expect(useInsightStore.getState().playerName).toBe('Mai Trần')
+  })
+
   it('spendFreePoint raises a level and consumes the pool, refundFreePoint reverses it', () => {
     useInsightStore.getState().selectArchetype('enforcer')
     useInsightStore.getState().spendFreePoint('ledger')

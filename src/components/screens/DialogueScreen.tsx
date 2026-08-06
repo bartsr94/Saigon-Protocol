@@ -23,8 +23,9 @@ import { useSettingsStore, TEXT_SPEED_MS } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { LOCATIONS } from '../../content/locations'
 import { ARCHETYPES } from '../../content/archetypes'
+import { NPCS } from '../../content/npcs'
 import type { CheckResult } from '../../engine/checkResolution'
-import { CheckResultBlock, ChoiceRow, Panel, PipTrack } from '../ui'
+import { CheckResultBlock, ChoiceRow, Panel, PipTrack, PortraitFrame } from '../ui'
 import { NavRail } from './NavRail'
 
 interface LogEntry {
@@ -106,19 +107,23 @@ export function DialogueScreen() {
 
   return (
     <div className="flex h-svh w-full">
-      <NavRail className="shrink-0 p-4" onMap={handleReturnToOverworld} onCase={() => openOverlay('casefile')} onMenu={() => openOverlay('settings')} />
+      <NavRail
+        className="shrink-0 p-4"
+        onChar={() => openOverlay('character')}
+        onMap={handleReturnToOverworld}
+        onCase={() => openOverlay('casefile')}
+        onMenu={() => openOverlay('settings')}
+      />
 
       {/* Left three-quarters: player status + center stage */}
       <div className="relative flex-1 overflow-hidden">
         <div className="absolute left-4 top-4 z-10 flex items-start gap-3">
-          <div
-            className="flex h-16 w-16 shrink-0 items-center justify-center border-2 border-chrome-primary bg-chrome-primary/5"
-            style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
-          >
-            <span className="font-display text-xs font-bold text-chrome-primary">
-              {ARCHETYPES[archetype].name.replace('The ', '').slice(0, 2).toUpperCase()}
-            </span>
-          </div>
+          <PortraitFrame
+            src={ARCHETYPES[archetype].portraitSrc}
+            alt={ARCHETYPES[archetype].name}
+            fallbackText={ARCHETYPES[archetype].name.replace('The ', '').slice(0, 2).toUpperCase()}
+            size="sm"
+          />
           <div className="flex flex-col gap-1.5 pt-1">
             <span className="font-display text-sm font-bold uppercase tracking-widest text-white">{ARCHETYPES[archetype].name}</span>
             <PipTrack current={vitality.current} max={vitality.max} color="var(--color-vitality)" />
@@ -126,10 +131,25 @@ export function DialogueScreen() {
           </div>
         </div>
 
-        <div className="flex h-full items-center justify-center">
-          <div className="flex h-64 w-64 items-center justify-center border border-dashed border-white/15 font-body text-xs uppercase tracking-widest text-white/30">
-            {locationName}
+        {/*
+          Test render of a real NPC portrait in the center stage (UI_DESIGN
+          §3, UI_VISUAL_STYLE_SPEC §5.2). Hardcoded to Mei Hong — there's no
+          per-line speaker metadata yet (Architecture §6, still open), so
+          this isn't "whoever is speaking," just proof the art slot works.
+        */}
+        <div className="flex h-full flex-col items-center justify-center gap-3">
+          <div
+            className="relative h-[420px] w-[300px] overflow-hidden bg-black/40"
+            style={{
+              clipPath: 'polygon(28px 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%, 0 28px)',
+              border: '2px solid color-mix(in srgb, var(--color-chrome-primary) 50%, transparent)',
+              boxShadow:
+                '0 0 30px color-mix(in srgb, var(--color-chrome-primary) 20%, transparent), inset 0 0 40px color-mix(in srgb, var(--color-chrome-primary) 10%, transparent)',
+            }}
+          >
+            <img src={NPCS.meiHong.portraitSrc} alt={NPCS.meiHong.name} className="h-full w-full object-cover" />
           </div>
+          <span className="font-display text-xs uppercase tracking-widest text-white/40">{locationName}</span>
         </div>
       </div>
 
