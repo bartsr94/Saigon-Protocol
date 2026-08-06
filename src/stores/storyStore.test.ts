@@ -180,18 +180,26 @@ The end.
   })
 
   it('runs the real compiled intro scene end-to-end, gating Insight interjections by level', () => {
-    useInsightStore.getState().selectArchetype('companyMan') // strength: ledger (4), weakness: root (1), static default (2)
+    useInsightStore.getState().selectArchetype('companyMan') // strength: ledger (4), weakness: root (1), static/hustle default (2)
 
     useStoryStore.getState().loadStory(introStoryJson)
     const opening = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
 
     expect(opening).toContain("The squad car pulls out of Cholon's press")
-    expect(opening).toContain('The Ledger has an opinion')
+    expect(opening).toContain("That's the whole briefing")
     expect(opening).not.toContain('Cantonese call-and-response')
-    expect(opening).not.toContain('how much water sits on the other side of that wall')
-    expect(useStoryStore.getState().currentChoices.map((c) => c.text)).toEqual(['Head in.'])
+    expect(opening).not.toContain("That's not a briefing, that's a dare")
+    expect(useStoryStore.getState().currentChoices.map((c) => c.text)).toEqual(['Keep driving.'])
 
-    const backgroundLine = useStoryStore.getState().currentLines.find((l) => l.text.includes('The lab itself is nothing to look at'))
+    useStoryStore.getState().choose(0)
+    const afterDriving = useStoryStore.getState()
+    const drivingText = afterDriving.currentLines.map((l) => l.text).join(' ')
+    expect(drivingText).toContain('The Ledger has an opinion')
+    expect(drivingText).not.toContain('how much water sits on the other side of that wall')
+    expect(drivingText).toContain('Two uniforms are posted at the entrance')
+    expect(afterDriving.currentChoices.map((c) => c.text)).toEqual(['Head in.'])
+
+    const backgroundLine = afterDriving.currentLines.find((l) => l.text.includes('The lab itself is nothing to look at'))
     expect(backgroundLine?.background).toBe('avelineLabExterior')
 
     useStoryStore.getState().choose(0)
@@ -215,9 +223,19 @@ The end.
 
     useStoryStore.getState().loadStory(introStoryJson)
     const opening = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
-
     expect(opening).toContain('Cantonese call-and-response')
-    expect(opening).not.toContain('The Ledger has an opinion')
+
+    useStoryStore.getState().choose(0) // Keep driving.
+    const drivingText = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
+    expect(drivingText).not.toContain('The Ledger has an opinion')
+  })
+
+  it('the intro surfaces the Hustle interjection for a high-Hustle archetype', () => {
+    useInsightStore.getState().selectArchetype('hustler') // strength: hustle (4)
+
+    useStoryStore.getState().loadStory(introStoryJson)
+    const opening = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
+    expect(opening).toContain("That's not a briefing, that's a dare")
   })
 
   it('the intro surfaces the Static interjection once free points push it past the threshold', () => {
@@ -225,8 +243,9 @@ The end.
     useInsightStore.getState().spendFreePoint('static') // 2 -> 3, crosses the ink conditional's threshold
 
     useStoryStore.getState().loadStory(introStoryJson)
-    const opening = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
+    useStoryStore.getState().choose(0) // Keep driving.
+    const drivingText = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
 
-    expect(opening).toContain('how much water sits on the other side of that wall')
+    expect(drivingText).toContain('how much water sits on the other side of that wall')
   })
 })

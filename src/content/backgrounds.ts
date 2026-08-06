@@ -3,9 +3,9 @@
 // convention's `# background: <id>` line tag (docs/INK_CONTENT_TAGGING_SPEC.md),
 // same shape as content/npcs.ts.
 
-export type BackgroundId = 'avelineLabExterior'
+export type BackgroundId = 'avelineLabExterior' | 'cholonMarket' | 'district4FloodWall'
 
-export const BACKGROUND_IDS: BackgroundId[] = ['avelineLabExterior']
+export const BACKGROUND_IDS: BackgroundId[] = ['avelineLabExterior', 'cholonMarket', 'district4FloodWall']
 
 export interface BackgroundDefinition {
   id: BackgroundId
@@ -17,5 +17,13 @@ export const BACKGROUNDS: Record<BackgroundId, BackgroundDefinition> = {
   avelineLabExterior: {
     id: 'avelineLabExterior',
     imageSrc: '/backgrounds/aveline-lab-exterior.png',
+  },
+  cholonMarket: {
+    id: 'cholonMarket',
+    imageSrc: '/backgrounds/cholon-market.png',
+  },
+  district4FloodWall: {
+    id: 'district4FloodWall',
+    imageSrc: '/backgrounds/district-4-flood-wall.png',
   },
 }

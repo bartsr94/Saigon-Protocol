@@ -21,16 +21,22 @@ with no scripted opening and no real narrative content beyond the throwaway
 
 **In scope:**
 - A single scripted cold-open scene (`content/ink/intro.ink`) — the
-  player's actual Case #1 opening: a squad-car drive from Cholon (District
-  5) into District 4, arrival at a small Aveline Biogenetics lab tucked
-  against the district's flood wall, and the first meeting with Mei Hong,
-  who frames it as a break-in and stonewalls on specifics.
+  player's actual Case #1 opening, told as a three-beat squad-car montage:
+  Cholon departure, the crossing into District 4, and arrival at a small
+  Aveline Biogenetics lab tucked against the district's flood wall, ending
+  with the first meeting with Mei Hong, who frames it as a break-in and
+  stonewalls on specifics. Two new backdrop-only beats (`cholonMarket`,
+  `district4FloodWall` in `content/backgrounds.ts`, alongside the existing
+  `avelineLabExterior`) and a narrator-voice beat with the two uniforms
+  posted outside the lab (pointing the detective to Mei Hong, no new NPC
+  entry) fill out the montage.
 - Wiring so this scene auto-plays exactly once, immediately after Character
   Creation confirms — before the player ever sees the Overworld.
-- A handful of Insight interjections during the drive/arrival, using the
-  existing line-tagging convention (`docs/INK_CONTENT_TAGGING_SPEC.md`),
-  reactive to Insight level the same way `demo.ink`'s `muscle_memory >= 3`
-  check already is.
+- A handful of Insight interjections during the drive/arrival (`root`,
+  `static`, `ledger`, and a new `hustle` beat reacting to how thin the
+  dispatch briefing is), using the existing line-tagging convention
+  (`docs/INK_CONTENT_TAGGING_SPEC.md`), reactive to Insight level the same
+  way `demo.ink`'s `muscle_memory >= 3` check already is.
 - Reusing the existing `meiHong` NPC entry (`src/content/npcs.ts`) — this is
   her first real appearance; the header comment there is stale (predates the
   tagging convention landing, see Design) and gets corrected alongside this.
@@ -72,29 +78,35 @@ with no scripted opening and no real narrative content beyond the throwaway
 
 ### Narrative beats (`content/ink/intro.ink`)
 
-Linear scene, broken into two pacing choices (non-mechanical — no
+Linear scene, broken into three pacing choices (non-mechanical — no
 `insight`/`check`/`locked` tags, just "continue"):
 
-1. **The drive.** Squad car leaves Cholon's density (Population &
-   Demographics' texture notes: layered languages, market density) and
-   crosses into District 4 — lower, water-stained, the flood wall looming
-   (City Geography's verticality/class framing; Climate's flood-wall
-   infrastructure). Two Insight interjections here, each gated like
-   `demo.ink`'s `muscle_memory >= 3` pattern:
-   - `root >= 3` — homesickness/cultural-memory beat over Cholon.
-   - `static >= 3` — climate-dread beat over the flood wall.
-2. **The oddity.** A baseline narrator observation every player gets: Aveline
-   runs its own security like every other SEZAC name, so a Constabulary
-   detective actually showing up is itself strange (Saigon Constabulary
-   lore: "Compact interference arrives later, not immediately" — this
-   should read as an ordinary-but-odd case, not a signal of danger).
-   `ledger >= 3` sharpens this into an explicit corporate-leverage read
-   rather than replacing it — low-Ledger players still get the hook, just
-   plainer, per GDD §4's "weakness opens a different branch, never a
-   missing one."
-3. **Arrival** — a small, unglamorous prefab lab bolted to the inside of the
-   flood wall, contrasting the shining-tower image of a major corp.
-   Ends the first pacing choice (`* [Head in.]`).
+1. **Leaving Cholon** (`# background: cholonMarket`). Squad car pulls out of
+   Cholon's density (Population & Demographics' texture notes: layered
+   languages, market density) toward District 4. `root >= 3` — homesickness/
+   cultural-memory beat. A second beat has the detective register how thin
+   the dispatch slip is (a name and an address, nothing else); `hustle >= 3`
+   sharpens this into an explicit "they want me walking in blind" read —
+   low-Hustle players still get the plainer "thin briefing" version, per GDD
+   §4's "weakness opens a different branch, never a missing one." Ends on
+   `* [Keep driving.]`.
+2. **Crossing into District 4** (`# background: district4FloodWall`) — lower,
+   water-stained, the flood wall looming (City Geography's
+   verticality/class framing; Climate's flood-wall infrastructure).
+   `static >= 3` — climate-dread beat over the flood wall. Then the baseline
+   narrator observation every player gets: Aveline runs its own security
+   like every other SEZAC name, so a Constabulary detective actually
+   showing up is itself strange (Saigon Constabulary lore: "Compact
+   interference arrives later, not immediately" — this should read as an
+   ordinary-but-odd case, not a signal of danger). `ledger >= 3` sharpens
+   this into an explicit corporate-leverage read rather than replacing it.
+3. **Arrival** (`# background: avelineLabExterior`) — the small,
+   unglamorous prefab lab bolted to the inside of the flood wall, now with
+   two SEZAC cruisers instead of one. Two uniforms posted outside greet the
+   detective and point them at the door ("She's inside...") —
+   narrator-voice, no `speaker` tag, since two background cops don't
+   warrant a `content/npcs.ts` entry/portrait of their own. Ends the second
+   pacing choice (`* [Head in.]`).
 4. **Mei Hong.** `# speaker: npc:meiHong` lines: she frames it as a
    break-in, refuses to specify what was taken beyond "proprietary tech,
    dangerous in the wrong hands." A second `ledger >= 3` interjection reads
@@ -110,8 +122,8 @@ path always emits exactly one line — avoids relying on inkjs's
 empty-line-on-false behavior, which `DialogueScreen`'s `StoryLineEntry`
 tolerates (`text.length === 0` guard) but is unnecessary to lean on here.
 
-`intro.ink` declares `VAR ledger = 0`, `VAR root = 0`, `VAR static = 0` —
-only the three Insights it actually gates on, following `storyStore.test.ts`'s
+`intro.ink` declares `VAR ledger = 0`, `VAR root = 0`, `VAR static = 0`,
+`VAR hustle = 0` — only the four Insights it actually gates on, following `storyStore.test.ts`'s
 `TWO_TURN_INK` fixture's precedent of declaring a subset, not `demo.ink`'s
 full seven-plus-`EXTERNAL`s set. No `EXTERNAL` declarations at all: this
 scene never calls `roll_check`/`is_red_check_consumed`/any wellbeing
@@ -165,13 +177,23 @@ tagged appearance, not a test render). No shape/data changes.
 
 - New cases in `storyStore.test.ts` (same file the `demo.json` end-to-end
   cases already live in), loading the real compiled `intro.json`:
-  - Opening batch contains the drive/arrival text; a `root >= 3` archetype
-    surfaces the Root interjection, a low-Root archetype doesn't.
-  - The Ledger interjection appears/doesn't per `ledger >= 3`.
-  - After `[Head in.]`, Mei Hong's lines carry `{ type: 'npc', npcId: 'meiHong' }`.
+  - Opening batch (before any choice) contains the Cholon-departure/
+    dispatch-slip text only; a `root >= 3` archetype surfaces the Root
+    interjection, a `hustle >= 3` archetype surfaces the Hustle one, neither
+    appears otherwise.
+  - After `[Keep driving.]`, the batch contains the flood-wall/arrival text;
+    the Ledger interjection appears/doesn't per `ledger >= 3`, the Static
+    one per `static >= 3`; the arrival line carries
+    `background: 'avelineLabExterior'`.
+  - After `[Head in.]`, Mei Hong's lines carry `{ type: 'npc', npcId: 'meiHong' }`,
+    and none of that batch's lines carry a `background`.
   - After `[Get to work.]`, `ended` is `true` with no further choices.
-- Manual browser pass: confirm Character Creation lands directly in the
-  intro (not the Overworld); confirm the Overworld only becomes visible
-  after `[Get to work.]`; confirm a fresh autosave now exists at that point
-  (Continue on Title becomes enabled from a clean save-wipe state).
+- Manual browser pass (done this session): confirmed Character Creation
+  lands directly in the intro (not the Overworld); the three-beat montage
+  paces correctly through `[Keep driving.]` / `[Head in.]` / `[Get to
+  work.]`; a Hustler archetype surfaces the new Hustle interjection; the
+  `avelineLabExterior` art renders at arrival (the two new backgrounds have
+  no art yet and correctly render nothing, per `DialogueScreen`'s
+  missing-art fallback); the Overworld only becomes visible after
+  `[Get to work.]`.
 - `npm run lint`, `npx tsc -b`, and `npm test` clean.
