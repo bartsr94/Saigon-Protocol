@@ -134,4 +134,40 @@ A short, flavor-forward creation step (Disco Elysium's archetype-plus-points mod
 
 ---
 
+## 5. Power Structure: Saigon SEZ
+
+### The Saigon Special Economic Zone Administrative Committee (SEZAC)
+
+The zone's nominal government, and the legal descendant of the old Vietnamese state's last real act of sovereignty: inviting in "anyone willing to help" as the climate crisis outpaced any single nation's ability to cope. SEZAC still exists in every way a government is supposed to — a Chairperson, an official seal, permits, a bureaucracy, a published charter. Almost no one who actually lives in Saigon believes it governs anything. Its board seats are held by the corporate stakeholders themselves, so SEZAC functions less as an authority and more as the paperwork through which those stakeholders' decisions become law after the fact. For a detective, this is a constant, useful friction: official channels exist, they produce real documents with real legal weight, and they almost never point at where a decision actually got made.
+
+### The Compact — Kaien Sōgō × Baekho Group
+
+The dominant power in the zone: a Japanese–Korean joint venture, informally called "the Compact" by everyone in the city, corporate paperwork or not.
+
+**Kaien Sōgō** is structured as a *sōgō shōsha* — a sprawling general trading house in the old mold, hands in logistics, resource extraction, and infrastructure all at once. Governed collectively by a Council of division heads: cautious, institutional, plays long games, prizes legal cover and plausible deniability over speed. Kaien is the half of the Compact most likely to insist a thing be done "properly" — meaning slowly, and meaning there's always a paper trail leading somewhere else.
+
+**Baekho Group** ("Baekho" — white tiger) is a chaebol in the classic mold: controlled by a founding family through circular cross-shareholding that lets them run the whole group while formally owning a fraction of it. Faster-moving, more aggressive, comfortable operating right at the edge of what SEZAC's charter technically permits. Baekho is the half of the Compact most likely to have already done the thing before Kaien finishes discussing whether it should be done.
+
+**The friction between them is structural, not personal** — a professional-manager consensus culture bolted onto a family autocracy, forced to co-sign everything of consequence. Genuine deadlocks happen. A case that snags on *which half of the Compact actually ordered this* is one of the most natural engines available for a Saigon Protocol story — the Compact isn't a villain, it's a marriage, and marriages have secrets from each other.
+
+### Aveline Biogenetics
+
+An EU-linked biotech firm and minority SEZAC stakeholder — one of the "others with their fingers here" the old Vietnamese invitation let in. Aveline is the corporate face closest to the setting's genetic-adaptation arc: plausibly among the entities that pioneered or now license the therapies behind heat tolerance and the wider modification spectrum, from the earliest sickle-cell-style gene edits through to fully custom genomes. Any case that touches modification, gray-market gene therapy, or an unlicensed clinic has a real chance of leading back to Aveline's name, whether the company likes it or not.
+
+### Nusantara Diaspora Resettlement & Workforce Solutions
+
+The Compact's shared muscle — a PMC in practice, a "workforce solutions" nonprofit-turned-contractor on paper, and the name is not an accident.
+
+**Origins.** Long before Saigon SEZ existed in its current form, the Indonesian and Malaysian archipelagos were among the first places on Earth to go under — thousands of low-lying islands, a population in the hundreds of millions, and a coastline that started failing decades ahead of the rest of the planet's collapse curve. Nusantara ("archipelago," the old word for the islands themselves) began as exactly what its name still claims: a genuine resettlement and relief organization, coordinating the mass movement of Indonesian, Malaysian, and Filipino refugees onto the Southeast Asian mainland while there were still functioning governments to fund and credential that kind of work. It ran camps. It ran job placement. For a while, it was trusted, and it earned that trust.
+
+**Mission creep.** As the archipelago finished dying and the states that funded Nusantara hollowed into corpo-govs, the scale of need stopped matching any legitimate capacity to meet it. Camps needed their own security once nobody else would provide it, so Nusantara built that security itself, first as contractors, then as an organic internal force. At the same time, corpo-govs discovered that Nusantara's registry — a vast population of stateless, credentialed, desperate people with functionally no legal protections — was the most convenient labor pool on the continent. "Job placement" quietly expanded to include whatever labor paid the bills, and eventually that meant armed labor.
+
+**Today.** Nusantara still nominally runs resettlement and welfare programs — a real function, not pure theater, since displacement hasn't stopped — but its revenue and its reputation with the Compact both run on contracted security work. It never rebranded, because the old name is an asset: new refugees still arrive trusting it, and corpo-govs get the deniability of hiring a company whose letterhead says "workforce solutions" rather than "private military contractor." The euphemism didn't replace the truth. It just quietly grew to cover it.
+
+**Structure.** Rank and file are descendants of the archipelago diaspora — their own language (a Malay/Indonesian creole), their own internal culture and esprit de corps, largely separate from and often quietly resentful of command. Officers are Japanese and Korean advisors seconded from Kaien Sōgō and Baekho Group respectively, so a given Nusantara unit may answer to Kaien-aligned command, Baekho-aligned command, or an uneasy mix of both — meaning the company is never fully owned by either half of the Compact, which is precisely why both halves are willing to use it.
+
+**The shape of the tragedy:** the off-world exodus and Nusantara are the same crisis with two different outcomes. The people who left the dying world for orbit were the ones some system decided were worth saving intact. The archipelago diaspora is what happened to the people who weren't — pushed onto the mainland instead of into orbit, and absorbed, generation after generation, by the one industry that will always take displaced people with nothing left to lose.
+
+---
+
 *Next section: Timeline Bridge — the key beats connecting 2026 to 2226, kept brief. (Still to be drafted.)*
