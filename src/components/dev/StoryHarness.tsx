@@ -7,6 +7,7 @@ import { useInsightStore } from '../../stores/insightStore'
 import { useStoryStore } from '../../stores/storyStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import demoStoryJson from '../../../content/ink/demo.json'
+import { CheckResultBlock, ChoiceRow, CyberButton, Panel, PipTrack } from '../ui'
 
 export function StoryHarness() {
   const archetype = useInsightStore((s) => s.archetype)
@@ -16,11 +17,7 @@ export function StoryHarness() {
   const returnToOverworld = useNavigationStore((s) => s.returnToOverworld)
 
   if (!archetype) {
-    return (
-      <div className="mx-auto max-w-2xl p-8 text-sm text-neutral-500">
-        Pick an archetype above to enable the story demo.
-      </div>
-    )
+    return <div className="mx-auto max-w-2xl p-8 font-body text-sm text-white/50">Pick an archetype above to enable the story demo.</div>
   }
 
   function handleReturnToOverworld() {
@@ -31,60 +28,46 @@ export function StoryHarness() {
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-neutral-200">Story demo (content/ink/demo.ink)</h2>
+        <h2 className="font-display text-sm font-bold uppercase tracking-widest text-chrome-primary">
+          Story demo (content/ink/demo.ink)
+        </h2>
         <div className="flex gap-2">
-          <button
-            className="rounded border border-emerald-500 px-3 py-1 text-xs text-emerald-300"
-            onClick={() => story.loadStory(demoStoryJson)}
-          >
+          <CyberButton className="!px-3 !py-1.5 !text-xs" onClick={() => story.loadStory(demoStoryJson)}>
             Restart
-          </button>
-          <button className="rounded border border-neutral-700 px-3 py-1 text-xs" onClick={handleReturnToOverworld}>
+          </CyberButton>
+          <CyberButton className="!px-3 !py-1.5 !text-xs" onClick={handleReturnToOverworld}>
             Return to Overworld
-          </button>
+          </CyberButton>
         </div>
       </div>
 
-      <p className="text-xs text-neutral-500">
-        Vitality {vitality.current}/{vitality.max} · Composure {composure.current}/{composure.max}
-      </p>
+      <div className="flex gap-6">
+        <PipTrack label="VITALITY" current={vitality.current} max={vitality.max} color="var(--color-vitality)" />
+        <PipTrack label="COMPOSURE" current={composure.current} max={composure.max} color="var(--color-composure)" />
+      </div>
 
       {story.story && (
-        <div className="space-y-4 rounded border border-neutral-800 p-4">
-          <div className="space-y-2 text-sm text-neutral-200">
+        <Panel size="lg" className="space-y-4 p-4">
+          <div className="space-y-2 font-body text-base text-white">
             {story.currentText.map((line, i) => (
               <p key={i}>{line}</p>
             ))}
           </div>
 
           {story.currentChoices.length > 0 && (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col divide-y divide-white/10 border-t border-white/10">
               {story.currentChoices.map((choice) => (
-                <button
-                  key={choice.index}
-                  className="rounded border border-neutral-700 p-2 text-left text-sm hover:border-emerald-400"
-                  onClick={() => story.choose(choice.index)}
-                >
+                <ChoiceRow key={choice.index} onClick={() => story.choose(choice.index)}>
                   {choice.text}
-                </button>
+                </ChoiceRow>
               ))}
             </div>
           )}
 
-          {story.ended && <p className="text-xs text-neutral-500">— scene ended —</p>}
+          {story.ended && <p className="font-body text-xs text-white/50">— scene ended —</p>}
 
-          {story.lastCheckResult && (
-            <p className="font-mono text-xs text-neutral-400">
-              [{story.lastCheckResult.dice[0]}][{story.lastCheckResult.dice[1]}] ={' '}
-              {story.lastCheckResult.diceTotal} + {story.lastCheckResult.modifier} mod = {story.lastCheckResult.total}{' '}
-              vs TN {story.lastCheckResult.targetNumber} ▸{' '}
-              <span className={story.lastCheckResult.success ? 'text-emerald-400' : 'text-red-400'}>
-                {story.lastCheckResult.success ? 'SUCCESS' : 'FAILURE'}
-              </span>
-              {story.lastCheckResult.doubles && <span className="text-yellow-400"> ({story.lastCheckResult.doubles})</span>}
-            </p>
-          )}
-        </div>
+          {story.lastCheckResult && <CheckResultBlock insightName="CHECK" result={story.lastCheckResult} />}
+        </Panel>
       )}
     </div>
   )

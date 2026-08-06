@@ -1,15 +1,32 @@
-import { InsightHarness } from './components/dev/InsightHarness'
-import { StoryHarness } from './components/dev/StoryHarness'
-import { NavigationHarness } from './components/dev/NavigationHarness'
+import { useEffect } from 'react'
+import { useUiStore } from './stores/uiStore'
+import { useSettingsStore } from './stores/settingsStore'
 import { useNavigationStore } from './stores/navigationStore'
+import { TitleScreen } from './components/screens/TitleScreen'
+import { ArchetypePicker } from './components/screens/ArchetypePicker'
+import { OverworldScreen } from './components/screens/OverworldScreen'
+import { DialogueScreen } from './components/screens/DialogueScreen'
+import { OverlayHost } from './components/screens/OverlayHost'
 
 function App() {
+  const screen = useUiStore((s) => s.screen)
   const selectedLocationId = useNavigationStore((s) => s.selectedLocationId)
+  const highContrast = useSettingsStore((s) => s.highContrast)
+  const largeText = useSettingsStore((s) => s.largeText)
+
+  // Large Text scales the root font-size so every rem-based Tailwind text
+  // utility site-wide scales with it — rem is relative to <html>, not to
+  // any inner wrapper, so this can't be a scoped inline style.
+  useEffect(() => {
+    document.documentElement.style.fontSize = largeText ? '112.5%' : ''
+  }, [largeText])
 
   return (
-    <main className="min-h-svh bg-neutral-950 text-neutral-100">
-      <InsightHarness />
-      {selectedLocationId ? <StoryHarness /> : <NavigationHarness />}
+    <main className="min-h-svh bg-bg text-white" style={{ filter: highContrast ? 'contrast(1.18) saturate(1.1)' : undefined }}>
+      {screen === 'title' && <TitleScreen />}
+      {screen === 'chargen' && <ArchetypePicker />}
+      {screen === 'game' && (selectedLocationId ? <DialogueScreen /> : <OverworldScreen />)}
+      <OverlayHost />
     </main>
   )
 }

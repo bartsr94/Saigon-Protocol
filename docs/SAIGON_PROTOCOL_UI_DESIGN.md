@@ -35,34 +35,35 @@ The game is a small set of full-screen views plus a few overlays. Overlays pause
 
 ## 3. The Dialogue / Scene View (core layout)
 
-This is the screen the player sees most, and it implements the layout you specified: dialogue panel right, status top-left, character portraits center, menu buttons bottom-left.
+This is the screen the player sees most, and it implements the layout you specified: dialogue panel right, status top-left, character portraits center, menu buttons in a rail on the left edge.
 
 ```
-┌───────────────────────────────────────────────┬───────────────────────────┐
-│ ┌────────┐                                     │  DIALOGUE / NARRATION LOG │
-│ │ PLAYER │  DET. [NAME]                        │  (scrolls; newest at      │
-│ │ PORTRAIT│  ▓▓▓▓▓▓▓░░░  Composure             │   bottom)                 │
-│ │ (you)  │  ▓▓▓▓▓░░░░░  Vitality              │                           │
-│ └────────┘                                     │  Narrator: The rain hasn't│
-│                                                │  stopped in three days... │
-│                                                │                           │
-│                                                │  ┌──┐ THE LEDGER          │
-│              ┌─────────────────┐               │  │▓▓│ This one's stalling.│
-│              │                 │               │  └──┘ Ask about the money.│
-│              │   NPC PORTRAIT  │               │                           │
-│              │  (center stage, │               │  MAREN: "You're early,    │
-│              │   speaking      │               │  detective. That's rare." │
-│              │   character)    │               │                           │
-│              │                 │               │  ─────────────────────    │
-│              └─────────────────┘               │  ▶ 1. "Just doing my job."│
-│                                                │  ▶ 2. [THE MASK ●] Smile  │
-│                                                │  ▶ 3. [LEDGER ◆ RED] Push │
-│ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐            │       on the payment.     │
-│ │ CHAR │ │ CASE │ │ MAP  │ │ MENU │            │  ▶ 4. Say nothing.        │
-│ └──────┘ └──────┘ └──────┘ └──────┘            │                           │
-│  (bottom-left cluster)                          │                           │
-└───────────────────────────────────────────────┴───────────────────────────┘
+┌──┬────────────────────────────────────────────┬───────────────────────────┐
+│▓▓│ ┌────────┐                                  │  DIALOGUE / NARRATION LOG │
+│CA│ │ PLAYER │  DET. [NAME]                     │  (scrolls; newest at      │
+│SE│ │ PORTRAIT│  ▓▓▓▓▓▓▓░░░  Composure          │   bottom)                 │
+├──┤ │ (you)  │  ▓▓▓▓▓░░░░░  Vitality           │                           │
+│▓▓│ └────────┘                                  │  Narrator: The rain hasn't│
+│MA│                                             │  stopped in three days... │
+│P │                                             │                           │
+├──┤              ┌─────────────────┐            │  ┌──┐ THE LEDGER          │
+│▓▓│              │                 │            │  │▓▓│ This one's stalling.│
+│ME│              │   NPC PORTRAIT  │            │  └──┘ Ask about the money.│
+│NU│              │  (center stage, │            │                           │
+│  │              │   speaking      │            │  MAREN: "You're early,    │
+│  │              │   character)    │            │  detective. That's rare." │
+│  │              └─────────────────┘            │  ─────────────────────    │
+│  │                                             │  ▶ 1. "Just doing my job."│
+│  │                                             │  ▶ 2. [THE MASK ●] Smile  │
+│  │                                             │  ▶ 3. [LEDGER ◆ RED] Push │
+│  │                                             │       on the payment.     │
+│  │                                             │  ▶ 4. Say nothing.        │
+└──┴────────────────────────────────────────────┴───────────────────────────┘
 ```
+
+*(Rail icons shown: Case, Map, Menu. Char — the Character/Insights overlay,
+§6.4 — isn't built yet and is omitted from the rail rather than rendered as
+a dead button; add it back here once §6.4 exists.)*
 
 ### Region breakdown
 
@@ -76,9 +77,9 @@ This is the screen the player sees most, and it implements the layout you specif
 - Supports a **speaking indicator** (subtle highlight/animation on the active speaker) and a small **audio glyph** when a voiced line is playing (see §7).
 - Location establishing art can also render here when no character is present (scene-setting beat before a conversation).
 
-**Bottom-left — Navigation/menu cluster**
-- Four buttons: **Char** (Insights overlay 2.5), **Case** (casefile/inventory 2.6), **Map** (overworld 2.4), **Menu** (system 2.7).
-- Deliberately in the corner, out of the reading path, so it never competes with the dialogue panel for attention.
+**Left edge — Navigation/menu rail**
+- Four buttons: **Char** (Insights overlay 2.5), **Case** (casefile/inventory 2.6), **Map** (overworld 2.4), **Menu** (system 2.7). Built so far as a vertical rail flush to the left edge (Char omitted until 2.5 exists — see the diagram note above).
+- Deliberately out of the reading path, so it never competes with the dialogue panel for attention.
 
 **Right — Dialogue panel** *(the heart of the UI)*
 - **Scrolling log** of narration, NPC dialogue, and **Insight interjections** (see §4). Newest content appears at the bottom; the player can scroll back.
