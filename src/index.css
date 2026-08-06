@@ -165,3 +165,30 @@ input.neon-slider::-moz-range-thumb {
   cursor: pointer;
   clip-path: polygon(0 20%, 100% 0, 100% 80%, 0 100%);
 }
+
+/* =========================================
+   Auto-hiding scrollbar (Dialogue log) — invisible at rest so it never
+   competes with the text; appears only while the reader is actively
+   scrolling (a .is-scrolling class toggled from JS), then fades back out.
+   ========================================= */
+.auto-hide-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.auto-hide-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.auto-hide-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.auto-hide-scrollbar.is-scrolling {
+  scrollbar-color: color-mix(in srgb, var(--color-chrome-primary) 50%, transparent) transparent;
+}
+
+.auto-hide-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-chrome-primary) 50%, transparent);
+}

@@ -68,10 +68,11 @@ Attach to any content line inside a knot/stitch/weave. At most one
 | *(absent)* | Narrator | Plain paragraph — today's only behavior, now the explicit default. |
 | `# speaker: npc:<npcId>` | An NPC line. `<npcId>` keys into `content/npcs.ts`. | Name row above the text; the center-stage portrait swaps to that NPC and stays until the next `npc:` tag. |
 | `# speaker: insight:<insightId>` | An Insight interjection (UI_DESIGN §4). `<insightId>` keys into `content/insights.ts`. | `InsightChip`-headed log entry in that Insight's color, no center-stage change. |
+| `# background: <backgroundId>` | Scene backdrop art (UI_DESIGN §3: "location establishing art can also render here when no character is present"). `<backgroundId>` keys into `content/backgrounds.ts`. Independent of `speaker` — a line can carry both, or `background` alone on an otherwise-narrator line. | Center-stage backdrop image (dimmed) behind the HUD/portrait; stays until the next `background:` tag. |
 
-An unrecognized `npcId`/`insightId` (typo, or an NPC not yet added to
-`npcs.ts`) falls back to narrator rendering for that line rather than
-breaking the scene.
+An unrecognized `npcId`/`insightId`/`backgroundId` (typo, or one not yet
+added to its content module) falls back to narrator rendering / no backdrop
+change for that line, rather than breaking the scene.
 
 Tags go on the *same source line* as the text they describe — ink attaches
 `currentTags` to whatever line is currently being built, and a standalone

@@ -7,13 +7,16 @@ import { create } from 'zustand'
 import { Story } from 'inkjs'
 import type { Choice } from 'inkjs/engine/Choice'
 import { bindCheckFunctions, bindWellbeingFunctions, syncInsightVariables } from '../engine/storyEngine'
-import { parseLineSpeaker, type LineSpeaker } from '../engine/contentTags'
+import { parseLineBackground, parseLineSpeaker, type LineSpeaker } from '../engine/contentTags'
+import type { BackgroundId } from '../content/backgrounds'
 import type { CheckResult } from '../engine/checkResolution'
 import { useInsightStore } from './insightStore'
 
 export interface StoryLine {
   text: string
   speaker: LineSpeaker
+  /** Set only on lines carrying a `# background: <id>` tag; null otherwise (caller keeps the last one shown). */
+  background: BackgroundId | null
 }
 
 interface StoryState {
@@ -44,7 +47,10 @@ function advance(story: Story, set: (partial: Partial<StoryState>) => void): voi
   const lines: StoryLine[] = []
   while (story.canContinue) {
     const line = story.Continue()
-    if (line !== null) lines.push({ text: line, speaker: parseLineSpeaker(story.currentTags ?? []) })
+    if (line !== null) {
+      const tags = story.currentTags ?? []
+      lines.push({ text: line, speaker: parseLineSpeaker(tags), background: parseLineBackground(tags) })
+    }
   }
   const currentChoices = story.currentChoices
   set({
@@ -65,7 +71,8 @@ function advance(story: Story, set: (partial: Partial<StoryState>) => void): voi
 // and the story's actual position are all restored exactly regardless.
 function hydrateFromRestoredState(story: Story, set: (partial: Partial<StoryState>) => void): void {
   const text = story.currentText
-  const lines: StoryLine[] = text ? [{ text, speaker: parseLineSpeaker(story.currentTags ?? []) }] : []
+  const tags = story.currentTags ?? []
+  const lines: StoryLine[] = text ? [{ text, speaker: parseLineSpeaker(tags), background: parseLineBackground(tags) }] : []
   const currentChoices = story.currentChoices
   set({
     currentLines: lines,

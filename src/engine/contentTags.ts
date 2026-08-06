@@ -6,6 +6,7 @@
 
 import { INSIGHT_IDS, type InsightId } from '../content/insights'
 import { NPC_IDS, type NpcId } from '../content/npcs'
+import { BACKGROUND_IDS, type BackgroundId } from '../content/backgrounds'
 
 export type LineSpeaker =
   | { type: 'narrator' }
@@ -26,6 +27,10 @@ function isInsightId(value: string): value is InsightId {
 
 function isNpcId(value: string): value is NpcId {
   return (NPC_IDS as string[]).includes(value)
+}
+
+function isBackgroundId(value: string): value is BackgroundId {
+  return (BACKGROUND_IDS as string[]).includes(value)
 }
 
 /** Splits a raw ink tag string on its first `:`, trimming both sides. Returns null if there's no colon. */
@@ -54,6 +59,21 @@ export function parseLineSpeaker(tags: string[]): LineSpeaker {
     if (kind === 'insight' && isInsightId(id)) return { type: 'insight', insightId: id }
   }
   return { type: 'narrator' }
+}
+
+/**
+ * Resolves a line's background art from its raw ink tags, independent of
+ * `speaker` — a line can carry both (e.g. an establishing line has no
+ * speaker but sets the backdrop). Absent or unrecognized `background` tags
+ * resolve to `null` rather than breaking the scene; the caller keeps
+ * whatever backdrop was last set (DialogueScreen's `activeBackgroundId`).
+ */
+export function parseLineBackground(tags: string[]): BackgroundId | null {
+  for (const raw of tags) {
+    const parsed = parseTag(raw)
+    if (parsed && parsed.key === 'background' && isBackgroundId(parsed.value)) return parsed.value
+  }
+  return null
 }
 
 /**
