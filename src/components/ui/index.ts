@@ -28,3 +28,6 @@ export type { NeonSliderProps } from './NeonSlider'
 
 export { NeonCheckbox } from './NeonCheckbox'
 export type { NeonCheckboxProps } from './NeonCheckbox'
+
+export { PortraitFrame } from './PortraitFrame'
+export type { PortraitFrameProps, PortraitSize } from './PortraitFrame'

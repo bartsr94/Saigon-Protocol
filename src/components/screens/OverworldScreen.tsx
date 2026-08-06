@@ -23,7 +23,12 @@ export function OverworldScreen() {
 
   return (
     <div className="flex h-svh w-full">
-      <NavRail className="shrink-0 p-4" onCase={() => openOverlay('casefile')} onMenu={() => openOverlay('settings')} />
+      <NavRail
+        className="shrink-0 p-4"
+        onChar={() => openOverlay('character')}
+        onCase={() => openOverlay('casefile')}
+        onMenu={() => openOverlay('settings')}
+      />
 
       <div className="flex-1 overflow-y-auto p-8">
         <h1 className="mb-6 font-display text-xl font-bold uppercase tracking-widest text-chrome-primary">
