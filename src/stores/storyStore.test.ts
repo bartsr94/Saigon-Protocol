@@ -3,6 +3,7 @@ import { Compiler } from 'inkjs/full'
 import { useStoryStore } from './storyStore'
 import { useInsightStore } from './insightStore'
 import demoStoryJson from '../../content/ink/demo.json'
+import introStoryJson from '../../content/ink/intro.json'
 
 function compileToJson(inkSource: string): Record<string, unknown> {
   const story = new Compiler(inkSource).Compile()
@@ -176,5 +177,56 @@ The end.
     const afterChoice = useStoryStore.getState().currentLines
     const npcLine = afterChoice.find((l) => l.text.includes('steam curling off her collar'))
     expect(npcLine?.speaker).toEqual({ type: 'npc', npcId: 'meiHong' })
+  })
+
+  it('runs the real compiled intro scene end-to-end, gating Insight interjections by level', () => {
+    useInsightStore.getState().selectArchetype('companyMan') // strength: ledger (4), weakness: root (1), static default (2)
+
+    useStoryStore.getState().loadStory(introStoryJson)
+    const opening = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
+
+    expect(opening).toContain("The squad car pulls out of Cholon's press")
+    expect(opening).toContain('The Ledger has an opinion')
+    expect(opening).not.toContain('Cantonese call-and-response')
+    expect(opening).not.toContain('how much water sits on the other side of that wall')
+    expect(useStoryStore.getState().currentChoices.map((c) => c.text)).toEqual(['Head in.'])
+
+    const backgroundLine = useStoryStore.getState().currentLines.find((l) => l.text.includes('The lab itself is nothing to look at'))
+    expect(backgroundLine?.background).toBe('avelineLabExterior')
+
+    useStoryStore.getState().choose(0)
+    const afterHeadIn = useStoryStore.getState()
+    const sceneText = afterHeadIn.currentLines.map((l) => l.text).join(' ')
+    expect(sceneText).toContain('The Ledger clocks it immediately')
+    // The backdrop set before "Head in." isn't re-tagged inside Mei Hong's
+    // lines — DialogueScreen is the one that keeps it showing across batches.
+    expect(afterHeadIn.currentLines.every((l) => l.background === null)).toBe(true)
+
+    const npcLine = afterHeadIn.currentLines.find((l) => l.text.includes("You're the detective"))
+    expect(npcLine?.speaker).toEqual({ type: 'npc', npcId: 'meiHong' })
+
+    expect(afterHeadIn.currentChoices.map((c) => c.text)).toEqual(['Get to work.'])
+    useStoryStore.getState().choose(0)
+    expect(useStoryStore.getState().ended).toBe(true)
+  })
+
+  it('the intro surfaces the Root interjection for a high-Root archetype instead of the Ledger one', () => {
+    useInsightStore.getState().selectArchetype('oldSaigon') // strength: root (4), weakness: ledger (1)
+
+    useStoryStore.getState().loadStory(introStoryJson)
+    const opening = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
+
+    expect(opening).toContain('Cantonese call-and-response')
+    expect(opening).not.toContain('The Ledger has an opinion')
+  })
+
+  it('the intro surfaces the Static interjection once free points push it past the threshold', () => {
+    useInsightStore.getState().selectArchetype('hustler') // ledger/root/static all default (2)
+    useInsightStore.getState().spendFreePoint('static') // 2 -> 3, crosses the ink conditional's threshold
+
+    useStoryStore.getState().loadStory(introStoryJson)
+    const opening = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
+
+    expect(opening).toContain('how much water sits on the other side of that wall')
   })
 })

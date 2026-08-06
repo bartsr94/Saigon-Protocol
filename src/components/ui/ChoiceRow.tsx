@@ -34,7 +34,7 @@ export function ChoiceRow({ children, tagVariant = 'none', tagLabel, insightColo
     <button
       onClick={onClick}
       disabled={locked}
-      className={`group flex w-full items-start gap-3 px-3 py-2 text-left font-body text-base transition-transform duration-200 ${
+      className={`group flex w-full items-start gap-3 px-3 py-2 text-left font-body text-[19px] transition-transform duration-200 ${
         locked ? 'cursor-not-allowed text-white/30' : 'cursor-pointer text-white hover:translate-x-1 hover:text-chrome-secondary'
       } ${className}`}
     >

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseChoiceTags, parseLineSpeaker } from './contentTags'
+import { parseChoiceTags, parseLineBackground, parseLineSpeaker } from './contentTags'
 
 describe('parseLineSpeaker', () => {
   it('defaults to narrator when there are no tags', () => {
@@ -28,6 +28,24 @@ describe('parseLineSpeaker', () => {
 
   it('ignores unrelated tags and keys off the speaker tag among them', () => {
     expect(parseLineSpeaker(['voice: some-clip-id', 'speaker: npc:meiHong'])).toEqual({ type: 'npc', npcId: 'meiHong' })
+  })
+})
+
+describe('parseLineBackground', () => {
+  it('returns null when there is no background tag', () => {
+    expect(parseLineBackground(['speaker: npc:meiHong'])).toBeNull()
+  })
+
+  it('resolves a recognized background tag', () => {
+    expect(parseLineBackground(['background: avelineLabExterior'])).toBe('avelineLabExterior')
+  })
+
+  it('falls back to null for an unrecognized backgroundId', () => {
+    expect(parseLineBackground(['background: someoneNotInContent'])).toBeNull()
+  })
+
+  it('resolves independently of a speaker tag on the same line', () => {
+    expect(parseLineBackground(['background: avelineLabExterior', 'speaker: npc:meiHong'])).toBe('avelineLabExterior')
   })
 })
 

@@ -1,9 +1,8 @@
-// NPC identity/portrait content. Minimal on purpose — no named NPCs exist
-// in the GDD yet, and there's no ink content-tagging convention to say who's
-// actually speaking in a given scene (Architecture §6, still open). Mei Hong
-// exists to exercise the NPC-portrait slot in the Dialogue/Scene view with
-// real art (DialogueScreen renders her as a hardcoded test, not tied to any
-// real speaker) before that convention lands.
+// NPC identity/portrait content. Minimal on purpose — the GDD doesn't name
+// NPCs beyond the case-by-case cast. Mei Hong is the Aveline Biogenetics lab
+// technician met in the intro scene (content/ink/intro.ink,
+// docs/INTRO_SCENE_SPEC.md), tagged as the speaker via the content-tagging
+// convention (docs/INK_CONTENT_TAGGING_SPEC.md), not a hardcoded test render.
 
 export type NpcId = 'meiHong'
 

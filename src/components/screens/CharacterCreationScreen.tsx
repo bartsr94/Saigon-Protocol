@@ -5,7 +5,9 @@
 
 import { useState } from 'react'
 import { useInsightStore } from '../../stores/insightStore'
+import { useStoryStore } from '../../stores/storyStore'
 import { useUiStore } from '../../stores/uiStore'
+import introStoryJson from '../../../content/ink/intro.json'
 import { GlitchText } from '../ui'
 import { ChargenArchetypeStep } from './ChargenArchetypeStep'
 import { ChargenFreePointsStep } from './ChargenFreePointsStep'
@@ -22,8 +24,17 @@ const STEP_LABELS: Record<Step, string> = {
 
 export function CharacterCreationScreen() {
   const archetype = useInsightStore((s) => s.archetype)
+  const loadStory = useStoryStore((s) => s.loadStory)
   const goToGame = useUiStore((s) => s.goToGame)
   const [step, setStep] = useState<Step>('archetype')
+
+  // Confirming Character Creation drops the player into the intro scene
+  // (docs/INTRO_SCENE_SPEC.md), not straight onto the Overworld — the
+  // Overworld only appears once that scene ends and story becomes null again.
+  function handleConfirm() {
+    loadStory(introStoryJson)
+    goToGame()
+  }
 
   return (
     <div className="mx-auto flex min-h-svh max-w-3xl flex-col gap-6 p-8">
@@ -43,7 +54,7 @@ export function CharacterCreationScreen() {
       {step === 'freePoints' && archetype && (
         <ChargenFreePointsStep onBack={() => setStep('archetype')} onNext={() => setStep('confirm')} />
       )}
-      {step === 'confirm' && archetype && <ChargenConfirmStep onBack={() => setStep('freePoints')} onConfirm={goToGame} />}
+      {step === 'confirm' && archetype && <ChargenConfirmStep onBack={() => setStep('freePoints')} onConfirm={handleConfirm} />}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useUiStore } from './stores/uiStore'
 import { useSettingsStore } from './stores/settingsStore'
-import { useNavigationStore } from './stores/navigationStore'
+import { useStoryStore } from './stores/storyStore'
 import { TitleScreen } from './components/screens/TitleScreen'
 import { CharacterCreationScreen } from './components/screens/CharacterCreationScreen'
 import { OverworldScreen } from './components/screens/OverworldScreen'
@@ -10,7 +10,11 @@ import { OverlayHost } from './components/screens/OverlayHost'
 
 function App() {
   const screen = useUiStore((s) => s.screen)
-  const selectedLocationId = useNavigationStore((s) => s.selectedLocationId)
+  // Story presence, not navigationStore.selectedLocationId, is the real
+  // signal for "show DialogueScreen": the intro scene is an active story
+  // with no location (docs/INTRO_SCENE_SPEC.md), a case selectedLocationId
+  // was never meant to distinguish on its own.
+  const activeStory = useStoryStore((s) => s.story)
   const highContrast = useSettingsStore((s) => s.highContrast)
   const largeText = useSettingsStore((s) => s.largeText)
 
@@ -25,7 +29,7 @@ function App() {
     <main className="min-h-svh bg-bg text-white" style={{ filter: highContrast ? 'contrast(1.18) saturate(1.1)' : undefined }}>
       {screen === 'title' && <TitleScreen />}
       {screen === 'chargen' && <CharacterCreationScreen />}
-      {screen === 'game' && (selectedLocationId ? <DialogueScreen /> : <OverworldScreen />)}
+      {screen === 'game' && (activeStory ? <DialogueScreen /> : <OverworldScreen />)}
       <OverlayHost />
     </main>
   )
