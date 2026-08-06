@@ -35,4 +35,17 @@ describe('navigationStore', () => {
     useNavigationStore.getState().returnToOverworld()
     expect(useNavigationStore.getState().selectedLocationId).toBeNull()
   })
+
+  it('hydrate bulk-restores state from a save blob, including rebuilding unlockedLocationIds as a Set', () => {
+    useNavigationStore.getState().hydrate({
+      unlockedLocationIds: ['checkpoint', 'deltaSquat'],
+      selectedLocationId: 'deltaSquat',
+    })
+
+    const state = useNavigationStore.getState()
+    expect(state.unlockedLocationIds.has('checkpoint')).toBe(true)
+    expect(state.unlockedLocationIds.has('deltaSquat')).toBe(true)
+    expect(state.unlockedLocationIds.has('noodleStall')).toBe(false)
+    expect(state.selectedLocationId).toBe('deltaSquat')
+  })
 })

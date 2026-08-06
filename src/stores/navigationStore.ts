@@ -5,6 +5,7 @@
 
 import { create } from 'zustand'
 import { LOCATIONS, LOCATION_IDS, type LocationId } from '../content/locations'
+import type { SerializedNavigationState } from '../engine/saveEngine'
 
 interface NavigationState {
   unlockedLocationIds: Set<LocationId>
@@ -13,6 +14,9 @@ interface NavigationState {
   unlockLocation: (id: LocationId) => void
   selectLocation: (id: LocationId) => void
   returnToOverworld: () => void
+
+  /** Bulk-restores state from a save blob (Save/Persistence Layer). */
+  hydrate: (state: SerializedNavigationState) => void
 }
 
 function defaultUnlockedLocationIds(): Set<LocationId> {
@@ -34,5 +38,12 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
 
   returnToOverworld: () => {
     set({ selectedLocationId: null })
+  },
+
+  hydrate: (state) => {
+    set({
+      unlockedLocationIds: new Set(state.unlockedLocationIds),
+      selectedLocationId: state.selectedLocationId,
+    })
   },
 }))

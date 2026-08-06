@@ -4,6 +4,7 @@
 
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useStoryStore } from '../../stores/storyStore'
+import { useSaveStore } from '../../stores/saveStore'
 import { useUiStore } from '../../stores/uiStore'
 import { LOCATIONS, LOCATION_IDS, type LocationId } from '../../content/locations'
 import demoStoryJson from '../../../content/ink/demo.json'
@@ -19,6 +20,9 @@ export function OverworldScreen() {
   function handleSelect(id: LocationId) {
     selectLocation(id)
     loadStory(demoStoryJson)
+    // Autosave checkpoint (Save/Persistence Layer): capture the fresh
+    // scene's opening state right after handing off to the Story Engine.
+    useSaveStore.getState().autosave()
   }
 
   return (

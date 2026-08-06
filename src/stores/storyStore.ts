@@ -24,7 +24,7 @@ interface StoryState {
   ended: boolean
   lastCheckResult: CheckResult | null
 
-  loadStory: (inkJson: string | Record<string, unknown>) => void
+  loadStory: (inkJson: string | Record<string, unknown>, savedStateJson?: string) => void
   choose: (index: number) => void
   reset: () => void
 }
@@ -55,6 +55,27 @@ function advance(story: Story, set: (partial: Partial<StoryState>) => void): voi
   })
 }
 
+// Restoring a save calls story.state.LoadJson() instead of advance() — the
+// story is already positioned at the saved point, so re-running Continue()
+// would push it past that point. ink's serialized state collapses the whole
+// "output since last choice" batch into one flat currentText/currentTags
+// pair, so the restored batch renders as a single block rather than its
+// original per-line narrator/NPC/Insight breakdown (Save/Persistence spec's
+// "known simplification"). Insight values, wellbeing, consumed Red checks,
+// and the story's actual position are all restored exactly regardless.
+function hydrateFromRestoredState(story: Story, set: (partial: Partial<StoryState>) => void): void {
+  const text = story.currentText
+  const lines: StoryLine[] = text ? [{ text, speaker: parseLineSpeaker(story.currentTags ?? []) }] : []
+  const currentChoices = story.currentChoices
+  set({
+    currentLines: lines,
+    currentChoices,
+    canContinue: story.canContinue,
+    ended: !story.canContinue && currentChoices.length === 0,
+    lastCheckResult: null,
+  })
+}
+
 export const useStoryStore = create<StoryState>((set, get) => ({
   story: null,
   currentLines: [],
@@ -63,7 +84,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   ended: false,
   lastCheckResult: null,
 
-  loadStory: (inkJson) => {
+  loadStory: (inkJson, savedStateJson) => {
     unsubscribeInsight?.()
 
     // Overload resolution doesn't distribute over a union argument, so narrow explicitly.
@@ -89,7 +110,12 @@ export const useStoryStore = create<StoryState>((set, get) => ({
     })
 
     set({ story, lastCheckResult: null })
-    advance(story, set)
+    if (savedStateJson) {
+      story.state.LoadJson(savedStateJson)
+      hydrateFromRestoredState(story, set)
+    } else {
+      advance(story, set)
+    }
   },
 
   choose: (index) => {

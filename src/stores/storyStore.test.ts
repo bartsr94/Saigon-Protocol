@@ -141,6 +141,27 @@ The end.
     expect(useInsightStore.getState().isRedCheckConsumed('checkpoint-stare-down')).toBe(true)
   })
 
+  it('loadStory with a saved ink state restores choices and mechanical state without re-running past it', () => {
+    useInsightStore.getState().selectArchetype('hustler')
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5) // comfortable success, non-double
+
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK))
+    const savedStateJson = useStoryStore.getState().story!.state.ToJson()
+
+    useStoryStore.getState().reset()
+    useInsightStore.setState(useInsightStore.getInitialState(), true) // simulate a fresh session before restoring
+
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK), savedStateJson)
+    const restored = useStoryStore.getState()
+    expect(restored.currentChoices).toHaveLength(1)
+    expect(restored.ended).toBe(false)
+    expect(restored.canContinue).toBe(false)
+
+    // The restored batch collapses to a single block rather than the original
+    // per-line speaker breakdown — the documented save/restore simplification.
+    expect(restored.currentLines).toHaveLength(1)
+  })
+
   it('tags an Insight interjection and an NPC line with their respective speakers, per line', () => {
     useInsightStore.getState().selectArchetype('enforcer')
     vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5) // non-double, comfortable success
