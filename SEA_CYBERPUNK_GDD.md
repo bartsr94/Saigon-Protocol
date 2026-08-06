@@ -1,6 +1,6 @@
 # Saigon Protocol — Design Document
 
-*Setting: Sol system, mid-2220s. A tabletop-style RPG (Claude as GM, played through text) using a Cepheus Engine–derived ruleset. World built by extrapolating real-world 2026 trends roughly 200 years forward.*
+*Setting: Sol system, mid-2220s. A narrative-driven detective RPG (browser-based, TypeScript) in the vein of Disco Elysium and Celestial Return: text-forward, choice- and dice-check-driven, with a personality-lens "Insight" system in place of a traditional stat block. World built by extrapolating real-world 2026 trends roughly 200 years forward.*
 
 ---
 
@@ -56,4 +56,82 @@ Every major faction in the region needs something only the others can provide: t
 
 ---
 
-*Next section: Timeline Bridge — the key beats connecting 2026 to 2226, kept brief.*
+## 2. Player Premise & Story Hook
+
+The player is a **police detective in Saigon SEZ**, assigned to a case that looks routine and quietly unravels into something far larger as the story progresses. The detective framing is deliberate: it gives the player a legitimate reason to move between every stratum of the setting — corporate districts, drowned Delta squats, gray-capital markets, the edges of the resistance — asking questions nobody wants answered. The innocuous-case-that-goes-off-the-rails structure keeps early play grounded and comprehensible while leaving the door open to the larger regional and (eventually) off-world stakes we've built.
+
+Tone target: grounded neo-noir. The detective is a person with a history and a specific way of seeing the world (see Insights and Character Creation below), not a blank cipher. Failure is a path, not a wall — a botched check or a low stat opens rougher routes through the story rather than stopping it dead.
+
+---
+
+## 3. Core Mechanics: Insights & Resolution
+
+### Insights (the personality-lens system)
+
+In place of a traditional attribute/skill sheet, the detective's psyche is modeled as a set of **Insights** — personified internal voices that interject during play, color the narration, gate or unlock dialogue options, and provide the modifier for dice checks. This is the Disco Elysium / Celestial Return lineage, but the specific set is tailored to Saigon Protocol's themes:
+
+- **The Ledger** — cold corporate transactional logic. Cost-benefit, contracts, leverage, what a thing is really worth. Strong at negotiation, spotting a corporate trap, appraising a deal.
+- **The Graft** — the voice of an altered body. Adaptation, pain tolerance, kinship with the modified and unease around the unmodified. Colors anything involving genetic mods, cybernetics, or bodily extremity.
+- **Muscle Memory** — professional violence worn smooth by repetition. Threat assessment, tactical reads, not flinching — and not romanticizing it either. The PMC-honed instinct.
+- **Root** — homesickness and cultural memory. Grief for what's underwater, code-switching between corpo boardrooms and back-alley Vietnamese, empathy for the displaced.
+- **Static** — low-grade climate dread as a running internal channel. Notices environmental danger early, carries the exhausted fatalism of someone who's watched the world decline in slow motion.
+- **The Hustle** — scarcity-honed street cunning. Haggling, reading desperation, improvising without the right tools or leverage.
+- **The Mask** — the social-chameleon instinct. Knowing which face to wear for which faction, and clocking when someone's doing the same to you.
+
+Each Insight is both a *modifier source* (feeds dice checks) and a *narrative voice* (interjects in dialogue, unlocks flavor and special options). Insights are levelable over the course of the story.
+
+*Open sub-question flagged for later: exact starting range and level cap per Insight — deferred to the mechanics-tuning pass, since it depends on how many checks a typical playthrough contains.*
+
+### Resolution (Disco Elysium–style dice)
+
+- **Core roll:** 2d6 + relevant Insight modifier vs. a target number set by difficulty. Dice are always available — there is **no consumable dice currency** (a deliberate departure from Celestial Return). Tension comes from modifiers and stakes, not from rationing dice.
+- **Doubles are decisive:** a natural 12 (double sixes) always succeeds regardless of modifiers; a natural 2 (double ones) always fails regardless of modifiers. Every check stays live even at extreme modifier gaps.
+- **White checks vs. Red checks:**
+  - *White checks* are retriable — you can attempt them again once something in the world changes (an Insight levels up, new information surfaces, gear or context changes). This avoids hard dead-ends.
+  - *Red checks* are one-shot, plot-critical, and never retriable. The game signals clearly before you commit. This is where irreversible tension lives — the replacement for dice-scarcity pressure.
+
+The failure philosophy across both types: a failed check should branch the narrative toward a rougher, more costly path, not halt progress. Getting it wrong is content, not a game-over.
+
+### Wellbeing & Damage (Composure & Vitality)
+
+The detective is vulnerable in conversation, not just in danger — a Disco Elysium–style model where dialogue and events can wound you, and enough damage kills you. Two tracks:
+
+- **Vitality** — physical wellbeing. Drained by injury, environmental exposure (the climate is a real hazard here), physical confrontation, some failed checks.
+- **Composure** — psychological wellbeing. Drained by dread, grief, social devastation, a truth you didn't want, a botched high-stakes moment. This is where the setting's themes bite: an unmodified detective standing in a Delta squat, or hearing what emigration really means, can take Composure damage as surely as a knife takes Vitality.
+
+**Rules of the model:**
+- Both are **small-number pools** (single digits, Disco-style — not big HP bars), so any single hit feels significant and the player tracks them closely.
+- **Damage comes primarily from narrative** — dialogue outcomes, event beats, and failed checks (especially Red checks, which can hit hard precisely because they're irreversible). This makes conversation genuinely dangerous.
+- **Reaching zero in either track is a fail-state (death/breaking).** Vitality-zero is death; Composure-zero is a psychological break that ends the run. Both are game-over conditions — the player must manage two ways to lose, not one.
+- **Recovery exists but is deliberate, not automatic** — specific narrative moments, rest, consumables/treatment, or resolving the thing that's hurting you. No passive regen that would defang the tension. (Exact recovery sources and rates: tuning-pass item.)
+- **Max pool size may be tied to Insights** — e.g. physically-oriented Insights (Muscle Memory, The Graft) raising Vitality's ceiling, mentally-oriented ones raising Composure's. This reinforces build consequences: a cerebral detective is physically fragile and vice versa. *Exact Insight→track mapping and base values deferred to the tuning pass.*
+
+**Design intent:** because damage flows through dialogue, the writing carries the threat. A conversation can be a boss fight. This also gives low-Insight builds a sharper edge — the rougher branches that open when you fail or lack an Insight often cost wellbeing, so a lopsided character doesn't just get different scenes, they get more dangerous ones.
+
+*Open sub-question flagged for the tuning pass: base pool sizes, the Insight→max-pool mapping, and the full list of recovery sources — all depend on playthrough length and encounter density.*
+
+---
+
+## 4. Character Creation
+
+A short, flavor-forward creation step (Disco Elysium's archetype-plus-points model), not a full lifepath simulation.
+
+**Flow:**
+1. **Pick a Cop archetype** — sets a baseline distribution across the seven Insights, with a couple pushed high and at least one pushed low as a genuine cost (not just flavor).
+2. **Spend a small pool of free points** to personalize on top of the baseline.
+3. **Receive a backstory blurb** tied to the archetype, which can unlock a handful of flavor-only recognition tags later (e.g. an ex-PMC being recognized by other PMCs).
+
+**Archetypes** (each names a strength and an honest cost):
+
+- **The Enforcer** — high Muscle Memory, low Ledger. Ex-PMC contractor turned SEZ police. Bulldozes situations a smarter cop would talk through; bad at negotiation and fine print.
+- **The Company Man** — high Ledger, low Root. Transferred from corporate internal security. Reads leverage instinctively, numb to the human cost of what the SEZ runs on.
+- **Old Saigon** — high Root, low Ledger. Local-born, maybe from a family that refused to leave. Deep cultural fluency and empathy; easy to outmaneuver in a boardroom.
+- **The Wire** — high Graft, low Mask. Heavily modified by choice or necessity. Visceral insight into mods and cybernetics; can't blend in — the body gives them away.
+- **The Hustler** — high Hustle, low Muscle Memory. Came up through the gray-capital economy. Reads desperation and improvises well; avoids violence and it shows when it can't be avoided.
+- **Boring Cop** — flat, unremarkable spread with more free points to distribute. For players who want to build fully custom from a blank slate.
+
+**Consequence design (the point of the low stats):** a weak Insight shouldn't only mean more failed checks — it should open *different* branches. A low-Ledger Enforcer finds the smooth negotiation option locked but a blunt-force option unlocked (intimidate instead of persuade), typically resolving the immediate problem while creating a new one downstream (a burned informant, a lieutenant who trusts you less). Weakness is a fork toward a rougher path, never a dead wall.
+
+---
+
+*Next section: Timeline Bridge — the key beats connecting 2026 to 2226, kept brief. (Still to be drafted.)*
