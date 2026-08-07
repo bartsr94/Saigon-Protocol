@@ -220,10 +220,13 @@ currently calls it outside of `unlocksOnComplete` wiring on the checkpoint
 → noodleStall → deltaSquat chain — see `GAME_GUIDE.md`'s content pipeline
 section for the current location list and what triggers an unlock.
 
-Rendered today as a card grid, not the eventual illustrated-diorama
-treatment — the underlying model is presentation-agnostic by design (a set
-of unlocked IDs plus per-location metadata), so it can degrade to a card
-list without a store change, which is exactly what's shipped.
+Rendered today as a clickable district map rather than a plain card grid.
+`content/mapRegions.ts` owns the district hotspot geometry/labels, while
+`content/locations.ts` owns the actual playable destinations via a
+`districtId` field. `OverworldScreen` overlays SVG hotspots on a temporary
+modern-day Saigon map image and opens a district-details panel from there;
+the background art is expected to change in a future 2226 pass without
+changing the underlying district/location split.
 
 ## 8. Save/Persistence Layer
 
@@ -370,9 +373,14 @@ untested surface area to browser-only mechanics, not decision logic.
   checks retriable, Red checks one-shot.
 - **Combat and tactical exploration are out of v1 scope** — a distant,
   Underrail: Expedition–style future consideration.
-- **Overworld is a diorama-with-hotspots presentation over a flat
-  unlocked-location model** — presentation-agnostic; ships today as a card
-  grid.
+- **Overworld is a district-hotspot presentation over a flat
+  unlocked-location model** — presentation-agnostic; ships today as a
+  clickable Saigon map backed by district hotspot geometry rather than a
+  plain card grid.
+- **District geometry and story destinations are now separate content
+  layers**: `content/mapRegions.ts` defines clickable districts and
+  `content/locations.ts` defines the playable locations inside them via
+  `districtId`.
 - **Character creation is a flow, not a runtime system** — writes starting
   Insight values, records archetype, sets initial flags. Full three-step
   wizard (`ChargenArchetypeStep` → `ChargenFreePointsStep` →
