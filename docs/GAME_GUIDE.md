@@ -36,7 +36,7 @@ old files now just redirect here.*
 | Title / Boot | Full screen | New game, Continue (enabled once any save exists), Settings |
 | Character Creation | Full screen, 3 steps | Archetype select → free-point spend → name + confirm |
 | **Dialogue / Scene** | Full screen | **The core loop** — narration, dialogue, choices, checks |
-| Overworld | Full screen | Location cards (diorama-with-hotspots model; ships today as a card grid) |
+| Overworld | Full screen | Clickable Saigon district map with district-panel destination selection |
 | Character (`character` overlay) | Overlay | Portrait, name, archetype + backstory, all seven Insights with pips/tagline/strength-weakness tag |
 | Casefile (`casefile` overlay) | Overlay | Evidence/Items grid + Case Notes log |
 | Settings (`settings` overlay) | Overlay | Audio, text speed, accessibility, save/load — also serves as the pause/system menu (there's no separate Pause screen) |
@@ -308,9 +308,11 @@ textbook curated-greeting use case.
 `content/locations.ts` defines the location list (`LocationId` union +
 `Record<LocationId, LocationDefinition>` + `LOCATION_IDS` array — currently
 `checkpoint` → `noodleStall` → `deltaSquat`, flavor-light placeholders, not
-GDD-canonical). Each definition has `name`, `blurb`, `unlockedByDefault`,
-optional `unlocksOnComplete: LocationId[]`, and optional baseline
-`musicId`/`ambienceIds`.
+GDD-canonical). Each definition has a `districtId`, `name`, `blurb`,
+`unlockedByDefault`, optional `unlocksOnComplete: LocationId[]`, and
+optional baseline `musicId`/`ambienceIds`. `content/mapRegions.ts` defines
+the Overworld's district geometry, labels, and blurbs separately from the
+playable story destinations.
 
 **Unlock flow:** `navigationStore.unlockLocation(id)` is idempotent and
 callable from anywhere, but in practice the only caller is
@@ -323,6 +325,12 @@ Selecting a location (`OverworldScreen.handleSelect`) does four things in
 one imperative sequence: `navigationStore.selectLocation(id)`,
 `storyStore.loadStory(LOCATION_STORY_JSON[id], undefined, id)`,
 `audioStore.enterLocation(LOCATIONS[id])`, and `saveStore.autosave()`.
+
+`OverworldScreen` now uses a temporary modern-day Saigon map image as the
+interaction surface, with SVG district hotspots for Districts 1, 4, 5, and
+2 plus a district-details panel and a text fallback list. The current map
+art is a placeholder for a future 2226-specific illustration, but the
+interaction model is intended to stay the same.
 
 ## 7. Save/Persistence
 
