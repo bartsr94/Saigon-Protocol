@@ -23,7 +23,7 @@ const TAG_STYLE: Record<Exclude<ChoiceTagVariant, 'none'>, (label: string | unde
 }
 
 /**
- * One row in the choice list, tagged per UI_DESIGN §5's mechanical
+ * One row in the choice list, tagged per docs/GAME_GUIDE.md §4's mechanical
  * vocabulary. Locked-visible choices render greyed out with their
  * requirement labelled, never hidden (that decision is content-side).
  */

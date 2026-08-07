@@ -1,9 +1,10 @@
-// Title/Boot (UI_DESIGN §6.1 / UI_VISUAL_STYLE_SPEC §5.5). Continue loads the
-// most recently written save slot (Save/Persistence Layer, docs/
-// SAVE_PERSISTENCE_SPEC.md) — disabled when none exists rather than faked.
+// Title/Boot (docs/GAME_GUIDE.md §2.1). Continue loads the
+// most recently written save slot (Save/Persistence Layer, docs/GAME_GUIDE.md
+// §7) — disabled when none exists rather than faked.
 // No key art asset exists yet either (art direction is a separate pass);
 // the gradient below is a stand-in, not a claim of finished art.
 
+import { useEffect } from 'react'
 import { CyberButton, GlitchText } from '../ui'
 import { useUiStore } from '../../stores/uiStore'
 import { useSaveStore } from '../../stores/saveStore'
@@ -14,14 +15,20 @@ export function TitleScreen() {
   const goToChargen = useUiStore((s) => s.goToChargen)
   const goToGame = useUiStore((s) => s.goToGame)
   const openOverlay = useUiStore((s) => s.openOverlay)
-  const hasAnySave = useSaveStore((s) => s.hasAnySave)
+  const slots = useSaveStore((s) => s.slots)
+  const refreshSlots = useSaveStore((s) => s.refreshSlots)
   const loadMostRecent = useSaveStore((s) => s.loadMostRecent)
-  const canContinue = hasAnySave()
+
+  useEffect(() => {
+    refreshSlots()
+  }, [refreshSlots])
+
+  const canContinue = slots.length > 0
 
   function handleContinue() {
     if (!loadMostRecent()) return
     // A loaded save with no active story lands on the Overworld — the title
-    // theme wouldn't otherwise stop there (docs/AUDIO_VOICEOVER_SPEC.md; a
+    // theme wouldn't otherwise stop there (docs/GAME_GUIDE.md; a
     // mid-scene save's own restored line tags already take care of this).
     if (!useStoryStore.getState().story) useAudioStore.getState().enterOverworld()
     goToGame()

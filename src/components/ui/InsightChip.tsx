@@ -6,15 +6,15 @@ export interface InsightChipProps {
   name: string
   /** The Insight's own `color` from src/content/insights.ts. */
   color: string
-  /** One-shot flicker on first appearance in the log (UI_VISUAL_STYLE_SPEC §5.4). */
+  /** One-shot flicker on first appearance in the log (docs/GAME_GUIDE.md §2.1). */
   glitchOnMount?: boolean
   className?: string
 }
 
 /**
  * The small icon-swatch + name tag that marks an Insight interjection in
- * the dialogue log, and the Insight-gated choice tag (UI_DESIGN §4/§5).
- * `glitchOnMount` also fires a one-shot sting (docs/AUDIO_VOICEOVER_SPEC.md)
+ * the dialogue log, and the Insight-gated choice tag (docs/GAME_GUIDE.md §4).
+ * `glitchOnMount` also fires a one-shot sting (docs/GAME_GUIDE.md)
  * — each log-entry instance genuinely mounts once, so this doesn't repeat
  * the way it would if it were tied to GlitchText's own repeating loop
  * variant (used elsewhere, e.g. the title screen).

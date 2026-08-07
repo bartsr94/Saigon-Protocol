@@ -1,4 +1,4 @@
-// Scene music cues (docs/AUDIO_VOICEOVER_SPEC.md). Set via the content-tagging
+// Scene music cues (docs/GAME_GUIDE.md). Set via the content-tagging
 // convention's `# music: <id>` line tag, or as a location's baseline mood
 // (content/locations.ts). Same shape as content/backgrounds.ts, with one
 // addition: `'none'` is a reserved sentinel id (no `src`) that explicitly

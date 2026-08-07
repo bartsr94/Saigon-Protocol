@@ -1,32 +1,39 @@
-# React + TypeScript + Vite
+# Saigon Protocol
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A browser-based narrative RPG in the Disco Elysium / Celestial Return vein:
+text-forward, choice- and dice-check-driven, with a seven-"Insight"
+personality-lens system standing in for a traditional character sheet.
+Client-side only, no backend — built with React, TypeScript, Vite,
+Zustand, Tailwind, and inkjs for branching narrative.
 
-Currently, two official plugins are available:
+## Docs
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `docs/SAIGON_PROTOCOL_ARCHITECTURE.md` — as-built technical reference
+  (store/engine structure, the ink↔TS boundary).
+- `docs/GAME_GUIDE.md` — practical reference for writing content and UI
+  (screen layout, visual style, ink tag vocabulary, save/audio conventions).
+- `docs/SEA_CYBERPUNK_GDD.md` — setting, lore, and narrative-design premise.
 
-## React Compiler
+## Runtime Entry
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `index.html` loads `src/main.tsx`
+- `src/main.tsx` mounts `src/App.tsx`
+- `App.tsx` routes between title, character creation, overworld, dialogue, and overlays
 
-## Expanding the Oxlint configuration
+## Key Directories
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+- `src/components/screens/` — top-level screens and overlays
+- `src/stores/` — Zustand state for UI, story, navigation, saves, settings, audio, and insights
+- `src/content/` — static game content registries
+- `content/ink/` — authored Ink stories plus compiled `.json`
+- `public/` — browser-served assets
+- `scripts/compile-ink.mjs` — compiles every `content/ink/*.ink` to sibling `.json`
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+## Scripts
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+- `npm run dev` — start Vite dev server
+- `npm run build` — type-check and build production bundle
+- `npm run test` — run Vitest suite
+- `npm run lint` — run Oxlint
+- `npm run compile:ink` — compile Ink sources to JSON
+- `npm run audio:convert` — convert `.wav` assets to `.mp3` with `ffmpeg`

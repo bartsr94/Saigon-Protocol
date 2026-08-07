@@ -8,12 +8,12 @@ export interface CheckResultBlockProps {
 }
 
 /**
- * Transparent check-result readout for the dialogue log (UI_DESIGN §5) —
+ * Transparent check-result readout for the dialogue log (docs/GAME_GUIDE.md §4) —
  * shows the dice, modifier, target, and pass/fail rather than hiding the
  * math, on purpose. Takes the engine's own CheckResult shape directly. Each
  * appearance in the log is a fresh mount (a new check just fired), so a
  * mount effect is the right moment for the success/failure sting
- * (docs/AUDIO_VOICEOVER_SPEC.md).
+ * (docs/GAME_GUIDE.md).
  */
 export function CheckResultBlock({ insightName, result }: CheckResultBlockProps) {
   const { dice, diceTotal, modifier, targetNumber, total, success, doubles } = result

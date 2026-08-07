@@ -18,8 +18,8 @@ export interface PanelProps extends Omit<HTMLAttributes<HTMLDivElement>, 'classN
 
 /**
  * The cut-corner card chrome shared by every panel in the game — dialogue
- * log, HUD frames, overlay modals, check-result rows (UI_VISUAL_STYLE_SPEC
- * §3). Purely presentational: callers own layout/content, this only owns
+ * log, HUD frames, overlay modals, check-result rows (docs/GAME_GUIDE.md
+ * §3.3). Purely presentational: callers own layout/content, this only owns
  * the angular border/glow/blur treatment. Forwards ordinary div props
  * (onClick, etc.) — style/className stay Panel's own.
  */

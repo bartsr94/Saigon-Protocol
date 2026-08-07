@@ -8,12 +8,13 @@ import { CharacterCreationScreen } from './components/screens/CharacterCreationS
 import { OverworldScreen } from './components/screens/OverworldScreen'
 import { DialogueScreen } from './components/screens/DialogueScreen'
 import { OverlayHost } from './components/screens/OverlayHost'
+import { FailStateOverlay } from './components/screens/FailStateOverlay'
 
 function App() {
   const screen = useUiStore((s) => s.screen)
   // Story presence, not navigationStore.selectedLocationId, is the real
   // signal for "show DialogueScreen": the intro scene is an active story
-  // with no location (docs/INTRO_SCENE_SPEC.md), a case selectedLocationId
+  // with no location (docs/GAME_GUIDE.md), a case selectedLocationId
   // was never meant to distinguish on its own.
   const activeStory = useStoryStore((s) => s.story)
   const highContrast = useSettingsStore((s) => s.highContrast)
@@ -36,7 +37,7 @@ function App() {
     document.documentElement.dataset.reduceMotion = reduceMotion ? 'true' : 'false'
   }, [reduceMotion])
 
-  // Title/Boot and Character Creation share one theme (docs/AUDIO_VOICEOVER_SPEC.md).
+  // Title/Boot and Character Creation share one theme (docs/GAME_GUIDE.md).
   // No corresponding "leave" branch here — deliberately: entering a real
   // scene already overrides this itself (the intro's own first-line `music`
   // tag, OverworldScreen.handleSelect's enterLocation, DialogueScreen's
@@ -54,6 +55,7 @@ function App() {
       {screen === 'chargen' && <CharacterCreationScreen />}
       {screen === 'game' && (activeStory ? <DialogueScreen /> : <OverworldScreen />)}
       <OverlayHost />
+      <FailStateOverlay />
     </main>
   )
 }

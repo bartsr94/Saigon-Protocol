@@ -36,7 +36,7 @@ function clampToNewMax(
 
 interface InsightState {
   archetype: ArchetypeId | null
-  /** Set during Character Creation's confirm step (UI_DESIGN §6.2 step 3). */
+  /** Set during Character Creation's confirm step (docs/GAME_GUIDE.md §2.2 step 3). */
   playerName: string
   levels: Record<InsightId, number>
   freePointsRemaining: number
@@ -62,21 +62,26 @@ interface InsightState {
 
   /** Bulk-restores state from a save blob (Save/Persistence Layer). */
   hydrate: (state: SerializedInsightState) => void
+  reset: () => void
 }
 
 const UNINITIALIZED_LEVELS: Record<InsightId, number> = Object.fromEntries(
   INSIGHT_IDS.map((id) => [id, 0]),
 ) as Record<InsightId, number>
 
-export const useInsightStore = create<InsightState>((set, get) => ({
+const INITIAL_INSIGHT_STATE = {
   archetype: null,
   playerName: '',
   levels: UNINITIALIZED_LEVELS,
   freePointsRemaining: 0,
   vitality: { current: 0, max: 0 },
   composure: { current: 0, max: 0 },
-  consumedRedChecks: new Set(),
-  failState: null,
+  consumedRedChecks: new Set<string>(),
+  failState: null as FailStateCause,
+}
+
+export const useInsightStore = create<InsightState>((set, get) => ({
+  ...INITIAL_INSIGHT_STATE,
 
   selectArchetype: (id) => {
     const def = ARCHETYPES[id]
@@ -170,6 +175,13 @@ export const useInsightStore = create<InsightState>((set, get) => ({
       composure: state.composure,
       consumedRedChecks: new Set(state.consumedRedChecks),
       failState: state.failState,
+    })
+  },
+
+  reset: () => {
+    set({
+      ...INITIAL_INSIGHT_STATE,
+      consumedRedChecks: new Set(),
     })
   },
 }))

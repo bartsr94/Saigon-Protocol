@@ -25,11 +25,11 @@ at files that don't exist.
 
 | Change type | File to update |
 |---|---|
-| A system was designed, built, or its design changed (Combat, Character, Resolution Engine, Story/ink boundary, Save/Persistence, Navigation) | `SAIGON_PROTOCOL_ARCHITECTURE.md` — update the relevant numbered section, and log the decision in its "Key Architectural Decisions (running log)" section. |
-| An open question in the architecture doc got resolved | Remove or resolve the entry under "Open question to resolve before detailing X" in `SAIGON_PROTOCOL_ARCHITECTURE.md`, and fold the resolution into the running log and the relevant section instead. |
+| Code/store/engine structure changed — a system was built or its wiring changed (Combat, Character, Resolution Engine, Story/ink boundary, Save/Persistence, Navigation, Audio) | `SAIGON_PROTOCOL_ARCHITECTURE.md` — update the relevant numbered section, and log the decision in its "Key Architectural Decisions (running log)" section. |
+| An open item in the architecture doc's "Open / not yet built" list got resolved | Remove it from that list, and fold the resolution into the running log and the relevant numbered section instead. |
+| A content-authoring convention changed — ink tag vocabulary, how to add a location/scene, save UX, audio asset conventions, screen layout, visual style tokens | `GAME_GUIDE.md` — update the relevant section. This is the doc a content author or UI contributor actually needs open; keep it practical, not architectural. |
 | Setting, lore, factions, regions, or tone/theme content was authored or changed | `SEA_CYBERPUNK_GDD.md`. |
 | Stack, setup steps, npm scripts, or the high-level project description changed | `README.md`. |
-| A visual/UI design system or convention was established (e.g. shared component patterns, styling approach) | `SAIGON_PROTOCOL_ARCHITECTURE.md`, as a short addition near the relevant system — this repo has no separate UI style guide yet; don't create one unless asked. |
 
 If work doesn't clearly map to any of the above (e.g. a pure content addition
 to `src/content/`, or a one-off bugfix with no architectural implication),

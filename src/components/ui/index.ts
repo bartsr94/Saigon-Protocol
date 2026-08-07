@@ -1,4 +1,4 @@
-// Reusable presentational primitives per docs/UI_VISUAL_STYLE_SPEC.md §6.
+// Reusable presentational primitives per docs/GAME_GUIDE.md §3.
 // Pure/presentational — props in, no store imports (CLAUDE.md's simulation/
 // UI separation rule).
 

@@ -11,9 +11,9 @@ export interface PipTrackProps {
 
 /**
  * Discrete pip/segment wellbeing track (Composure/Vitality) — deliberately
- * NOT a smooth bar, per UI_DESIGN §3: the player should read exact
+ * NOT a smooth bar, per docs/GAME_GUIDE.md §2.1: the player should read exact
  * remaining points and feel each hit. Pips that just changed get a brief
- * one-shot flash (UI_VISUAL_STYLE_SPEC §4); `motion-safe:` skips it under
+ * one-shot flash (docs/GAME_GUIDE.md §3.4); `motion-safe:` skips it under
  * prefers-reduced-motion.
  */
 export function PipTrack({ current, max, color, label, className = '' }: PipTrackProps) {

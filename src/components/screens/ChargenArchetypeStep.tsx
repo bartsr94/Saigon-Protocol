@@ -1,4 +1,4 @@
-// Character Creation step 1: archetype select (UI_DESIGN §6.2 step 1).
+// Character Creation step 1: archetype select (docs/GAME_GUIDE.md §2.2 step 1).
 // Selecting an archetype commits its baseline Insight spread to
 // insightStore immediately — the free-point-spend step (next) operates on
 // that real state, not a preview copy.

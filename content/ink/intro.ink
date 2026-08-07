@@ -1,4 +1,4 @@
-// Case #1 cold-open — "Aveline Biogenetics, District 4" (docs/INTRO_SCENE_SPEC.md).
+// Case #1 cold-open — "Aveline Biogenetics, District 4" (docs/GAME_GUIDE.md).
 // The player's real first scene: auto-loaded once Character Creation
 // confirms, before the Overworld is ever shown. A three-beat squad-car
 // montage (Cholon departure -> District 4 crossing -> lab arrival, each
@@ -49,7 +49,7 @@ The lab itself is nothing to look at — a low prefab bolted to the inside of th
 Two uniforms are posted at the entrance, one leaning on a cruiser's hood, the other straightening up as your engine cuts out. Neither looks thrilled to be standing next to a flood wall on their shift. "Detective," the closer one says, and jerks a thumb at the door before you've even asked. "She's inside. Hasn't come out since we called it in."
 
 * [Head in.]
-    A woman in an Aveline lab coat is waiting just inside the door, arms crossed, badge already scanned and logged. Steam curls off a cup she's not drinking from. "You're the detective." Not a question. "Mei Hong. I run this lab. Or I did, until this morning." # speaker: npc:meiHong # voice: meiHongIntro
+    A woman in an Aveline lab coat is waiting just inside the door, arms crossed, badge already scanned and logged. Steam curls off a cup she's not drinking from. "You're the detective." Not a question. "Mei Hong. I run this lab. Or I did, until this morning." # speaker: npc:meiHong
     "Someone got in. Took something. That part's simple." She doesn't move from the doorway. "What they took isn't." # speaker: npc:meiHong
     "It's proprietary. Aveline property, licensed research — nothing that concerns the Constabulary under normal circumstances." Her voice doesn't change, but her eyes do. "I can tell you it's dangerous in the wrong hands. I can't tell you more than that. Not without an authorization I don't have yet." # speaker: npc:meiHong
     { ledger >= 3:

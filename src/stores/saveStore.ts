@@ -1,4 +1,4 @@
-// Save/Persistence Layer (Architecture §5, docs/SAVE_PERSISTENCE_SPEC.md).
+// Save/Persistence Layer (Architecture §8, docs/GAME_GUIDE.md §7).
 // Owns localStorage I/O for save slots: one system-managed Autosave slot
 // plus player-named manual slots. No index file — refreshSlots() scans
 // localStorage for SAVE_KEY_PREFIX-prefixed keys directly, since the save

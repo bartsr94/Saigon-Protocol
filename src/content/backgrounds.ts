@@ -1,6 +1,6 @@
-// Scene backdrop art (UI_DESIGN §3: "Location establishing art can also
+// Scene backdrop art (docs/GAME_GUIDE.md §2.1: "Location establishing art can also
 // render here when no character is present"). Set via the content-tagging
-// convention's `# background: <id>` line tag (docs/INK_CONTENT_TAGGING_SPEC.md),
+// convention's `# background: <id>` line tag (docs/GAME_GUIDE.md),
 // same shape as content/npcs.ts.
 
 export type BackgroundId = 'avelineLabExterior' | 'cholonMarket' | 'district4FloodWall'
@@ -9,8 +9,8 @@ export const BACKGROUND_IDS: BackgroundId[] = ['avelineLabExterior', 'cholonMark
 
 export interface BackgroundDefinition {
   id: BackgroundId
-  /** `/backgrounds/<id>.png` — served from public/. */
-  imageSrc: string
+  /** `/backgrounds/<id>.png` — served from public/ when art exists. */
+  imageSrc?: string
 }
 
 export const BACKGROUNDS: Record<BackgroundId, BackgroundDefinition> = {
@@ -20,10 +20,8 @@ export const BACKGROUNDS: Record<BackgroundId, BackgroundDefinition> = {
   },
   cholonMarket: {
     id: 'cholonMarket',
-    imageSrc: '/backgrounds/cholon-market.png',
   },
   district4FloodWall: {
     id: 'district4FloodWall',
-    imageSrc: '/backgrounds/district-4-flood-wall.png',
   },
 }

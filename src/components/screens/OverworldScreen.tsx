@@ -1,5 +1,5 @@
-// Overworld/Navigation (UI_DESIGN §6.3). Presented as a card list — the
-// presentation-agnostic fallback Architecture §2 calls for; the illustrated-
+// Overworld/Navigation (docs/GAME_GUIDE.md §6). Presented as a card list — the
+// presentation-agnostic fallback Architecture §7 calls for; the illustrated-
 // diorama treatment is separate future art-direction work.
 
 import { useNavigationStore } from '../../stores/navigationStore'
@@ -21,7 +21,7 @@ export function OverworldScreen() {
   function handleSelect(id: LocationId) {
     selectLocation(id)
     loadStory(LOCATION_STORY_JSON[id], undefined, id)
-    // Location's baseline mood (docs/AUDIO_VOICEOVER_SPEC.md), instant on
+    // Location's baseline mood (docs/GAME_GUIDE.md), instant on
     // selection, before the ink content's own first-line tags (if any) take over.
     useAudioStore.getState().enterLocation(LOCATIONS[id])
     // Autosave checkpoint (Save/Persistence Layer): capture the fresh

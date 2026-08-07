@@ -14,8 +14,8 @@ export interface ArchetypeDefinition {
   /** Starting Insight levels before free-point spend (placeholder numbers — GDD §3 tuning-pass item). */
   baseline: Record<InsightId, number>
   freePoints: number
-  /** `/portraits/archetypes/<id>.png` — served from public/, missing art falls back to initials (PortraitFrame). */
-  portraitSrc: string
+  /** `/portraits/archetypes/<id>.png` — served from public/ once art lands; absent falls back to initials (PortraitFrame). */
+  portraitSrc?: string
 }
 
 // PLACEHOLDER values (GDD §3 tuning-pass item): baseline spread and free-point pool size.
@@ -42,7 +42,6 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     weakness: 'ledger',
     baseline: baselineFor('muscleMemory', 'ledger'),
     freePoints: FREE_POINTS_DEFAULT,
-    portraitSrc: '/portraits/archetypes/enforcer.png',
   },
   companyMan: {
     id: 'companyMan',
@@ -53,7 +52,6 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     weakness: 'root',
     baseline: baselineFor('ledger', 'root'),
     freePoints: FREE_POINTS_DEFAULT,
-    portraitSrc: '/portraits/archetypes/companyMan.png',
   },
   oldSaigon: {
     id: 'oldSaigon',
@@ -64,7 +62,6 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     weakness: 'ledger',
     baseline: baselineFor('root', 'ledger'),
     freePoints: FREE_POINTS_DEFAULT,
-    portraitSrc: '/portraits/archetypes/oldSaigon.png',
   },
   wire: {
     id: 'wire',
@@ -75,7 +72,6 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     weakness: 'mask',
     baseline: baselineFor('graft', 'mask'),
     freePoints: FREE_POINTS_DEFAULT,
-    portraitSrc: '/portraits/archetypes/wire.png',
   },
   hustler: {
     id: 'hustler',
@@ -86,7 +82,6 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     weakness: 'muscleMemory',
     baseline: baselineFor('hustle', 'muscleMemory'),
     freePoints: FREE_POINTS_DEFAULT,
-    portraitSrc: '/portraits/archetypes/hustler.png',
   },
   boringCop: {
     id: 'boringCop',
@@ -96,7 +91,6 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     weakness: null,
     baseline: baselineFor(null, null),
     freePoints: FREE_POINTS_BORING_COP,
-    portraitSrc: '/portraits/archetypes/boringCop.png',
   },
 }
 

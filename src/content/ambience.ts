@@ -1,4 +1,4 @@
-// Layerable environmental sound (docs/AUDIO_VOICEOVER_SPEC.md). Set via the
+// Layerable environmental sound (docs/GAME_GUIDE.md). Set via the
 // content-tagging convention's `# ambience: +<id>` / `-<id>` / `clear` line
 // tags, or as a location's baseline mood (content/locations.ts). Multiple
 // ambience ids can be active at once — same shape as content/backgrounds.ts,

@@ -1,4 +1,4 @@
-// Character / Insights overlay (UI_DESIGN §6.4) — the closest thing to a
+// Character / Insights overlay (docs/GAME_GUIDE.md §2) — the closest thing to a
 // character sheet: portrait, archetype + backstory, and all seven Insights
 // with current level, color, and tagline.
 

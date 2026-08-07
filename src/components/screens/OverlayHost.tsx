@@ -1,5 +1,5 @@
 // Renders whichever overlay is active on top of the current screen — per
-// UI_DESIGN §2, overlays pause the view beneath rather than replacing it.
+// docs/GAME_GUIDE.md §2, overlays pause the view beneath rather than replacing it.
 
 import { useEffect } from 'react'
 import { useUiStore } from '../../stores/uiStore'

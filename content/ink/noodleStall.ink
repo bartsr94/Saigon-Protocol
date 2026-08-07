@@ -1,5 +1,5 @@
 // Back-Alley Noodle Stall (src/content/locations.ts) — flavor-light
-// placeholder scene, not real GDD content (docs/CONTENT_PIPELINE_SPEC.md).
+// placeholder scene, not real GDD content (docs/GAME_GUIDE.md).
 // No check in this scene — a location file isn't required to exercise the
 // check EXTERNALs to be valid.
 

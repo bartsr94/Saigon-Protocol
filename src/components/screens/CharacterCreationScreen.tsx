@@ -1,4 +1,4 @@
-// Character Creation (UI_DESIGN §6.2 / GDD §4): three-step wizard —
+// Character Creation (docs/GAME_GUIDE.md §2.2 / GDD §4): three-step wizard —
 // archetype select, free-point spend, confirm/name — before dropping into
 // the Overworld. Step state is local; the actual character data lives in
 // insightStore via the store actions each step already wired to.
@@ -29,7 +29,7 @@ export function CharacterCreationScreen() {
   const [step, setStep] = useState<Step>('archetype')
 
   // Confirming Character Creation drops the player into the intro scene
-  // (docs/INTRO_SCENE_SPEC.md), not straight onto the Overworld — the
+  // (docs/GAME_GUIDE.md), not straight onto the Overworld — the
   // Overworld only appears once that scene ends and story becomes null again.
   function handleConfirm() {
     loadStory(introStoryJson, undefined, 'intro')

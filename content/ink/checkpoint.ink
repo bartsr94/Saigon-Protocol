@@ -1,7 +1,6 @@
 // SEZ Checkpoint (src/content/locations.ts) — flavor-light placeholder scene,
-// not real GDD content (docs/CONTENT_PIPELINE_SPEC.md), same status demo.ink
-// already has. Exercises a White/Red check inline, per this location's own
-// content, distinct from the shared demo.ink fixture.
+// not real GDD content (docs/GAME_GUIDE.md). Exercises a Red
+// check inline, per this location's own content.
 
 EXTERNAL is_red_check_consumed(checkId)
 EXTERNAL roll_check(insight, targetNumber, checkId, risk)
