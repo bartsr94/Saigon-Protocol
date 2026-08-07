@@ -5,13 +5,12 @@
 
 import { useMemo, useState } from 'react'
 import { useNavigationStore } from '../../stores/navigationStore'
-import { useStoryStore } from '../../stores/storyStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useAudioStore } from '../../stores/audioStore'
 import { useUiStore } from '../../stores/uiStore'
 import { DISTRICT_IDS, DISTRICT_REGIONS, type DistrictRegionDefinition } from '../../content/mapRegions'
 import { LOCATIONS, LOCATION_IDS, type DistrictId, type LocationId } from '../../content/locations'
-import { LOCATION_STORY_JSON } from '../../content/locationStories'
+import { useGameplayStore } from '../../stores/gameplayStore'
 import { CyberButton, GlitchText, Panel } from '../ui'
 import { NavRail } from './NavRail'
 
@@ -25,8 +24,8 @@ export function OverworldScreen() {
   const unlockedLocationIds = useNavigationStore((s) => s.unlockedLocationIds)
   const selectedLocationId = useNavigationStore((s) => s.selectedLocationId)
   const selectLocation = useNavigationStore((s) => s.selectLocation)
-  const loadStory = useStoryStore((s) => s.loadStory)
   const openOverlay = useUiStore((s) => s.openOverlay)
+  const enterHub = useGameplayStore((s) => s.enterHub)
   const [selectedDistrictId, setSelectedDistrictId] = useState<DistrictId>('district4')
   const [hoveredDistrictId, setHoveredDistrictId] = useState<DistrictId | null>(null)
 
@@ -48,12 +47,12 @@ export function OverworldScreen() {
 
   function handleSelect(id: LocationId) {
     selectLocation(id)
-    loadStory(LOCATION_STORY_JSON[id], undefined, id)
-    // Location's baseline mood (docs/GAME_GUIDE.md), instant on
-    // selection, before the ink content's own first-line tags (if any) take over.
+    enterHub(id)
+    // Hub's baseline mood (docs/GAME_GUIDE.md), instant on entry, before any
+    // encounter scene inside that location takes over with its own tags.
     useAudioStore.getState().enterLocation(LOCATIONS[id])
-    // Autosave checkpoint (Save/Persistence Layer): capture the fresh
-    // scene's opening state right after handing off to the Story Engine.
+    // Autosave checkpoint (Save/Persistence Layer): capture the current hub
+    // entry so scene selection can happen from inside the location later.
     useSaveStore.getState().autosave()
   }
 

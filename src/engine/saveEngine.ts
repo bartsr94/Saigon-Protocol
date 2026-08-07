@@ -4,14 +4,15 @@
 // split.
 
 import { ARCHETYPES, type ArchetypeId } from '../content/archetypes'
+import type { HubId } from '../content/locationHubs'
+import type { SerializedCasefileState } from './casefileEngine'
 import type { InsightId } from '../content/insights'
 import { LOCATIONS, type LocationId } from '../content/locations'
 
-// Bumped to 2 when activeStoryId was added to SaveBlob — a v1 blob has no
-// way to know which compiled story its inkStateJson belongs to, so it's
-// correctly treated as "no save" by parseSaveBlob's version check below,
-// rather than risk restoring ink state against the wrong compiled Story.
-export const SAVE_FORMAT_VERSION = 2
+// Bumped to 4 when hub-state persistence was added alongside casefile
+// progression. There is still no migration path; older saves are treated as
+// absent rather than partially restored.
+export const SAVE_FORMAT_VERSION = 4
 export const AUTOSAVE_SLOT_ID = 'autosave'
 export const SAVE_KEY_PREFIX = 'saigon-protocol:save:'
 
@@ -40,6 +41,8 @@ export interface SaveBlob {
   kind: SaveSlotKind
   insight: SerializedInsightState
   navigation: SerializedNavigationState
+  currentHubId: HubId | null
+  casefile: SerializedCasefileState
   /** null when saved with no active scene (e.g. standing on the Overworld). */
   inkStateJson: string | null
   /** Which compiled story inkStateJson belongs to ('intro' or a LocationId) — storyStore.activeStoryId at save time. Null alongside a null inkStateJson. */

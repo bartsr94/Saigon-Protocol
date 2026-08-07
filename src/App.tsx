@@ -1,12 +1,14 @@
 import { useEffect } from 'react'
 import { useUiStore } from './stores/uiStore'
 import { useSettingsStore } from './stores/settingsStore'
+import { useGameplayStore } from './stores/gameplayStore'
 import { useStoryStore } from './stores/storyStore'
 import { useAudioStore } from './stores/audioStore'
 import { TitleScreen } from './components/screens/TitleScreen'
 import { CharacterCreationScreen } from './components/screens/CharacterCreationScreen'
 import { OverworldScreen } from './components/screens/OverworldScreen'
 import { DialogueScreen } from './components/screens/DialogueScreen'
+import { LocationHubScreen } from './components/screens/LocationHubScreen'
 import { OverlayHost } from './components/screens/OverlayHost'
 import { FailStateOverlay } from './components/screens/FailStateOverlay'
 
@@ -17,6 +19,7 @@ function App() {
   // with no location (docs/GAME_GUIDE.md), a case selectedLocationId
   // was never meant to distinguish on its own.
   const activeStory = useStoryStore((s) => s.story)
+  const currentHubId = useGameplayStore((s) => s.currentHubId)
   const highContrast = useSettingsStore((s) => s.highContrast)
   const largeText = useSettingsStore((s) => s.largeText)
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
@@ -53,7 +56,7 @@ function App() {
     <main className="min-h-svh bg-bg text-white" style={{ filter: highContrast ? 'contrast(1.18) saturate(1.1)' : undefined }}>
       {screen === 'title' && <TitleScreen />}
       {screen === 'chargen' && <CharacterCreationScreen />}
-      {screen === 'game' && (activeStory ? <DialogueScreen /> : <OverworldScreen />)}
+      {screen === 'game' && (activeStory ? <DialogueScreen /> : currentHubId ? <LocationHubScreen /> : <OverworldScreen />)}
       <OverlayHost />
       <FailStateOverlay />
     </main>

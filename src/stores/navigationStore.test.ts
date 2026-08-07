@@ -36,6 +36,19 @@ describe('navigationStore', () => {
     expect(useNavigationStore.getState().selectedLocationId).toBeNull()
   })
 
+  it('reset restores default unlocked locations and clears selection', () => {
+    useNavigationStore.getState().unlockLocation('noodleStall')
+    useNavigationStore.getState().selectLocation('noodleStall')
+
+    useNavigationStore.getState().reset()
+
+    const state = useNavigationStore.getState()
+    for (const id of LOCATION_IDS) {
+      expect(state.unlockedLocationIds.has(id)).toBe(LOCATIONS[id].unlockedByDefault)
+    }
+    expect(state.selectedLocationId).toBeNull()
+  })
+
   it('hydrate bulk-restores state from a save blob, including rebuilding unlockedLocationIds as a Set', () => {
     useNavigationStore.getState().hydrate({
       unlockedLocationIds: ['checkpoint', 'deltaSquat'],

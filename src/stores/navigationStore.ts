@@ -17,6 +17,7 @@ interface NavigationState {
 
   /** Bulk-restores state from a save blob (Save/Persistence Layer). */
   hydrate: (state: SerializedNavigationState) => void
+  reset: () => void
 }
 
 function defaultUnlockedLocationIds(): Set<LocationId> {
@@ -44,6 +45,13 @@ export const useNavigationStore = create<NavigationState>((set, get) => ({
     set({
       unlockedLocationIds: new Set(state.unlockedLocationIds),
       selectedLocationId: state.selectedLocationId,
+    })
+  },
+
+  reset: () => {
+    set({
+      unlockedLocationIds: defaultUnlockedLocationIds(),
+      selectedLocationId: null,
     })
   },
 }))

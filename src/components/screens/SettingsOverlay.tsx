@@ -13,6 +13,8 @@ import { useSaveStore } from '../../stores/saveStore'
 import { useUiStore } from '../../stores/uiStore'
 import { useStoryStore } from '../../stores/storyStore'
 import { useAudioStore } from '../../stores/audioStore'
+import { useNavigationStore } from '../../stores/navigationStore'
+import { LOCATIONS } from '../../content/locations'
 import { CyberButton, NeonCheckbox, NeonSlider, Panel } from '../ui'
 
 const TEXT_SPEEDS: TextSpeed[] = ['slow', 'normal', 'fast']
@@ -47,7 +49,14 @@ function SaveDataSection() {
   function handleLoad(id: string) {
     if (!loadSlot(id)) return
     // Same title-music handoff TitleScreen's Continue needs (docs/GAME_GUIDE.md).
-    if (!useStoryStore.getState().story) useAudioStore.getState().enterOverworld()
+    if (!useStoryStore.getState().story) {
+      const selectedLocationId = useNavigationStore.getState().selectedLocationId
+      if (selectedLocationId) {
+        useAudioStore.getState().enterLocation(LOCATIONS[selectedLocationId])
+      } else {
+        useAudioStore.getState().enterOverworld()
+      }
+    }
     closeOverlay()
     goToGame()
   }

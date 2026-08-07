@@ -21,6 +21,7 @@ import { useStoryStore, type StoryLine } from '../../stores/storyStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useAudioStore } from '../../stores/audioStore'
+import { useGameplayStore } from '../../stores/gameplayStore'
 import { useSettingsStore, TEXT_SPEED_MS } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { LOCATIONS } from '../../content/locations'
@@ -30,7 +31,7 @@ import { BACKGROUNDS, type BackgroundId } from '../../content/backgrounds'
 import { INSIGHTS } from '../../content/insights'
 import { parseChoiceTags } from '../../engine/contentTags'
 import type { CheckResult } from '../../engine/checkResolution'
-import { CheckResultBlock, ChoiceRow, InsightChip, Panel, PipTrack, PortraitFrame } from '../ui'
+import { CheckResultBlock, ChoiceRow, CyberButton, InsightChip, Panel, PipTrack, PortraitFrame } from '../ui'
 import { NavRail } from './NavRail'
 
 interface LogEntry {
@@ -173,6 +174,8 @@ export function DialogueScreen() {
   const selectedLocationId = useNavigationStore((s) => s.selectedLocationId)
   const returnToOverworld = useNavigationStore((s) => s.returnToOverworld)
   const unlockLocation = useNavigationStore((s) => s.unlockLocation)
+  const currentHubId = useGameplayStore((s) => s.currentHubId)
+  const leaveHub = useGameplayStore((s) => s.leaveHub)
 
   const openOverlay = useUiStore((s) => s.openOverlay)
   const textSpeed = useSettingsStore((s) => s.textSpeed)
@@ -256,13 +259,27 @@ export function DialogueScreen() {
     setIsScrolling(!atBottom)
   }
 
-  function handleReturnToOverworld() {
+  function finalizeEndedScene() {
     if (selectedLocationId && ended) {
       for (const unlockedId of LOCATIONS[selectedLocationId].unlocksOnComplete ?? []) {
         unlockLocation(unlockedId)
       }
     }
+  }
+
+  function handleReturnToHub() {
+    finalizeEndedScene()
+    resetStory()
+    if (currentHubId && LOCATIONS[currentHubId]) {
+      useAudioStore.getState().enterLocation(LOCATIONS[currentHubId])
+    }
+    useSaveStore.getState().autosave()
+  }
+
+  function handleReturnToOverworld() {
+    finalizeEndedScene()
     returnToOverworld()
+    leaveHub()
     resetStory()
     // Leaving a scene gets the Overworld hub's own mood back (docs/GAME_GUIDE.md).
     useAudioStore.getState().enterOverworld()
@@ -280,7 +297,7 @@ export function DialogueScreen() {
       <NavRail
         className="shrink-0 p-4"
         onChar={() => openOverlay('character')}
-        onMap={handleReturnToOverworld}
+        onMap={currentHubId ? handleReturnToHub : handleReturnToOverworld}
         onCase={() => openOverlay('casefile')}
         onMenu={() => openOverlay('settings')}
       />
@@ -389,6 +406,14 @@ export function DialogueScreen() {
                 </ChoiceRow>
               )
             })}
+          </div>
+        )}
+
+        {ended && (!latestEntry || typedChars >= latestEntryText.length) && (
+          <div className="border-t border-white/10 pt-3" onClick={(e) => e.stopPropagation()}>
+            <CyberButton onClick={currentHubId ? handleReturnToHub : handleReturnToOverworld}>
+              {currentHubId ? 'Continue Investigation' : 'Return to Map'}
+            </CyberButton>
           </div>
         )}
       </Panel>

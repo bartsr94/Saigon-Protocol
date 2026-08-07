@@ -3,6 +3,8 @@ import { useSaveStore } from './saveStore'
 import { useInsightStore } from './insightStore'
 import { useNavigationStore } from './navigationStore'
 import { useStoryStore } from './storyStore'
+import { useCasefileStore } from './casefileStore'
+import { useGameplayStore } from './gameplayStore'
 import { AUTOSAVE_SLOT_ID } from '../engine/saveEngine'
 import noodleStallJson from '../../content/ink/noodleStall.json'
 import introStoryJson from '../../content/ink/intro.json'
@@ -35,6 +37,8 @@ describe('saveStore', () => {
     useInsightStore.setState(useInsightStore.getInitialState(), true)
     useNavigationStore.setState(useNavigationStore.getInitialState(), true)
     useStoryStore.getState().reset()
+    useCasefileStore.setState(useCasefileStore.getInitialState(), true)
+    useGameplayStore.setState(useGameplayStore.getInitialState(), true)
     useSaveStore.setState(useSaveStore.getInitialState(), true)
   })
 
@@ -78,17 +82,28 @@ describe('saveStore', () => {
     useInsightStore.getState().selectArchetype('hustler')
     useInsightStore.getState().setPlayerName('Kade')
     useNavigationStore.getState().unlockLocation('noodleStall')
+    useGameplayStore.getState().enterHub('checkpoint')
+    useCasefileStore.getState().addEvidence('drone-log')
+    useCasefileStore.getState().unlockNote('note-01')
     useSaveStore.getState().saveToSlot('Snapshot')
     const slotId = useSaveStore.getState().slots[0].id
 
     // Mutate state after saving, then confirm loadSlot restores the snapshot.
     useInsightStore.getState().setPlayerName('Someone Else')
     useNavigationStore.getState().unlockLocation('deltaSquat')
+    useGameplayStore.getState().enterHub('deltaSquat')
+    useCasefileStore.getState().addEvidence('water-sample')
+    useCasefileStore.getState().unlockNote('note-02')
 
     expect(useSaveStore.getState().loadSlot(slotId)).toBe(true)
     expect(useInsightStore.getState().playerName).toBe('Kade')
     expect(useNavigationStore.getState().unlockedLocationIds.has('noodleStall')).toBe(true)
     expect(useNavigationStore.getState().unlockedLocationIds.has('deltaSquat')).toBe(false)
+    expect(useGameplayStore.getState().currentHubId).toBe('checkpoint')
+    expect(useCasefileStore.getState().evidenceIds.has('drone-log')).toBe(true)
+    expect(useCasefileStore.getState().evidenceIds.has('water-sample')).toBe(false)
+    expect(useCasefileStore.getState().noteIds.has('note-01')).toBe(true)
+    expect(useCasefileStore.getState().noteIds.has('note-02')).toBe(false)
 
     expect(useSaveStore.getState().loadSlot('does-not-exist')).toBe(false)
   })

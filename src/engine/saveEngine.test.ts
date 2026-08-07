@@ -21,6 +21,12 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       unlockedLocationIds: ['checkpoint', 'noodleStall'],
       selectedLocationId: 'checkpoint',
     },
+    currentHubId: 'checkpoint',
+    casefile: {
+      evidenceIds: ['drone-log'],
+      noteIds: ['note-01'],
+      flags: ['saw-breach'],
+    },
     inkStateJson: '{"someInkState":true}',
     activeStoryId: 'checkpoint',
     ...overrides,
