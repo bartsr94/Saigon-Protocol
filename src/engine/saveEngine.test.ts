@@ -22,6 +22,7 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       selectedLocationId: 'checkpoint',
     },
     inkStateJson: '{"someInkState":true}',
+    activeStoryId: 'checkpoint',
     ...overrides,
   }
 }

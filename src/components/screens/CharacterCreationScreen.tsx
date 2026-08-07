@@ -32,7 +32,7 @@ export function CharacterCreationScreen() {
   // (docs/INTRO_SCENE_SPEC.md), not straight onto the Overworld — the
   // Overworld only appears once that scene ends and story becomes null again.
   function handleConfirm() {
-    loadStory(introStoryJson)
+    loadStory(introStoryJson, undefined, 'intro')
     goToGame()
   }
 

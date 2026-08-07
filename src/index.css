@@ -84,7 +84,18 @@ body {
   animation: var(--animate-glitch-2);
 }
 
+/* Settings' "Reduce Motion" toggle (settingsStore.reduceMotion, wired via
+   App.tsx's data-reduce-motion attribute) is the explicit, overridable
+   source of truth from here on; the raw media query stays as a fallback for
+   before the app ever mounts / for anyone who never opens Settings. */
 @media (prefers-reduced-motion: reduce) {
+  .glitch-text--active::before,
+  .glitch-text--active::after {
+    display: none;
+  }
+}
+
+:root[data-reduce-motion='true'] {
   .glitch-text--active::before,
   .glitch-text--active::after {
     display: none;
