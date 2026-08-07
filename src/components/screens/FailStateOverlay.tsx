@@ -5,7 +5,10 @@ import { useStoryStore } from '../../stores/storyStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useAudioStore } from '../../stores/audioStore'
+import { useCasefileStore } from '../../stores/casefileStore'
+import { useGameplayStore } from '../../stores/gameplayStore'
 import { CyberButton, Panel } from '../ui'
+import { LOCATIONS } from '../../content/locations'
 
 function failCopy(failState: 'vitality' | 'composure') {
   if (failState === 'vitality') {
@@ -23,6 +26,8 @@ function failCopy(failState: 'vitality' | 'composure') {
 export function FailStateOverlay() {
   const failState = useInsightStore((s) => s.failState)
   const resetInsight = useInsightStore((s) => s.reset)
+  const resetCasefile = useCasefileStore((s) => s.reset)
+  const resetGameplay = useGameplayStore((s) => s.reset)
   const goToTitle = useUiStore((s) => s.goToTitle)
   const goToGame = useUiStore((s) => s.goToGame)
   const closeOverlay = useUiStore((s) => s.closeOverlay)
@@ -40,18 +45,27 @@ export function FailStateOverlay() {
   const canLoad = slots.length > 0
 
   function handleReturnToTitle() {
-    useNavigationStore.getState().returnToOverworld()
+    useNavigationStore.getState().reset()
     useStoryStore.getState().reset()
     useAudioStore.getState().enterOverworld()
     closeOverlay()
     resetInsight()
+    resetGameplay()
+    resetCasefile()
     goToTitle()
   }
 
   function handleLoadMostRecent() {
     refreshSlots()
     if (!loadMostRecent()) return
-    if (!useStoryStore.getState().story) useAudioStore.getState().enterOverworld()
+    if (!useStoryStore.getState().story) {
+      const selectedLocationId = useNavigationStore.getState().selectedLocationId
+      if (selectedLocationId) {
+        useAudioStore.getState().enterLocation(LOCATIONS[selectedLocationId])
+      } else {
+        useAudioStore.getState().enterOverworld()
+      }
+    }
     closeOverlay()
     goToGame()
   }

@@ -61,6 +61,7 @@ pure module's functions to other stores:
 | `engine/contentTags.ts` | (consumed by `storyStore.ts`) |
 | `engine/saveEngine.ts` | `stores/saveStore.ts` |
 | `engine/audioEngine.ts` | `stores/audioStore.ts` |
+| `engine/casefileEngine.ts` | `stores/casefileStore.ts` |
 
 **Zustand stores** (all module-scoped singletons, `create<State>(...)`,
 cross-store reads via `getState()`):

@@ -10,6 +10,11 @@ import { useUiStore } from '../../stores/uiStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useStoryStore } from '../../stores/storyStore'
 import { useAudioStore } from '../../stores/audioStore'
+import { useCasefileStore } from '../../stores/casefileStore'
+import { useGameplayStore } from '../../stores/gameplayStore'
+import { useInsightStore } from '../../stores/insightStore'
+import { useNavigationStore } from '../../stores/navigationStore'
+import { LOCATIONS } from '../../content/locations'
 
 export function TitleScreen() {
   const goToChargen = useUiStore((s) => s.goToChargen)
@@ -25,12 +30,29 @@ export function TitleScreen() {
 
   const canContinue = slots.length > 0
 
+  function handleNewGame() {
+    useStoryStore.getState().reset()
+    useInsightStore.getState().reset()
+    useNavigationStore.getState().reset()
+    useGameplayStore.getState().reset()
+    useCasefileStore.getState().reset()
+    goToChargen()
+  }
+
   function handleContinue() {
     if (!loadMostRecent()) return
     // A loaded save with no active story lands on the Overworld — the title
-    // theme wouldn't otherwise stop there (docs/GAME_GUIDE.md; a
-    // mid-scene save's own restored line tags already take care of this).
-    if (!useStoryStore.getState().story) useAudioStore.getState().enterOverworld()
+    // theme wouldn't otherwise stop there (docs/GAME_GUIDE.md; a mid-scene
+    // save's own restored line tags already take care of this). Hub restores
+    // reuse their location's baseline mood instead.
+    if (!useStoryStore.getState().story) {
+      const selectedLocationId = useNavigationStore.getState().selectedLocationId
+      if (selectedLocationId) {
+        useAudioStore.getState().enterLocation(LOCATIONS[selectedLocationId])
+      } else {
+        useAudioStore.getState().enterOverworld()
+      }
+    }
     goToGame()
   }
 
@@ -44,7 +66,7 @@ export function TitleScreen() {
       </h1>
 
       <nav className="flex w-full max-w-sm flex-col gap-4">
-        <CyberButton tag="NG.01" onClick={goToChargen}>
+        <CyberButton tag="NG.01" onClick={handleNewGame}>
           New Game
         </CyberButton>
         <CyberButton tag="LD.02" disabled={!canContinue} title={canContinue ? undefined : 'No save data yet'} onClick={handleContinue}>

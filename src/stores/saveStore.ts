@@ -19,12 +19,15 @@ import {
   parseSaveBlob,
   storageKey,
   summarizeSlot,
-  SAVE_FORMAT_VERSION,
   SAVE_KEY_PREFIX,
   type SaveBlob,
   type SaveSlotKind,
   type SaveSlotMeta,
 } from '../engine/saveEngine'
+import { SAVE_FORMAT_VERSION } from '../engine/saveEngine'
+import { serializeCasefileState } from '../engine/casefileEngine'
+import { useCasefileStore } from './casefileStore'
+import { useGameplayStore } from './gameplayStore'
 import { useInsightStore } from './insightStore'
 import { useNavigationStore } from './navigationStore'
 import { useStoryStore } from './storyStore'
@@ -73,6 +76,8 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
   if (!insight.archetype) return null // nothing to save before chargen commits an archetype
 
   const navigation = useNavigationStore.getState()
+  const casefile = useCasefileStore.getState()
+  const gameplay = useGameplayStore.getState()
   const story = useStoryStore.getState().story
 
   return {
@@ -94,6 +99,8 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
       unlockedLocationIds: [...navigation.unlockedLocationIds],
       selectedLocationId: navigation.selectedLocationId,
     },
+    currentHubId: gameplay.currentHubId,
+    casefile: serializeCasefileState(casefile),
     inkStateJson: story ? story.state.ToJson() : null,
     activeStoryId: story ? useStoryStore.getState().activeStoryId : null,
   }
@@ -143,6 +150,8 @@ export const useSaveStore = create<SaveState>((set, get) => ({
 
     useInsightStore.getState().hydrate(blob.insight)
     useNavigationStore.getState().hydrate(blob.navigation)
+    useGameplayStore.getState().hydrate({ currentHubId: blob.currentHubId })
+    useCasefileStore.getState().hydrate(blob.casefile)
     const storyJson = blob.activeStoryId ? resolveStoryJson(blob.activeStoryId) : null
     if (blob.inkStateJson && storyJson) {
       useStoryStore.getState().loadStory(storyJson, blob.inkStateJson, blob.activeStoryId)

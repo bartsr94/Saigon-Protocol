@@ -1,9 +1,18 @@
-// Casefile/Evidence overlay (docs/GAME_GUIDE.md §9). Backed by the static
-// placeholder content in content/casefile.ts — see that file's header for
-// why this can't be dynamic yet.
+// Casefile/Evidence overlay (docs/GAME_GUIDE.md §9). Now driven by
+// casefileStore rather than a static always-visible fixture, so the player
+// only sees what the current investigation has actually logged so far.
 
-import { useState } from 'react'
-import { CASE_NOTES, EVIDENCE, EVIDENCE_IDS, type EvidenceId, type EvidenceTier } from '../../content/casefile'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  CASE_NOTES,
+  CASE_NOTE_IDS,
+  EVIDENCE,
+  EVIDENCE_IDS,
+  type CaseNoteId,
+  type EvidenceId,
+  type EvidenceTier,
+} from '../../content/casefile'
+import { useCasefileStore } from '../../stores/casefileStore'
 import { useUiStore } from '../../stores/uiStore'
 import { CyberButton, Panel } from '../ui'
 
@@ -15,9 +24,19 @@ const TIER_COLOR: Record<EvidenceTier, string> = {
 
 export function CasefileOverlay() {
   const closeOverlay = useUiStore((s) => s.closeOverlay)
+  const evidenceIds = useCasefileStore((s) => s.evidenceIds)
+  const noteIds = useCasefileStore((s) => s.noteIds)
   const [tab, setTab] = useState<'evidence' | 'notes'>('evidence')
   const [selectedId, setSelectedId] = useState<EvidenceId | null>(null)
-  const selected = selectedId ? EVIDENCE[selectedId] : null
+
+  const ownedEvidenceIds = useMemo(() => EVIDENCE_IDS.filter((id) => evidenceIds.has(id)), [evidenceIds])
+  const unlockedNoteIds = useMemo(() => CASE_NOTE_IDS.filter((id) => noteIds.has(id)), [noteIds])
+  const selected = selectedId && evidenceIds.has(selectedId) ? EVIDENCE[selectedId] : null
+
+  useEffect(() => {
+    if (selectedId && evidenceIds.has(selectedId)) return
+    setSelectedId(ownedEvidenceIds[0] ?? null)
+  }, [ownedEvidenceIds, evidenceIds, selectedId])
 
   return (
     <Panel size="lg" className="flex max-h-[85vh] w-full max-w-4xl flex-col gap-4 p-6" onClick={(e) => e.stopPropagation()}>
@@ -35,8 +54,9 @@ export function CasefileOverlay() {
 
       {tab === 'evidence' ? (
         <div className="flex flex-1 gap-4 overflow-hidden">
-          <div className="grid flex-[2] auto-rows-min grid-cols-4 gap-3 overflow-y-auto content-start">
-            {EVIDENCE_IDS.map((id) => {
+          <div className="grid flex-[2] auto-rows-min grid-cols-4 content-start gap-3 overflow-y-auto">
+            {ownedEvidenceIds.length === 0 && <p className="col-span-full font-body text-sm text-white/35">No logged evidence yet.</p>}
+            {ownedEvidenceIds.map((id) => {
               const item = EVIDENCE[id]
               const color = TIER_COLOR[item.tier]
               return (
@@ -78,12 +98,16 @@ export function CasefileOverlay() {
         </div>
       ) : (
         <div className="flex-1 space-y-4 overflow-y-auto">
-          {CASE_NOTES.map((note) => (
-            <div key={note.id} className="border-l-2 border-chrome-primary pl-3">
-              <h4 className="font-display text-sm font-bold uppercase tracking-wide text-chrome-primary">{note.heading}</h4>
-              <p className="font-body text-sm text-white/70">{note.body}</p>
-            </div>
-          ))}
+          {unlockedNoteIds.length === 0 && <p className="font-body text-sm text-white/35">No case notes yet.</p>}
+          {unlockedNoteIds.map((id: CaseNoteId) => {
+            const note = CASE_NOTES[id]
+            return (
+              <div key={note.id} className="border-l-2 border-chrome-primary pl-3">
+                <h4 className="font-display text-sm font-bold uppercase tracking-wide text-chrome-primary">{note.heading}</h4>
+                <p className="font-body text-sm text-white/70">{note.body}</p>
+              </div>
+            )
+          })}
         </div>
       )}
     </Panel>
