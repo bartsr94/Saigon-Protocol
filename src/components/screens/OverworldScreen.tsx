@@ -20,7 +20,7 @@ export function OverworldScreen() {
 
   function handleSelect(id: LocationId) {
     selectLocation(id)
-    loadStory(LOCATION_STORY_JSON[id])
+    loadStory(LOCATION_STORY_JSON[id], undefined, id)
     // Location's baseline mood (docs/AUDIO_VOICEOVER_SPEC.md), instant on
     // selection, before the ink content's own first-line tags (if any) take over.
     useAudioStore.getState().enterLocation(LOCATIONS[id])

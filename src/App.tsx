@@ -18,6 +18,7 @@ function App() {
   const activeStory = useStoryStore((s) => s.story)
   const highContrast = useSettingsStore((s) => s.highContrast)
   const largeText = useSettingsStore((s) => s.largeText)
+  const reduceMotion = useSettingsStore((s) => s.reduceMotion)
 
   // Large Text scales the root font-size so every rem-based Tailwind text
   // utility site-wide scales with it — rem is relative to <html>, not to
@@ -25,6 +26,15 @@ function App() {
   useEffect(() => {
     document.documentElement.style.fontSize = largeText ? '112.5%' : ''
   }, [largeText])
+
+  // Reduce Motion is seeded from prefers-reduced-motion but is an explicit,
+  // overridable choice from here on (settingsStore.ts) — so motion-sensitive
+  // CSS (index.css's .glitch-text rules) keys off this data attribute rather
+  // than the raw media query, the same root-attribute pattern highContrast
+  // would use if it needed CSS (not just inline style) to reach.
+  useEffect(() => {
+    document.documentElement.dataset.reduceMotion = reduceMotion ? 'true' : 'false'
+  }, [reduceMotion])
 
   // Title/Boot and Character Creation share one theme (docs/AUDIO_VOICEOVER_SPEC.md).
   // No corresponding "leave" branch here — deliberately: entering a real

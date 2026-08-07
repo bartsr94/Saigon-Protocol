@@ -111,15 +111,6 @@ the repo, convert them with `npm run audio:convert` (`scripts/wav-to-mp3.mjs`,
 requires ffmpeg on PATH) rather than committing `.wav` files or shipping them
 directly. See `docs/AUDIO_VOICEOVER_SPEC.md` for the audio layer's design.
 
-### Dev harnesses
-
-`src/components/dev/*Harness.tsx` (`InsightHarness`, `StoryHarness`,
-`NavigationHarness`) are throwaway scaffolding used to exercise a store/engine
-end-to-end before real UI exists for it — not production screens. `App.tsx`
-wires them together (e.g. swapping `NavigationHarness`/`StoryHarness` based on
-`navigationStore`'s `selectedLocationId`) as a temporary stand-in for real
-screen composition.
-
 ### Documentation workflow
 
 When a system's design or implementation changes, reflect it in

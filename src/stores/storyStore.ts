@@ -37,13 +37,15 @@ export interface StoryLine {
 
 interface StoryState {
   story: Story | null
+  /** Which compiled story is loaded ('intro', or a LocationId) — opaque to storyStore, but saveStore needs it to know which JSON to recompile a restored save against. Null when no story is active. */
+  activeStoryId: string | null
   currentLines: StoryLine[]
   currentChoices: Choice[]
   canContinue: boolean
   ended: boolean
   lastCheckResult: CheckResult | null
 
-  loadStory: (inkJson: string | Record<string, unknown>, savedStateJson?: string) => void
+  loadStory: (inkJson: string | Record<string, unknown>, savedStateJson?: string, storyId?: string | null) => void
   choose: (index: number) => void
   reset: () => void
 }
@@ -119,13 +121,14 @@ function hydrateFromRestoredState(story: Story, set: (partial: Partial<StoryStat
 
 export const useStoryStore = create<StoryState>((set, get) => ({
   story: null,
+  activeStoryId: null,
   currentLines: [],
   currentChoices: [],
   canContinue: false,
   ended: false,
   lastCheckResult: null,
 
-  loadStory: (inkJson, savedStateJson) => {
+  loadStory: (inkJson, savedStateJson, storyId) => {
     unsubscribeInsight?.()
 
     // Overload resolution doesn't distribute over a union argument, so narrow explicitly.
@@ -150,7 +153,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       syncInsightVariables(story, state.levels, state.archetype)
     })
 
-    set({ story, lastCheckResult: null })
+    set({ story, activeStoryId: storyId ?? null, lastCheckResult: null })
     if (savedStateJson) {
       story.state.LoadJson(savedStateJson)
       hydrateFromRestoredState(story, set)
@@ -171,6 +174,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
     unsubscribeInsight = null
     set({
       story: null,
+      activeStoryId: null,
       currentLines: [],
       currentChoices: [],
       canContinue: false,

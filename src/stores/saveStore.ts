@@ -11,7 +11,9 @@
 // use to keep the handoff at the component layer.
 
 import { create } from 'zustand'
-import demoStoryJson from '../../content/ink/demo.json'
+import introStoryJson from '../../content/ink/intro.json'
+import { LOCATION_STORY_JSON } from '../content/locationStories'
+import type { LocationId } from '../content/locations'
 import {
   AUTOSAVE_SLOT_ID,
   parseSaveBlob,
@@ -46,6 +48,13 @@ function getStorage(): Storage | null {
 function generateSlotId(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
+/** Maps a saved storyStore.activeStoryId back to the compiled JSON that produced it, so loadSlot restores against the same story the ink state was serialized from — not always the same throwaway fixture. */
+function resolveStoryJson(storyId: string): Record<string, unknown> | null {
+  if (storyId === 'intro') return introStoryJson
+  if (storyId in LOCATION_STORY_JSON) return LOCATION_STORY_JSON[storyId as LocationId]
+  return null
 }
 
 function readAllBlobs(storage: Storage): { id: string; blob: SaveBlob }[] {
@@ -86,6 +95,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
       selectedLocationId: navigation.selectedLocationId,
     },
     inkStateJson: story ? story.state.ToJson() : null,
+    activeStoryId: story ? useStoryStore.getState().activeStoryId : null,
   }
 }
 
@@ -133,8 +143,9 @@ export const useSaveStore = create<SaveState>((set, get) => ({
 
     useInsightStore.getState().hydrate(blob.insight)
     useNavigationStore.getState().hydrate(blob.navigation)
-    if (blob.inkStateJson) {
-      useStoryStore.getState().loadStory(demoStoryJson, blob.inkStateJson)
+    const storyJson = blob.activeStoryId ? resolveStoryJson(blob.activeStoryId) : null
+    if (blob.inkStateJson && storyJson) {
+      useStoryStore.getState().loadStory(storyJson, blob.inkStateJson, blob.activeStoryId)
     } else {
       useStoryStore.getState().reset()
     }

@@ -4,6 +4,8 @@ import { useInsightStore } from './insightStore'
 import { useNavigationStore } from './navigationStore'
 import { useStoryStore } from './storyStore'
 import { AUTOSAVE_SLOT_ID } from '../engine/saveEngine'
+import noodleStallJson from '../../content/ink/noodleStall.json'
+import introStoryJson from '../../content/ink/intro.json'
 
 class MemoryStorage implements Storage {
   private store = new Map<string, string>()
@@ -89,6 +91,42 @@ describe('saveStore', () => {
     expect(useNavigationStore.getState().unlockedLocationIds.has('deltaSquat')).toBe(false)
 
     expect(useSaveStore.getState().loadSlot('does-not-exist')).toBe(false)
+  })
+
+  it('loadSlot restores a save captured mid-scene against the same compiled story it was saved from, not an unrelated fixture', () => {
+    useInsightStore.getState().selectArchetype('hustler')
+    useNavigationStore.getState().unlockLocation('noodleStall')
+    useNavigationStore.getState().selectLocation('noodleStall')
+    useStoryStore.getState().loadStory(noodleStallJson, undefined, 'noodleStall')
+    useStoryStore.getState().choose(0) // advance past the opening so the saved ink state isn't just the start position
+
+    useSaveStore.getState().autosave()
+
+    // Simulate a fresh session: story gone, insight/navigation state reset.
+    useStoryStore.getState().reset()
+    useInsightStore.setState(useInsightStore.getInitialState(), true)
+    useNavigationStore.setState(useNavigationStore.getInitialState(), true)
+
+    expect(useSaveStore.getState().loadSlot(AUTOSAVE_SLOT_ID)).toBe(true)
+    expect(useStoryStore.getState().activeStoryId).toBe('noodleStall')
+    expect(useStoryStore.getState().story).not.toBeNull()
+    // Restoring against the wrong compiled story throws inside inkjs before
+    // any lines/choices are ever produced — reaching this assertion at all
+    // proves the right JSON was used.
+    expect(useStoryStore.getState().ended || useStoryStore.getState().currentChoices.length > 0).toBe(true)
+  })
+
+  it('loadSlot restores an intro-scene save the same way', () => {
+    useInsightStore.getState().selectArchetype('companyMan')
+    useStoryStore.getState().loadStory(introStoryJson, undefined, 'intro')
+    useStoryStore.getState().choose(0)
+
+    useSaveStore.getState().autosave()
+    useStoryStore.getState().reset()
+
+    expect(useSaveStore.getState().loadSlot(AUTOSAVE_SLOT_ID)).toBe(true)
+    expect(useStoryStore.getState().activeStoryId).toBe('intro')
+    expect(useStoryStore.getState().story).not.toBeNull()
   })
 
   it('hasAnySave and loadMostRecent reflect current storage', () => {
