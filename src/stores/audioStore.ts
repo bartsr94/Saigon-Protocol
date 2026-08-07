@@ -1,4 +1,4 @@
-// Voiceover/Audio Layer (docs/AUDIO_VOICEOVER_SPEC.md). Owns all browser
+// Voiceover/Audio Layer (docs/GAME_GUIDE.md). Owns all browser
 // audio I/O — plain HTMLAudioElements, no Web Audio API/third-party library.
 // Mirrors saveStore.ts owning all localStorage I/O: a Zustand store with a
 // thin reactive surface, backed by module-scoped (non-reactive) Audio
@@ -139,11 +139,16 @@ function stopVoice(): void {
 
 function playVoiceClip(id: VoiceClipId, set: (partial: Partial<AudioState>) => void): void {
   stopVoice()
+  const src = VOICE_CLIPS[id].src
+  if (!src) {
+    set({ currentVoiceClipId: null, isVoicePlaying: false })
+    return
+  }
   if (!useSettingsStore.getState().voiceEnabled) {
     set({ currentVoiceClipId: id, isVoicePlaying: false })
     return
   }
-  const el = makeAudio(VOICE_CLIPS[id].src, false)
+  const el = makeAudio(src, false)
   set({ currentVoiceClipId: id, isVoicePlaying: false })
   if (!el) return
   voiceEl = el
@@ -179,7 +184,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     reconcileAmbience(nextAmbienceIds, state.activeAmbienceIds)
     set({ activeMusicId: musicId, activeAmbienceIds: nextAmbienceIds })
 
-    // Advancing past a line always interrupts whatever voice clip was playing (UI_DESIGN §7) — reading pace wins, regardless of whether the new batch cues a fresh one.
+    // Advancing past a line always interrupts whatever voice clip was playing (docs/GAME_GUIDE.md §8) — reading pace wins, regardless of whether the new batch cues a fresh one.
     stopVoice()
     set({ isVoicePlaying: false })
     if (voiceToPlay) playVoiceClip(voiceToPlay, set)
@@ -205,7 +210,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     set({ activeMusicId: null, activeAmbienceIds: [], currentVoiceClipId: null, isVoicePlaying: false })
   },
 
-  /** Title/Boot and Character Creation (UI_DESIGN §2.1/§2.2) — idempotent, so navigating between the two doesn't restart the track. */
+  /** Title/Boot and Character Creation (docs/GAME_GUIDE.md §2) — idempotent, so navigating between the two doesn't restart the track. */
   playTitleMusic: () => {
     if (get().activeMusicId === 'titleTheme') return
     crossfadeMusic('titleTheme')

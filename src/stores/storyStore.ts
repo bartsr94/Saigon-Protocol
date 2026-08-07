@@ -1,4 +1,4 @@
-// Wraps the active inkjs Story instance (Architecture §3): exposes current
+// Wraps the active inkjs Story instance (Architecture §6): exposes current
 // text/choices as read-only derived state, and wires the ink<->TS boundary
 // (storyEngine.ts) to insightStore for check resolution, wellbeing, and
 // live Insight-variable sync.

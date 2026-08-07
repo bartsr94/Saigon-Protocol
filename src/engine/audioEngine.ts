@@ -1,4 +1,4 @@
-// Pure decision logic for the Voiceover/Audio Layer (docs/AUDIO_VOICEOVER_SPEC.md):
+// Pure decision logic for the Voiceover/Audio Layer (docs/GAME_GUIDE.md):
 // given the current audio state and a new cue, what should be playing next.
 // No browser APIs — audioStore.ts owns the actual HTMLAudioElements and calls
 // into these. Same pure/impure split as checkResolution.ts/storyEngine.ts.

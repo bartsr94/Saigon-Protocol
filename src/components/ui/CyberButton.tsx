@@ -7,9 +7,9 @@ export interface CyberButtonProps extends ButtonHTMLAttributes<HTMLButtonElement
 }
 
 /**
- * Cut-md chrome button — idle cyan, hover/focus magenta (UI_VISUAL_STYLE_SPEC
- * §1/§3). Used for nav-rail icons, menu buttons, Settings actions. Hover/
- * click SFX (docs/AUDIO_VOICEOVER_SPEC.md) fire here rather than at each
+ * Cut-md chrome button — idle cyan, hover/focus magenta (docs/GAME_GUIDE.md
+ * §3.1/§3.3). Used for nav-rail icons, menu buttons, Settings actions. Hover/
+ * click SFX (docs/GAME_GUIDE.md) fire here rather than at each
  * call site, so every button in the app gets them for free.
  */
 export function CyberButton({ tag, className = '', children, disabled, onMouseEnter, onClick, ...props }: CyberButtonProps) {

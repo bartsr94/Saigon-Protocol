@@ -1,9 +1,9 @@
-// The left-edge vertical icon rail (UI_VISUAL_STYLE_SPEC §5.3) shared by the
+// The left-edge vertical icon rail (docs/GAME_GUIDE.md §2.1) shared by the
 // Overworld and Dialogue/Scene screens. Presentational — callbacks in, no
 // navigation/simulation-state store imports; screens wire it to
 // navigationStore/uiStore. Button order (Char/Case/Map/Menu) follows the
 // reference screenshot. The one exception is audioStore, for the same
-// hover/click SFX every other button gets (docs/AUDIO_VOICEOVER_SPEC.md) —
+// hover/click SFX every other button gets (docs/GAME_GUIDE.md) —
 // UI feedback, not a coupling to game state.
 
 import { useAudioStore } from '../../stores/audioStore'

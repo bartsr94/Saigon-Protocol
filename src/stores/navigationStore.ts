@@ -1,4 +1,4 @@
-// Overworld/Navigation Layer (Architecture §2): tracks which locations exist,
+// Overworld/Navigation Layer (Architecture §7): tracks which locations exist,
 // which are unlocked, and which is selected. No knowledge of storyStore or
 // inkjs — the Story Engine handoff happens at the component layer, keeping
 // this system's responsibility singular.

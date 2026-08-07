@@ -15,7 +15,7 @@ export interface InsightDefinition {
    * Memory are named as physical there — everything else defaults to mental.
    */
   domain: 'physical' | 'mental'
-  /** Placeholder identity color — real iconography is a separate visual-design pass (see docs/UI_VISUAL_STYLE_SPEC.md §1). */
+  /** Placeholder identity color — real iconography is a separate visual-design pass (see docs/GAME_GUIDE.md §3.1). */
   color: string
 }
 

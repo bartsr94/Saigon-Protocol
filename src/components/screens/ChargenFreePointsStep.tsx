@@ -1,4 +1,4 @@
-// Character Creation step 2: free-point spend (UI_DESIGN §6.2 step 2).
+// Character Creation step 2: free-point spend (docs/GAME_GUIDE.md §2.2 step 2).
 // Live-updates Insight levels and wellbeing via the real insightStore
 // actions. refundFreePoint already refuses to drop a level below its
 // archetype baseline — GDD §4's "face the consequences" intent, enforced

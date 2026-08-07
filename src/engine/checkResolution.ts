@@ -1,5 +1,5 @@
 // Core dice math for GDD §3 "Resolution": 2d6 + Insight modifier vs target number.
-// Pure and deterministic given its inputs — the only place dice math lives (Architecture §2).
+// Pure and deterministic given its inputs — the only place dice math lives (Architecture §5).
 
 export type Die = 1 | 2 | 3 | 4 | 5 | 6
 

@@ -1,4 +1,4 @@
-// One-shot UI interaction sounds (docs/AUDIO_VOICEOVER_SPEC.md). Triggered
+// One-shot UI interaction sounds (docs/GAME_GUIDE.md). Triggered
 // directly from component event handlers via audioStore.playSfx(id) — UI
 // feedback, not simulation state, so this is plain component-layer wiring,
 // same as the voice glyph's replayVoice() call. Mixes into the existing

@@ -1,236 +1,438 @@
-# Saigon Protocol — Architecture Document
+# Saigon Protocol — Architecture
 
-*Companion to SEA_CYBERPUNK_GDD.md. Covers technical structure only — no lore here.*
-
----
-
-## 1. Tech Stack & Project Setup
-
-| Layer | Choice | Rationale |
-|---|---|---|
-| Language | TypeScript (strict mode) | Non-negotiable given the project's existing conventions; catches state-shape mistakes early in a data-heavy game. |
-| UI Framework | React 18 | Matches the stack already proven out on Children of the Ashmark — same component/hook patterns apply directly. |
-| Build tool | Vite | Fast iteration, standard pairing with React + TS. |
-| State management | Zustand | Same reasoning as above — familiar, minimal-boilerplate, plays well with the simulation/UI split described below. |
-| Styling | Tailwind CSS | Consistency with existing stack. |
-| Narrative authoring | **inkjs** | Handles branching dialogue/prose with conditionals and variables far better than hand-rolled TS would; compiled `.ink` files ship as JSON and run via the inkjs runtime in-browser. |
-| Deployment target | Static site, client-side only | Pure browser game, no backend required for v1. Saves live in browser storage (see §5, to be detailed in a later pass). |
-| Package management | npm | Consistency with existing projects. |
-
-**Stack confirmed** after the design pivot toward a Celestial Return / Disco Elysium–style narrative RPG. The pivot actually *strengthens* the fit: dropping the Cepheus character sheet and the combat system removes the two heaviest unbuilt subsystems, while inkjs's native support for conditional/variable-gated choices maps cleanly onto Insight-gated dialogue options. No stack changes were needed.
+*As-built technical reference: how the codebase is actually structured, not
+a build guide. Companion to `SEA_CYBERPUNK_GDD.md` (lore/setting — no
+technical content there) and `GAME_GUIDE.md` (content-authoring, UI/visual
+conventions, and system *behavior* from a designer's point of view — no
+store/file wiring detail here that belongs there instead). If a system's
+design changes, update the relevant section below and append to the running
+log at the bottom — don't rewrite past log entries.*
 
 ---
 
-## 2. High-Level System Overview
+## 1. Stack
 
-Six systems, each with a single clear responsibility. (Note the reduced scope versus the pre-pivot design: the Cepheus character sheet and the combat system are both gone. Combat/tactical exploration is a **distant future** consideration — Underrail: Expedition–style — explicitly out of scope for v1 and not designed for here.)
+| Layer | Choice |
+|---|---|
+| Language | TypeScript, strict mode |
+| UI framework | React 19 |
+| Build tool | Vite |
+| State management | Zustand |
+| Styling | Tailwind CSS 4 (CSS-first `@theme`, no config file) |
+| Narrative authoring | **inkjs** — `.ink` source compiled to `.json`, run via the lean `Story` runtime in-browser |
+| Testing | Vitest (`environment: 'node'` — no DOM, no `.test.tsx` files) |
+| Linting | Oxlint |
+| Deployment | Static site, client-side only. No backend. Saves live in `localStorage`. |
 
-- **Overworld/Navigation Layer** — presents the set of available locations and tracks which are unlocked, handing off to the Story Engine when one is selected. Rendered as a Celestial Return–style illustrated **diorama with clickable hotspots** rather than a literal traversable map; underlying state is still just a set of unlocked location IDs plus per-location metadata, so the model is presentation-agnostic (could fall back to a card list). No positional/pathfinding state.
-- **Story Engine** — wraps the inkjs runtime. Each location owns one or more compiled `.ink` files representing its available scenes/events. Drives the text and choices the player sees and holds all *narrative* branching and flags. Insight-gated choices are expressed as ink conditionals reading Insight values exposed to the ink runtime.
-- **Insight System** — the seven Insights (The Ledger, The Graft, Muscle Memory, Root, Static, The Hustle, The Mask). Single source of truth for check modifiers, and the source of the personified "voice" interjections. Replaces the old character sheet entirely. Holds current level per Insight plus any temporary modifiers.
-- **Check Resolution Engine** — the mechanical core: `2d6 + Insight modifier vs. target number`. Handles the doubles rule (natural 12 always succeeds, natural 2 always fails) and the White-check (retriable) vs. Red-check (one-shot) distinction. Pure, deterministic-given-its-inputs functions — the single place any dice math lives.
-- **Save/Persistence Layer** — serializes Insight state, ink story state (inkjs exports/restores story state as JSON natively), character-creation choices, and global/world flags into browser storage.
-- **Voiceover/Audio Layer** — plays pre-generated **ElevenLabs** voice clips for a *curated subset* of lines (character intros and greetings in v1, not full dialogue). Clips are generated ahead of time as static audio assets, not synthesized live in-browser — see §7 for the pipeline and rationale. This layer maps a line ID to an audio file, handles playback/interrupt, and respects a global voice toggle. It is a consumer of the Story Engine (it reacts to which line is being shown), never a driver of narrative state.
+Combat and tactical exploration are out of scope — a distant,
+Underrail: Expedition–style future consideration, not designed for here.
 
-Rendering is deliberately not listed as a "system" in its own right — React components are consumers of the above, not owners of any logic.
+## 2. Entry point & load order
 
-Character creation is a **flow, not a runtime system** — a one-time sequence (archetype pick → free-point spend → backstory blurb) that writes starting values into the Insight System and sets some initial narrative flags. It doesn't need its own persistent store beyond recording the chosen archetype for later recognition-tag checks.
+- `index.html` loads `src/main.tsx`, which mounts `src/App.tsx`.
+- `App.tsx` is the root router. It reads `uiStore.screen` (`'title' |
+  'chargen' | 'game'`) and, within `'game'`, whether `storyStore.story` is
+  non-null to decide between `TitleScreen`, `CharacterCreationScreen`,
+  `DialogueScreen` (a story is active), or `OverworldScreen` (no active
+  story). `OverlayHost` renders unconditionally on top, reading
+  `uiStore.activeOverlay`.
+- `App.tsx` also owns two small cross-cutting effects: syncing
+  `settingsStore`'s `reduceMotion`/`highContrast`/`largeText` onto
+  `document.documentElement` (via `data-*` attributes and inline styles the
+  rest of the app's CSS keys off), and calling `audioStore.playTitleMusic()`
+  whenever `screen` is `'title'`/`'chargen'`.
 
----
+## 3. The core rule: simulation never lives in a component
 
-## 3. State Management & the Core Architectural Rule
+Dice math, stat calculations, and ink story state are computed in
+stores/engine modules. Components read store state and dispatch actions —
+they never compute a roll or mutate a stat directly. This is enforced by
+convention, not tooling; hold the line when reviewing or writing code here.
 
-**Simulation logic stays separate from UI rendering — no exceptions.** This is the same rule that governs Children of the Ashmark, Red Horizon, and World Orogen, and it applies just as strictly here: dice math, character stat calculations, and ink story state never live inside a React component or JSX. Components read from stores and dispatch actions; they never compute a roll or mutate a stat directly.
+**Pure/impure split.** Every stateful system pairs a pure `engine/*.ts`
+module (no store imports, no browser APIs, fully unit-testable) with an
+impure `stores/*.ts` Zustand layer that owns side effects and wires the
+pure module's functions to other stores:
 
-**Proposed Zustand store split:**
+| Pure engine | Impure store |
+|---|---|
+| `engine/checkResolution.ts` | `stores/insightStore.ts` |
+| `engine/storyEngine.ts` | `stores/storyStore.ts` |
+| `engine/contentTags.ts` | (consumed by `storyStore.ts`) |
+| `engine/saveEngine.ts` | `stores/saveStore.ts` |
+| `engine/audioEngine.ts` | `stores/audioStore.ts` |
 
-- `insightStore` — the seven Insights: current level each, plus any active temporary modifiers, plus the chosen archetype (for recognition-tag lookups). Also holds the **wellbeing tracks** (Composure, Vitality) — current and max values — since max pools may derive from Insight levels (GDD §3), keeping the derivation in one place. Replaces the old `characterStore`. Single source of truth for anything a check or damage event reads. *(If wellbeing logic grows, it can split into its own `wellbeingStore` later — but the Insight coupling argues for keeping them together initially.)*
-- `storyStore` — wraps the active inkjs `Story` instance; exposes current text, current choices, and relevant ink variables to the UI as read-only derived state.
-- `navigationStore` — unlocked locations, currently selected location, overworld-level flags.
-- A `saveStore` / persistence utility that orchestrates serializing the above into one save blob (full design deferred to §5).
+**Zustand stores** (all module-scoped singletons, `create<State>(...)`,
+cross-store reads via `getState()`):
 
-(No `combatStore` — combat is out of v1 scope.)
+- `insightStore` — the seven Insights, wellbeing tracks, archetype, player
+  name, chargen free points, Red-check consumption. Single source of truth
+  for anything a check or damage event reads.
+- `storyStore` — wraps the active inkjs `Story` instance.
+- `navigationStore` — unlocked/selected Overworld locations. No knowledge
+  of `storyStore`/inkjs.
+- `saveStore` — owns all `localStorage` I/O for save slots. No knowledge of
+  `uiStore` (doesn't navigate on load/save; callers do that).
+- `audioStore` — owns real `HTMLAudioElement`s for music/ambience/voice/SFX.
+  Pure *consumer* of `storyStore`'s output; ink itself has no audio
+  `EXTERNAL` of any kind.
+- `settingsStore` — audio levels, voice toggle, text speed, accessibility
+  toggles (Reduce Motion/High Contrast/Large Text). Session-only — not
+  persisted to a save slot.
+- `uiStore` — `screen` + `activeOverlay` only. Owns nothing but "what's on
+  screen."
 
-**Voiceover** doesn't need a full store — a lightweight `audioStore` (or a small hook) tracks the global voice toggle and the currently-playing clip so it can be interrupted when the player advances. The line-ID → audio-file lookup is a static manifest loaded at boot, not persistent state.
-
-**The ink ↔ TypeScript boundary:** ink handles prose and narrative branching only. Anything requiring dice or Insight lookups happens in TypeScript, called *from* ink via `EXTERNAL` function declarations — e.g., an ink choice triggers a check by calling a TS function that reads `insightStore`, rolls `2d6 + modifier` against the target number, applies the doubles rule, records the attempt (so a Red check can't be retried), and returns a pass/fail result ink branches on. Insight *values* are also pushed into ink variables so that choices can be gated/shown conditionally (`{ledger >= 3: ...}`) without a function call. This keeps all dice math in one testable place instead of duplicated inside ink's variable system, and gives the Check Resolution Engine exactly one implementation.
-
-**White vs. Red check bookkeeping** lives on the TS side, not in ink: the resolution engine (or a thin wrapper store) tracks which Red checks have been consumed and which White checks are currently retriable given world state. Ink just asks "can I pass this check?" and renders the result.
-
-**Wellbeing damage/healing** also crosses the boundary via `EXTERNAL` functions: ink content signals damage or healing (e.g. `~ damage_composure(2)`), which calls a TS handler that mutates the wellbeing tracks in `insightStore`, checks for a zero/fail-state, and — if a track hits zero — signals the game-over/break flow. Ink never owns the death check; it only declares the damage. This keeps the fail-state logic in one authoritative place and lets the UI animate the change (per UI doc §3).
-
----
+Each store keeps to one responsibility and, where two stores need to
+interact, the handoff happens either via an explicit action call at the
+**component layer** (e.g. `OverworldScreen.handleSelect` calling both
+`navigationStore.selectLocation` and `storyStore.loadStory`) or via a
+store **subscription** set up at load time (e.g. `storyStore.loadStory`
+subscribing to `insightStore` for live Insight-variable sync into ink, or
+`audioStore` subscribing to `settingsStore` for live volume resync). No
+store imports another store's file at module scope to call its actions
+directly outside of one of those two seams.
 
 ## 4. Insight System
 
-The seven Insights (`src/content/insights.ts`) are the only character stat: no
-separate attributes, skills, or equipment sheet. Each has an id, display name,
-tagline (its narrative "voice"), a placeholder identity color, and a
-**domain** — `physical` (Graft, Muscle Memory) or `mental` (the other five) —
-which drives the wellbeing derivation below. `insightStore.levels` holds the
-current level per Insight; that level *is* the check modifier, unmediated —
-see §3's ink↔TS boundary and `checkResolution.ts`'s `resolveCheck(modifier,
-targetNumber)`.
-
-**Range**: `INSIGHT_MIN = 1`, `INSIGHT_MAX = 6` (`content/insights.ts`).
-Levels are clamped to this range everywhere they change.
+`src/content/insights.ts` defines the seven Insights (Ledger, Graft, Muscle
+Memory, Root, Static, Hustle, Mask) — the game's only character stat, no
+separate attributes/skills/equipment sheet. Each has an id, display name,
+tagline, identity color, and a **domain** (`physical` or `mental`) that
+drives wellbeing derivation. `insightStore.levels` holds the current level
+per Insight; that level *is* the check modifier, unmediated —
+`checkResolution.ts`'s `resolveCheck(modifier, targetNumber)` reads it
+directly. Range: `INSIGHT_MIN = 1`, `INSIGHT_MAX = 6`.
 
 **Starting values are set once, at Character Creation, and don't change for
-the rest of the run:**
+the rest of the run.** Each of the six archetypes (`content/archetypes.ts`)
+names a strength/weakness Insight (or neither, for Boring Cop) and gets a
+baseline spread from `baselineFor()` — default 2, strength 4, weakness 1.
+The player spends a free-point pool (3 for the five story archetypes, 6 for
+Boring Cop) via `spendFreePoint(id)`, up to `INSIGHT_MAX`;
+`refundFreePoint(id)` reverses a spend but won't drop a level below that
+archetype's own baseline. Confirming Character Creation locks these in —
+there is no in-play leveling (XP, investigation rewards) in v1.
 
-- Each of the six archetypes (`content/archetypes.ts`) names a `strength` and
-  `weakness` Insight (or neither, for Boring Cop) and gets a baseline spread
-  from `baselineFor()`: every Insight starts at a default of 2, except the
-  named strength (4) and weakness (1).
-- The player then spends a **free-point pool** — 3 points for the five
-  story archetypes, 6 for Boring Cop (a flat, no-strength/weakness build
-  meant to be fully custom) — one point per `spendFreePoint(id)` call, raised
-  on any Insight up to `INSIGHT_MAX`. `refundFreePoint(id)` reverses a spend
-  but refuses to drop a level back below that archetype's own baseline for
-  that Insight — points can only be reallocated *above* what the archetype
-  already grants, never taken out of its defining strength/weakness.
-- Confirming Character Creation locks these in; `insightStore` has no
-  in-play mechanism to earn or spend further points. Leveling up mid-run
-  (XP, investigation rewards, etc.) does not exist in v1 — the Insight
-  sheet a player finishes chargen with is the one they play the whole run
-  with, aside from wellbeing tracks moving via damage/healing.
-
-**Temporary modifiers do not exist.** Earlier design language in §2/§3
-("plus any active temporary modifiers") described headroom for future
-narrative effects — injury, exhaustion, drugs — stacking a bonus/penalty on
-top of a level. No such mechanism was built for v1: `insightStore.levels` is
-the single number `resolveCheck` reads for a given Insight, full stop. If
-temporary modifiers are ever added, they'd need their own field distinct
-from `levels` so a save/restore doesn't have to guess which part of a
-level was "real."
+There is no temporary-modifier mechanism. `insightStore.levels` is the sole
+number `resolveCheck` reads for a given Insight.
 
 **Wellbeing pools derive from Insight levels** (`content/wellbeing.ts`),
-recomputed on every level change so current values clamp down if a max
-shrinks (`clampToNewMax` in `insightStore.ts`):
-- Vitality max = `BASE_VITALITY (4)` + sum of the two physical Insights
-  (Graft + Muscle Memory).
-- Composure max = `BASE_COMPOSURE (4)` + (sum of the five mental Insights,
-  divided by 3 and rounded up) — the division keeps Composure from dwarfing
-  Vitality's range given it draws from five Insights against Vitality's two.
+recomputed on every level change (`clampToNewMax` in `insightStore.ts`):
+Vitality max = `BASE_VITALITY (4)` + Graft + Muscle Memory; Composure max =
+`BASE_COMPOSURE (4)` + (sum of the five mental Insights ÷ 3, rounded up).
+The specific numbers (`BASELINE_*`, free-point pool sizes, `BASE_*`, the ÷3
+divisor) are flagged `PLACEHOLDER` at their source as GDD §3 tuning-pass
+items — the mechanism is settled, the values are expected to move.
 
-All of the numbers above (`BASELINE_DEFAULT/HIGH/LOW`, free-point pool
-sizes, `BASE_VITALITY`/`BASE_COMPOSURE`, the ÷3 divisor) are flagged
-`PLACEHOLDER` at their source as GDD §3 tuning-pass items — the *mechanism*
-is settled and wired end-to-end, but the specific values are expected to
-move during balance passes, not a decision this section is locking in.
+## 5. Check Resolution Engine
+
+`engine/checkResolution.ts`'s `resolveCheck(modifier, targetNumber, random?)`
+is the only place dice math lives: `2d6 + modifier vs targetNumber`. Natural
+12 always succeeds, natural 2 always fails, regardless of modifier/target
+(doubles are decisive). `random` is injectable (`RandomSource = () =>
+number`) so tests can fix the outcome; production calls default to
+`Math.random`.
+
+**White vs. Red checks** are bookkept in `insightStore`, not ink:
+`consumedRedChecks: Set<string>` tracks which Red `checkId`s have already
+fired. `checkId` strings must be globally unique across all loaded content
+(no per-location namespace) — the convention is prefixing with the
+scene/location name (`"checkpoint-jump-queue"`), enforced by convention,
+not by any runtime check.
+
+## 6. Story Engine & the ink ↔ TypeScript boundary
+
+ink owns narrative branching and prose only; it never rolls its own dice or
+mutates wellbeing directly. `engine/storyEngine.ts` is pure and
+store-agnostic — it binds `EXTERNAL` functions and syncs variables onto a
+given `Story` instance from injected handlers, same testable style as
+`checkResolution.ts`. `stores/storyStore.ts` is the Zustand layer that
+constructs the `Story`, supplies those handlers from `insightStore`, and
+exposes derived UI state.
+
+**`EXTERNAL` contract** (declared ink-side, bound TS-side in
+`storyEngine.ts`):
+- `is_red_check_consumed(checkId)` — lets ink gate whether a Red-check
+  choice is even offered.
+- `roll_check(insight, targetNumber, checkId, risk)` — resolves a check,
+  returns only a pass/fail boolean to ink. The full `CheckResult` (dice,
+  doubles tier) is captured TS-side via an `onCheckResult` callback for the
+  UI — ink never sees more than the boolean.
+- `damage_vitality` / `heal_vitality` / `damage_composure` /
+  `heal_composure` — ink declares damage/healing; TS owns the actual
+  mutation and any fail-state (zero-track) check. Ink never owns the death
+  check.
+
+**Insight variable sync.** Insight levels + archetype are pushed into ink
+globals via an explicit snake_case map (`INSIGHT_ID_TO_INK_VAR` — e.g.
+`muscleMemory` → `muscle_memory`) and kept live-synced through an
+`insightStore` subscription for the run. The sync silently skips any
+variable a given story didn't declare with `VAR` (writing an undeclared ink
+global throws), so minimal/test stories don't need to declare the full set.
+
+**Only import the lean `Story` runtime from `inkjs` in shipped code.**
+`Compiler` (from `inkjs/full`) is an authoring-time-only tool
+(`scripts/compile-ink.mjs`) for producing `.json` from `.ink` source — never
+import it outside that script.
+
+**`storyStore` state shape:**
+
+```ts
+interface StoryState {
+  story: Story | null
+  activeStoryId: string | null   // 'intro' or a LocationId — which compiled story is loaded
+  currentLines: StoryLine[]      // one entry per ink line since the last choice, each individually tagged
+  currentChoices: Choice[]
+  canContinue: boolean
+  ended: boolean
+  lastCheckResult: CheckResult | null
+}
+```
+
+`activeStoryId` exists so `saveStore` knows which compiled JSON a restored
+`inkStateJson` belongs to — it's opaque to `storyStore` itself.
+`currentLines` is rebuilt per `Continue()` batch by `advance()`, reading
+`story.currentTags` right after each line's own `Continue()` call (a batch
+can mix narrator/NPC/Insight lines that each need their own speaker tag).
+Restoring a save calls `hydrateFromRestoredState()` instead — `story.state
+.LoadJson()` positions the story exactly, but ink's serialized state
+collapses the whole "output since last choice" into one flat
+`currentText`/`currentTags` pair, so a restored batch renders as a single
+block rather than its original per-line breakdown. This is a documented,
+deliberate simplification: Insight values, wellbeing, consumed Red checks,
+and the story's actual position are all restored exactly regardless.
+
+See `GAME_GUIDE.md` for the ink content-tagging vocabulary
+(`speaker`/`background`/`music`/`ambience`/`voice`/choice tags) that
+`contentTags.ts` parses out of `story.currentTags`/`choice.tags`.
+
+## 7. Overworld/Navigation Layer
+
+`stores/navigationStore.ts` tracks `unlockedLocationIds: Set<LocationId>`
+(seeded from each location's `unlockedByDefault` flag in
+`content/locations.ts`) and `selectedLocationId`. Deliberately has **no
+knowledge of `storyStore`/inkjs** — the handoff to the Story Engine
+("selecting a location loads its story") happens at the component layer,
+in `OverworldScreen.handleSelect`, not inside either store.
+
+`unlockLocation(id)` exists on the store but nothing in production code
+currently calls it outside of `unlocksOnComplete` wiring on the checkpoint
+→ noodleStall → deltaSquat chain — see `GAME_GUIDE.md`'s content pipeline
+section for the current location list and what triggers an unlock.
+
+Rendered today as a card grid, not the eventual illustrated-diorama
+treatment — the underlying model is presentation-agnostic by design (a set
+of unlocked IDs plus per-location metadata), so it can degrade to a card
+list without a store change, which is exactly what's shipped.
+
+## 8. Save/Persistence Layer
+
+A pure `engine/saveEngine.ts` (save-blob shape, `parseSaveBlob`,
+`summarizeSlot`) plus `stores/saveStore.ts`, which owns all `localStorage`
+I/O. No index file — `refreshSlots()` scans `localStorage` directly for
+`SAVE_KEY_PREFIX`-prefixed keys.
+
+**Slots:** one system-managed Autosave slot (overwritten on returning to
+the Overworld and on selecting a location) plus player-named manual slots
+(create-new or overwrite), via `SettingsOverlay`'s Save/Load section and
+`TitleScreen`'s Continue (loads the most recent slot).
+
+**`SaveBlob` shape** (`SAVE_FORMAT_VERSION = 2`): `insight`
+(`SerializedInsightState`), `navigation` (`SerializedNavigationState`),
+`inkStateJson: string | null`, and `activeStoryId: string | null` —
+`inkStateJson`/`activeStoryId` are always captured/restored together (both
+set mid-scene, both `null` on the Overworld). `activeStoryId` is what lets
+`loadSlot` recompile the *same* story `inkStateJson` was serialized from
+(`resolveStoryJson()` maps `'intro'` → `introStoryJson`, else looks up
+`LOCATION_STORY_JSON`) instead of always restoring against one fixture —
+this was a real bug (see running log) that the version bump exists to
+guard against for any pre-fix save.
+
+**Version handling:** `parseSaveBlob` treats a version mismatch as "no
+save" (returns `null`) rather than throwing or attempting migration — there
+is no migration path, a stale-shape blob is just discarded.
+
+`insightStore`/`navigationStore` each expose a `hydrate()` bulk-restore
+action (rebuilds `Set`s from serialized arrays); `storyStore.loadStory()`
+takes an optional `savedStateJson` + `storyId` pair that routes to
+`hydrateFromRestoredState()` instead of `advance()`. `settingsStore` is
+explicitly **not** part of a save blob — it's a persistent user preference
+tier, not a game-run snapshot, and stays session-only.
+
+## 9. Voiceover/Audio Layer
+
+A pure `engine/audioEngine.ts` (`nextMusicId`, `applyAmbienceCue`,
+`computeChannelVolume`, `pickSfxSrc` — no browser APIs, unit-testable since
+Vitest's environment is `node`) feeds an impure `stores/audioStore.ts`,
+which owns real `HTMLAudioElement`s directly (no Web Audio API, no
+third-party library). `audioStore` is a pure consumer of `storyStore`'s
+output — it reads `StoryLine`s for `music`/`ambienceOps`/`voice`, never
+drives narrative state, and ink has no audio `EXTERNAL` of any kind.
+
+- **Music**: two pooled elements (A/B), crossfaded via a `setInterval`
+  ramp (not `requestAnimationFrame` — rAF can stall indefinitely in a
+  backgrounded tab, confirmed by a real bug fix, see running log).
+- **Ambience**: one looping element per active layer, independently faded
+  in/out, additive (not replace-on-change).
+- **Voice**: single element, one-shot, interrupted on advance.
+- **SFX**: fresh un-pooled element per call (`playSfx`), so rapid
+  overlapping triggers don't cut each other off; category/variant pool
+  resolved by `audioEngine.pickSfxSrc`.
+- **Volume**: subscribes to `settingsStore` at module init (same
+  live-resync pattern `storyStore.loadStory` uses for `insightStore`).
+- **No React player component** — Zustand stores are module singletons
+  outside the render tree, so `audioStore`'s elements survive every screen
+  swap without special mounting.
+
+`content/locations.ts` carries optional `musicId`/`ambienceIds` as a
+location's static baseline mood, applied on entering (`enterLocation`) and
+reset on returning to the Overworld (`enterOverworld`) — the only place
+audio is driven from outside ink. Audio state is entirely session-only, no
+`SaveBlob` involvement.
+
+Full tag vocabulary, content-module shapes, and asset-pipeline conventions
+(where files live, naming, category folders) are in `GAME_GUIDE.md`.
+
+## 10. UI layer
+
+`src/components/ui/` holds pure/presentational primitives — props in, no
+store imports (`Panel`, `CyberButton`, `PipTrack`, `InsightChip`,
+`ChoiceRow`, `CheckResultBlock`, `GlitchText`, `NeonSlider`, `NeonCheckbox`,
+`PortraitFrame`). `src/components/screens/` holds the real screens/overlays
+built on top of them (`TitleScreen`, `CharacterCreationScreen` +
+`ChargenArchetypeStep`/`ChargenFreePointsStep`/`ChargenConfirmStep`,
+`OverworldScreen`, `DialogueScreen`, `SettingsOverlay`, `CasefileOverlay`,
+`CharacterOverlay`, `NavRail`, `OverlayHost`, `FailStateOverlay`).
+
+`NavRail`'s `RailButton` and `CyberButton` are the one deliberate exception
+to "UI primitives don't import stores" — both call `audioStore.playSfx`
+directly for hover/click feedback, since UI sound isn't the kind of
+game-state coupling the simulation/UI rule exists to prevent.
+
+Visual tokens (chrome/semantic colors, cut-corner panel sizes, fonts),
+motion/accessibility conventions, and the full screen-by-screen UI spec
+live in `GAME_GUIDE.md`, not here — this section only maps *where the code
+lives*, not what it looks like or why.
+
+## 11. Content pipeline (code-level summary)
+
+Each Overworld location owns exactly one `content/ink/<locationId>.ink`
+file, compiled to a sibling `.json` via `npm run compile:ink`
+(`scripts/compile-ink.mjs`, walks `content/ink/*.ink`, writes each sibling
+`.json` via `inkjs/full`'s `Compiler`). `src/content/locationStories.ts`
+maps `LocationId` → compiled JSON; `OverworldScreen.handleSelect` reads
+from it. This is a manual step — no build-time or pre-commit hook forces
+recompilation, so a stale `.json` after an `.ink` edit is a real hazard a
+content author has to remember.
+
+Static content modules (`src/content/*.ts`) — `insights.ts`,
+`archetypes.ts`, `wellbeing.ts`, `locations.ts`, `npcs.ts`, `backgrounds.ts`,
+`music.ts`, `ambience.ts`, `voiceClips.ts`, `sfx.ts`, `casefile.ts` — are
+all plain exported `Record<Id, Definition>` objects keyed by a
+string-literal ID type, with a companion `_IDS` array for iteration. New
+content modules should follow this shape rather than inventing a new
+pattern.
+
+`content/ink/demo.ink`/`demo.json` is a throwaway Story Engine wiring
+fixture (`storyStore.test.ts`/`storyEngine.test.ts` depend on its exact
+content) — not real GDD content, don't treat it as canonical.
+
+Ink authoring conventions (the `speaker`/`background`/`music`/`ambience`/
+`voice` tag vocabulary, choice tags, check-definition placement, `checkId`
+naming) are documented in `GAME_GUIDE.md`, which is the reference a content
+author actually needs open while writing `.ink` files.
+
+## 12. Testing & verification
+
+No CI config exists yet. The manual gate before considering work done:
+`npm run lint` (Oxlint), `npx tsc -b` (strict typecheck), `npm test`
+(Vitest, single run). Every pure `engine/*.ts` module and every store has a
+companion `*.test.ts`; there are zero `.test.tsx` component tests anywhere
+in the repo (Vitest's environment is `node`, no DOM) — UI-primitive
+behavior and real browser audio/playback are verified by manual passes
+instead, which is why the pure/impure split above matters: it keeps the
+untested surface area to browser-only mechanics, not decision logic.
 
 ---
 
-## 6. Content Pipeline
+## Key Architectural Decisions (running log)
 
-Settled design in `docs/CONTENT_PIPELINE_SPEC.md`. Each Overworld location
-(`content/locations.ts`) owns exactly one `.ink` file at
-`content/ink/<locationId>.ink`, compiled to a sibling `<locationId>.json` —
-the actual runtime asset `storyStore.loadStory()` consumes.
-`src/content/locationStories.ts` maps `LocationId` to its compiled JSON, and
-`OverworldScreen.handleSelect` loads from that map instead of every location
-sharing the `demo.ink` fixture, as it did before this section existed.
+*Append-only in spirit — don't rewrite past entries, add new ones below.*
 
-**Compiling**: `npm run compile:ink` runs `scripts/compile-ink.mjs`, which
-walks every `content/ink/*.ink` and writes its sibling `.json` via
-`inkjs/full`'s `Compiler` — a real, committed tool replacing the previous
-one-off-script folklore. It's a manual step, not a build-time or pre-commit
-hook: a stale `.json` after an `.ink` edit is a real hazard a content author
-has to remember, same as before this pipeline existed, just now with a
-reliable command instead of an ad hoc script.
+- **inkjs owns narrative branching; TypeScript owns all mechanical
+  resolution.** Ink never rolls its own dice — it calls out via `EXTERNAL`
+  functions, and reads Insight values via pushed ink variables for
+  choice-gating.
+- **Insight system replaces the character sheet.** Seven personified
+  Insights serve as both check modifiers and narrative voices.
+- **Resolution is Disco Elysium–style, not Celestial Return–style.** `2d6 +
+  Insight vs. TN`, doubles decisive, no consumable dice currency. White
+  checks retriable, Red checks one-shot.
+- **Combat and tactical exploration are out of v1 scope** — a distant,
+  Underrail: Expedition–style future consideration.
+- **Overworld is a diorama-with-hotspots presentation over a flat
+  unlocked-location model** — presentation-agnostic; ships today as a card
+  grid.
+- **Character creation is a flow, not a runtime system** — writes starting
+  Insight values, records archetype, sets initial flags. Full three-step
+  wizard (`ChargenArchetypeStep` → `ChargenFreePointsStep` →
+  `ChargenConfirmStep`).
+- **Wellbeing is a Disco-style two-track fail-state system**
+  (Composure/Vitality), driven by narrative damage through the ink↔TS
+  boundary. Zero in either track ends the run. Max pools derive from
+  Insight levels. Death-check logic is TS-authoritative; ink only declares
+  damage.
+- **Story Engine, Navigation/Overworld, Save/Persistence, and
+  Voiceover/Audio Layer are all fully implemented** — none of the six
+  systems named in §2 remain unbuilt. (`SAVE_PERSISTENCE_SPEC.md` and
+  `AUDIO_VOICEOVER_SPEC.md` previously listed these as open; both are
+  superseded by this doc + `GAME_GUIDE.md`.)
+- **Ink content-tagging convention implemented**: `speaker` (narrator /
+  `npc:<id>` / `insight:<id>`), `background`, `music`, `ambience`, `voice`
+  line tags plus `insight`/`check`/`locked` choice tags. `storyStore`
+  carries tags **per line**, not flattened across a `Continue()` batch.
+- **Portrait/backdrop art convention**: `PortraitFrame` falls back to
+  initials on missing/failed art; `DialogueScreen`'s backdrop image has the
+  same `onError` tolerance — art can land incrementally without breaking
+  anything.
+- **Save/load bug fixed (2026):** `loadSlot` used to unconditionally
+  reload `demo.json` regardless of which story a save was actually taken
+  in, risking corrupted restores for any mid-scene save. Fixed by threading
+  `activeStoryId` through `storyStore` → `SaveBlob` → `saveStore`
+  (`resolveStoryJson`), with `SAVE_FORMAT_VERSION` bumped to 2 so any
+  pre-fix save is correctly treated as absent rather than mis-restored.
+- **`reduceMotion` wired to an actual visual effect** via a
+  `data-reduce-motion` attribute on `document.documentElement`
+  (`App.tsx`), mirrored by a CSS selector in `index.css` alongside the
+  `prefers-reduced-motion` media-query fallback — same pattern
+  `highContrast`/`largeText` already use.
+- **A real playback bug in the audio crossfade was fixed**: `rAF`-driven
+  fades could permanently stall at their starting volume in a backgrounded/
+  unfocused tab (rAF isn't a guaranteed timer). `audioStore.fadeTo` now
+  uses `setInterval` (50ms steps), which keeps firing regardless of tab
+  visibility.
+- **Two orphaned dev-scaffolding components (`InsightHarness.tsx`,
+  `NavigationHarness.tsx`) were removed** — superseded by the real screens
+  under `src/components/screens/`, confirmed unreferenced anywhere.
+- **Docs restructured (2026):** the eight settled-design spec docs
+  (`CONTENT_PIPELINE_SPEC.md`, `INK_CONTENT_TAGGING_SPEC.md`,
+  `INTRO_SCENE_SPEC.md`, `NAVIGATION_OVERWORLD_SPEC.md`,
+  `SAVE_PERSISTENCE_SPEC.md`, `AUDIO_VOICEOVER_SPEC.md`,
+  `UI_VISUAL_STYLE_SPEC.md`, `SAIGON_PROTOCOL_UI_DESIGN.md`) were
+  consolidated into `GAME_GUIDE.md`, since all of them described work that
+  is now built rather than pending. This file was rewritten from a
+  pre-implementation design doc into the as-built reference above; each
+  superseded file now just redirects to `GAME_GUIDE.md` so existing code
+  comments that cite them by path stay valid.
 
-**Check definitions (target number, White/Red risk) live inline in the
-`.ink` source**, via each choice's own `roll_check(insight, targetNumber,
-checkId, risk)` call — not a separate TS-side registry. This was the open
-half of the original "Next up" bullet; it's resolved by codifying the
-convention `demo.ink`/`checkpoint.ink` already use rather than inventing
-something new. The one rule this imposes on content authors: `checkId`
-strings are read against a single flat `insightStore.consumedRedChecks` set
-shared by whatever story is currently loaded, with no per-location
-namespacing in code, so a `checkId` must be unique across *all* content, not
-just within its own file — enforced by convention (prefixing with the
-scene/location name, e.g. `"checkpoint-jump-queue"`), not by any runtime
-check.
+### Open / not yet built
 
-A location's `.ink` file is presently singular — "one or more compiled `.ink`
-files" per §2 (multiple scenes/events, revisit variations, branching by
-world state) is intentionally not built yet; nothing has needed it before a
-real content pass does.
-
----
-
-## 7. Voiceover/Audio Layer
-
-Settled design in `docs/AUDIO_VOICEOVER_SPEC.md`. Three new ink line tags —
-`music`, `ambience`, `voice` — extend the content-tagging convention (§6/
-`docs/INK_CONTENT_TAGGING_SPEC.md`) the same way `speaker`/`background`
-already work: parsed per-line by `contentTags.ts`, carried on `StoryLine`,
-consumed at the component layer. `music` and `background` share a
-last-wins persistence model; `ambience` is additive (multiple simultaneous
-layers — rain, market chatter, engine idle — added/removed independently,
-not replaced); `voice` is one-shot, curated to intros/greetings per §2's
-original scope, never full dialogue.
-
-A pure `engine/audioEngine.ts` (what should be playing, given the current
-state and a new cue — no browser APIs) feeds an impure `stores/audioStore.ts`
-(owns real `HTMLAudioElement`s, crossfade, and a live subscription to
-`settingsStore`'s volume/mute state) — the same pure/impure split every
-other engine/store pair in this document uses. `audioStore` is a pure
-*consumer* of the Story Engine, per §2's original framing: it reads
-`storyStore`'s output, never drives narrative state, and ink itself has no
-audio `EXTERNAL` of any kind.
-
-Locations (`content/locations.ts`) also carry an optional static baseline
-mood (`musicId`/`ambienceIds`), applied on entering a location and reset on
-returning to the Overworld — independent of whatever a location's `.ink`
-content tags afterward, and the only place audio is driven from outside
-ink.
-
----
-
-### Key Architectural Decisions (running log)
-
-- **inkjs owns narrative branching; TypeScript owns all mechanical resolution.** Ink never rolls its own dice — it calls out via `EXTERNAL` functions, and reads Insight values via pushed ink variables for choice-gating.
-- **Insight system replaces the character sheet.** Seven personified Insights serve as both check modifiers and narrative voices. No attributes/skills/equipment sheet.
-- **Resolution is Disco Elysium–style, not Celestial Return–style.** `2d6 + Insight vs. TN`, doubles decisive, no consumable dice currency. White checks retriable, Red checks one-shot.
-- **Combat and tactical exploration are out of v1 scope** — a distant, Underrail: Expedition–style future consideration, deliberately not designed for now. This is the single biggest scope reduction from the pre-pivot design.
-- **Overworld is a diorama-with-hotspots presentation over a flat unlocked-location model** — presentation-agnostic, so it can degrade to a card list if needed.
-- **Character creation is a flow, not a runtime system** — writes starting Insight values, records archetype, sets initial flags.
-- **React + Zustand + Tailwind + Vite + inkjs**, unchanged through the pivot.
-- **Voiceover via pre-generated ElevenLabs clips, curated not comprehensive.** Intros/greetings voiced in v1 to establish character; most lines stay text-only. Clips are baked to static assets at build/author time — no live API calls from the shipped game (avoids per-play cost, latency, key exposure, and network dependence). See §7.
-- **Wellbeing is a Disco-style two-track fail-state system** (Composure/Vitality), driven by narrative damage through the ink↔TS boundary. Zero in either track ends the run. Max pools may derive from Insights, so the tracks live in `insightStore` for now. Death-check logic is TS-authoritative; ink only declares damage.
-- **Strict simulation/UI separation**, consistent with every other project in the portfolio.
-- **Story Engine implemented**: `storyEngine.ts` (pure, store-agnostic ink↔TS binding, mirrors `checkResolution.ts`'s testable style) + `storyStore.ts` (Zustand, owns the active `Story` instance). Concrete `EXTERNAL` contract: `is_red_check_consumed(checkId)` lets ink gate whether a Red-check choice is even offered; `roll_check(insight, targetNumber, checkId, risk)` resolves it and returns pass/fail to ink, while the full `CheckResult` (dice, doubles tier) is captured TS-side via a callback for UI use — ink itself only ever needs the boolean. `damage_vitality`/`heal_vitality`/`damage_composure`/`heal_composure` are the wellbeing `EXTERNAL`s. Insight levels + archetype are pushed into ink globals (explicit snake_case map, e.g. `muscleMemory` → `muscle_memory`) and kept live-synced via a store subscription for the run; the sync skips any variable a given story didn't declare, so minimal/test stories don't need to declare the full set. Production code only ever imports the lean `Story` runtime from `inkjs` — `Compiler` (from `inkjs/full`) is a content-authoring-time tool only (used via a one-off scratch script whenever `demo.ink` changes, to produce `content/ink/demo.json`), never shipped. `content/ink/demo.ink` is a throwaway wiring fixture, not real narrative content, and doesn't constitute the real §6 content pipeline.
-- **Navigation/Overworld Layer implemented**: `navigationStore.ts` (Zustand) tracks `unlockedLocationIds`/`selectedLocationId` against a static `locations.ts` content module (placeholder location list — flavor-light dev fixtures, not real GDD locations, same status as `demo.ink`). Deliberately has no knowledge of `storyStore`/inkjs, keeping it single-responsibility; the Story Engine handoff ("selecting a location loads its story") happens at the component layer in the new `NavigationHarness` dev component, which renders locations as a card list — the presentation-agnostic fallback the architecture doc calls for, not the eventual illustrated-diorama treatment. Every location currently hands off to the same placeholder `content/ink/demo.json` used by the Story Engine task, since real per-location content loading is §6 (still open). `App.tsx` swaps between `NavigationHarness` and `StoryHarness` based on `selectedLocationId`; `StoryHarness` gained a "Return to Overworld" exit (`navigationStore.returnToOverworld()` + `storyStore.reset()`) and dropped its own self-load button now that Navigation drives loading. Full settled design captured in `docs/NAVIGATION_OVERWORLD_SPEC.md`.
-- **Visual style system implemented** per `docs/UI_VISUAL_STYLE_SPEC.md`: Tailwind `@theme` tokens (chrome/semantic colors, cut-corner sizes) in `index.css`, self-hosted Orbitron/Rajdhani, and a `src/components/ui/` primitive set (`Panel`, `CyberButton`, `PipTrack`, `InsightChip`, `ChoiceRow`, `CheckResultBlock`, `GlitchText`, `NeonSlider`, `NeonCheckbox`) — pure/presentational, no store imports.
-- **Real screens built on top of those primitives**, replacing the dev harnesses in `App.tsx`'s render tree (the harness files themselves stay in `src/components/dev/` as standalone manual-testing scaffolding — the check-tester UI in particular has no equivalent in real UI): `TitleScreen`, `ArchetypePicker` (archetype-select only — Character Creation's free-point-spend/backstory steps and the separate Character/Insights overlay are still unbuilt, out of scope for this pass), `OverworldScreen`, `DialogueScreen`, `SettingsOverlay`, `CasefileOverlay`, all under `src/components/screens/`. Two new stores route between them: `uiStore.ts` (`screen: 'title' | 'chargen' | 'game'` + `activeOverlay`, single-responsibility the same way `navigationStore` is) and `settingsStore.ts` (audio levels, voice toggle, text speed, Reduce Motion/High Contrast/Large Text — session-only, since Save/Persistence (§5) doesn't exist yet). Reduce Motion/High Contrast/Large Text are real, wired effects (motion gated via props into `GlitchText`/`PipTrack`, high contrast via a `filter` on the app root, large text via scaling `<html>`'s root font-size so every rem-based Tailwind size follows) — not decorative checkboxes. The Pause/System Menu screen (§2.7) wasn't built separately; the nav rail's Menu button opens Settings directly, since there's no save/load to host yet.
-- **DialogueScreen's scrollback log is screen-local state, not storyStore state**: `storyStore.currentLines` only ever holds "the lines since the last choice" (Architecture §3's `advance()`), so `DialogueScreen` accumulates each new batch into a local transcript itself, keyed off the `Story` instance identity to reset per-scene. If another screen ever needs the same transcript, promoting this into `storyStore` is the right move — it wasn't done now to avoid changing tested store shape for a single caller. Fixed alongside this: `storyStore.lastCheckResult` used to persist across turns that rolled no check, so a check result could appear to belong to unrelated later text; `advance()` now clears it at the start of each pass.
-- **Ink content-tagging convention implemented** (UI_DESIGN §4/§5, resolves the other half of the §6 open item): settled design in `docs/INK_CONTENT_TAGGING_SPEC.md`. `src/engine/contentTags.ts` — pure, store-agnostic, mirrors `checkResolution.ts`'s style — parses raw ink tag strings (`# key: value`) into `LineSpeaker` (`narrator` / `npc:<npcId>` / `insight:<insightId>`) and `ChoiceTagInfo` (`insight`, `check: white|red`, `locked: <reason>`), falling back gracefully on unrecognized ids instead of throwing. `storyStore`'s `currentText`/`currentTags` (one flat pair per `Continue()` batch) became `currentLines: { text, speaker }[]` — tags are read right after each line's own `Continue()` call, since a batch can mix narrator/NPC/Insight lines that each need their own speaker. `DialogueScreen` renders each line per its speaker (plain paragraph / NPC name row / `InsightChip` header) and follows the center-stage portrait to the most recent NPC speaker tag; each `ChoiceRow` gets its tag props from `parseChoiceTags(choice.tags)`. One inkjs subtlety the spec calls out: `Choice.tags` only populates from tags written **inside** the choice's `[brackets]` — a tag placed after the closing bracket attaches to the next line of output instead, not to the choice.
-- **`StoryHarness` dev component removed**: it was already orphaned (superseded by the real `DialogueScreen`, not referenced from `App.tsx`) and its `story.currentText` usage no longer compiles against the `currentLines` shape above. `NavigationHarness`/`InsightHarness` are untouched.
-- **Character Creation is now the full three-step wizard** (UI_DESIGN §6.2 / GDD §4): `CharacterCreationScreen` orchestrates local step state over `ChargenArchetypeStep` → `ChargenFreePointsStep` → `ChargenConfirmStep`, superseding the archetype-select-only `ArchetypePicker` (removed). Archetype select still commits immediately to `insightStore` as before; free-point spend and refund wire directly to the store's existing `spendFreePoint`/`refundFreePoint` (no new store logic needed — the "expensive to undo below baseline" rule was already enforced there). Confirm adds a name field, backed by a new `insightStore.playerName`/`setPlayerName` (character identity, same tier as `archetype`) — "Begin" is disabled until a name is entered.
-- **Character/Insights overlay implemented** (UI_DESIGN §6.4): `CharacterOverlay` — portrait, name, archetype + backstory, then all seven Insights with color, current-level pips, tagline, and a Strength/Weakness tag where the active archetype names one. `uiStore.OverlayId` gained `'character'`; `NavRail` gained a `CHAR` button, now rendered first to match the reference screenshot's Char/Case/Map/Menu order (previously omitted as a dead button since nothing existed to open).
-- **Portrait art convention established**: `PortraitFrame` (new `src/components/ui/` primitive) renders the angular corner-cut avatar chrome UI_VISUAL_STYLE_SPEC §5.1 calls for, and falls back to initials on a missing/failed image rather than a broken-image icon — art can land incrementally. Player archetype portraits are `ArchetypeDefinition.portraitSrc` → `public/portraits/archetypes/<archetypeId>.png`; used by `ChargenArchetypeStep`, `ChargenConfirmStep`, `CharacterOverlay`, and `DialogueScreen`'s HUD chip (replacing its old hand-rolled initials box). A new minimal `content/npcs.ts` (mirrors the `archetypes.ts` shape) holds NPC identity + `public/portraits/npcs/<npcId>.png`; `DialogueScreen`'s center stage now swaps to its one entry, Mei Hong, driven by the real `# speaker: npc:meiHong` line tag in `demo.ink` (see the content-tagging convention bullet below) rather than a hardcoded test render.
-- **§4 Insight System detail drafted**, documenting the already-implemented mechanism rather than changing it: starting values are archetype baseline (default 2, strength 4, weakness 1) plus a chargen-only free-point pool (3, or 6 for Boring Cop), locked in at Character Creation confirm with no in-play leveling. Wellbeing max pools derive from Insight levels per `content/wellbeing.ts`. Resolved the open "temporary-modifier model" question: no such mechanism exists — `insightStore.levels` is the sole check modifier `resolveCheck` reads; the earlier "active temporary modifiers" language in §2/§3 was headroom for a future feature (injury/exhaustion/drug effects), never built for v1.
-- **Save/Persistence Layer implemented**: settled design in `docs/SAVE_PERSISTENCE_SPEC.md`. A pure `engine/saveEngine.ts` (save-blob shape, `parseSaveBlob`, `summarizeSlot`, mirroring `storyEngine.ts`'s pure/impure split) plus a `saveStore.ts` Zustand layer that owns all `localStorage` I/O. One system-managed Autosave slot (overwritten at two checkpoints: returning to the Overworld, and selecting a location) plus player-named manual slots (create-new or overwrite), scanned directly from `localStorage` keys rather than kept in a separate index. `insightStore`/`navigationStore` each gained a `hydrate()` bulk-restore action; `storyStore.loadStory()` gained an optional saved-ink-state param that calls `story.state.LoadJson()` instead of `advance()` — restoring mechanical state (choices, Insight values, wellbeing, consumed Red checks, story position) exactly, though the last shown batch collapses to a single block on restore rather than its original per-line speaker breakdown, since ink's serialized state doesn't preserve that per-`Continue()` breakdown (a documented, deliberate simplification, not a bug). `TitleScreen`'s Continue and a new `Save_Data` section in `SettingsOverlay` (per UI_DESIGN §6.6, which already scoped save/load slots to the System/Settings overlay) are the only UI surfaces — `saveStore` itself has no knowledge of `uiStore`, same seam `navigationStore`/`storyStore` already use. `settingsStore` (audio/accessibility prefs) stays session-only, a deliberately separate follow-up.
-- **Intro scene implemented** — the game's first real narrative content, not a throwaway fixture: settled design in `docs/INTRO_SCENE_SPEC.md`. `content/ink/intro.ink` (+ compiled `intro.json`) is the Case #1 cold-open (squad-car drive from Cholon into District 4, arrival at a small Aveline Biogenetics lab, first meeting with Mei Hong), using the content-tagging convention's Insight interjections (`ledger`/`root`/`static`, gated the same way `demo.ink`'s `muscle_memory >= 3` already is) and declaring no `EXTERNAL`s at all, since this scene deliberately has no checks or wellbeing calls. Confirming Character Creation now calls `storyStore.loadStory(introStoryJson)` alongside the existing `goToGame()` — no new `uiStore` screen value needed, because `App.tsx`'s render discriminator changed from `navigationStore.selectedLocationId` to `storyStore.story`'s presence: `selectedLocationId` was only ever a proxy for "is a story active" because every prior active story came from selecting a location, and the intro breaks that coincidence (an active story with no location). Leaving the intro reuses `DialogueScreen`'s existing nav-rail "return to Overworld" exit unchanged, which also means the Save/Persistence Layer's first autosave checkpoint now naturally fires the moment the intro ends — no special-casing needed anywhere in either system.
-- **Content-tagging convention gained a `background` line tag** (`docs/INK_CONTENT_TAGGING_SPEC.md`'s Line tags table), independent of `speaker` — a line can set the center-stage backdrop with or without also tagging a speaker. New `content/backgrounds.ts` (same shape as `content/npcs.ts`: `BackgroundId` union + `_IDS` array + `imageSrc` pointing at `public/backgrounds/<file>.png`); `contentTags.ts` gained `parseLineBackground` (same graceful-fallback-to-null behavior as an unrecognized `npcId`); `StoryLine` gained a `background: BackgroundId | null` field alongside `speaker`. `DialogueScreen` tracks `activeBackgroundId` the same way it already tracks `activeNpcId` (most recent tag seen, persists across batches until changed or the scene resets) and renders it as a dimmed full-bleed image behind the HUD/portrait layer in the center stage — the "location establishing art" slot UI_DESIGN §3 already called for. First real use: `intro.ink`'s lab-exterior line tags `# background: avelineLabExterior`, art file `public/backgrounds/aveline-lab-exterior.png` (not yet committed — a `.gitkeep` holds the directory; the backdrop simply doesn't render until that file lands, same missing-art tolerance `PortraitFrame` already has).
-- **§6 Content pipeline drafted and implemented**: settled design in `docs/CONTENT_PIPELINE_SPEC.md`. `checkpoint`/`noodleStall`/`deltaSquat` each gained their own `content/ink/<locationId>.ink`, compiled to a sibling `.json` via a new committed `scripts/compile-ink.mjs` (`npm run compile:ink`), replacing the informal one-off-script compile step and the "every location shares `demo.ink`" placeholder wiring. `src/content/locationStories.ts` maps `LocationId` to its compiled JSON; `OverworldScreen.handleSelect` reads from it instead of a hardcoded `demoStoryJson` import. Resolved the open "where check definitions live" question: inline in each `.ink` file's own `roll_check(...)` call, no separate registry — codifying the convention `demo.ink` already used, plus the `checkId`-must-be-globally-unique naming rule that follows from `insightStore.consumedRedChecks` being one flat set with no per-location namespace.
-- **Intro scene gained a three-beat squad-car montage**: `docs/INTRO_SCENE_SPEC.md` updated to match. `content/ink/intro.ink` restructured from two pacing choices to three (`[Keep driving.]` / `[Head in.]` / `[Get to work.]`), each stage carrying its own `# background:` tag — two new `BackgroundId`s (`cholonMarket`, `district4FloodWall` in `content/backgrounds.ts`) join the existing `avelineLabExterior`, following the same missing-art tolerance (`DialogueScreen`'s `onError` fallback) `avelineLabExterior` itself relied on before its art landed; `cholonMarket`/`district4FloodWall` have no art yet. The scene also gained a fourth Insight interjection (`hustle >= 3`, reacting to how thin the dispatch briefing is) and a narrator-voice beat where two uniforms posted outside the lab greet the detective and point them to Mei Hong — deliberately no new `content/npcs.ts` entry/portrait for two background characters, keeping the NPC-identity convention reserved for named, recurring cast. `storyStore.test.ts`'s intro cases updated to match the new beat boundaries.
-- **§7 Voiceover/Audio Layer drafted and implemented**: settled design in `docs/AUDIO_VOICEOVER_SPEC.md`, resolving the open "line-ID naming convention" question by sidestepping it entirely — a curated line's `# voice: <clipId>` tag *is* its own stable id, chosen by the content author, rather than something derived from ink's internal path. Three new line tags extend the content-tagging convention: `music` (last-wins, same persistence model as `background`; `'none'` is a reserved `MusicId` that explicitly silences music through the normal lookup path rather than a special-cased nullable type), `ambience` (additive/diff — `+id`/`-id`/`clear`, letting a scene layer rain, market chatter, and engine idle independently instead of replacing one slot), and `voice` (one-shot, curated to intros/greetings per §2's original scope). `contentTags.ts` gained `parseLineMusic`/`parseLineAmbience`/`parseLineVoice`; `StoryLine` gained matching fields, parsed in both `advance()` and the save-restore path (`hydrateFromRestoredState`) — the same dual-parse requirement `background`/`speaker` already established. Three new content modules (`content/music.ts`, `ambience.ts`, `voiceClips.ts`) mirror the `npcs.ts`/`backgrounds.ts` shape, with assets under new `public/audio/{music,ambience,voice}/` directories (`.gitkeep`'d — no real audio files exist yet, same missing-art tolerance `backgrounds.ts` had before its first PNG landed). A new pure `engine/audioEngine.ts` (`nextMusicId`, `applyAmbienceCue`, `computeChannelVolume` — no browser APIs, unit-testable since the Vitest environment is `node`) feeds a new impure `stores/audioStore.ts`, which owns real `HTMLAudioElement`s directly (no Web Audio API, no third-party audio library — a `requestAnimationFrame`-driven linear crossfade between pooled elements covers music transitions and per-layer ambience fade in/out) and subscribes to `settingsStore` at module init for live volume/mute resync, the same pattern `storyStore.loadStory` already uses for `insightStore`. No always-mounted React player component was needed: Zustand stores are module singletons outside the render tree, so `audioStore`'s elements survive every screen swap in `App.tsx` without special mounting. Ambience mixes into the existing `sfx` channel — no dedicated ambience slider was added, since none was requested and one can be added later without touching the tag vocabulary or store shape. `content/locations.ts` gained optional `musicId`/`ambienceIds` on `LocationDefinition` (`OverworldScreen.handleSelect` applies it via `audioStore.enterLocation`, `DialogueScreen.handleReturnToOverworld` calls `audioStore.enterOverworld` to reset) — the only place audio is driven from outside ink, since the Overworld screen isn't ink content. `DialogueScreen` gained a small voice glyph/replay control on a voiced line's latest entry, reading `audioStore.isVoicePlaying`/`currentVoiceClipId`. `intro.ink` (+ recompiled `intro.json`) proves all three tags against real compiled content: music plus layered `engineIdle`/`marketChatter` ambience at the Cholon departure, a `rain` layer swapped in and `engineIdle` dropped across the drive/arrival beats, and Mei Hong's first line voiced (`meiHongIntro`) — the textbook curated-greeting case. Audio state is session-only, same precedent `settingsStore` already set — no `SaveBlob` changes.
-- **First real music assets landed and wired**: two tracks ("Saigon Protocol - Homepage" and "Intro", renamed to `title-theme.mp3`/`intro-theme.mp3` under `public/audio/music/`) replaced the placeholder `MusicId` scheme — `labTension` is gone (the Intro track covers the squad-car drive *and* the Aveline Labs arrival as one continuous cue, so `intro.ink`'s lab-arrival line no longer re-tags music at all, relying on `music`'s existing last-wins persistence) and a new `titleTheme` id was added for Title/Boot and Character Creation. `App.tsx` gained a small `useEffect` on `uiStore.screen` calling a new `audioStore.playTitleMusic()` (idempotent) whenever `screen` is `'title'`/`'chargen'` — deliberately no matching "leave" branch, since a real scene already overrides `titleTheme` itself (the intro's own first-line tag, `enterLocation`, `enterOverworld`) and reacting to every other screen value here would race those calls within the same render pass. The one gap a real scene's own entry points don't cover — Title's Continue / `SettingsOverlay`'s Load landing directly on an Overworld-only save, with no story to re-cue music — is handled by both callers checking `storyStore.story` after a successful load and calling `audioStore.enterOverworld()` themselves when it's still `null`.
-- **First real ambience assets landed** (`engineIdle`/`rain`/`marketChatter`, matching the ids `intro.ink` already tagged) **and a real playback bug fixed along the way**: manual verification via a temporary debug hook (added, checked, removed) showed a music/ambience fade could get permanently stuck at its starting volume in a backgrounded/unfocused browser tab — traced to `requestAnimationFrame`, which a standalone test confirmed can simply never fire in that state (rAF is tied to the paint cycle, not a guaranteed timer). `audioStore.ts`'s `fadeTo` now ramps volume via `setInterval` (50ms steps) instead, which keeps firing regardless of tab visibility, so a fade always eventually completes. Confirmed the existing fade-out-then-pause behavior for a removed ambience layer (e.g. `marketChatter` fading to silence as `rain` fades in when the intro's squad car leaves Cholon) was already correct by design — this fix only addressed the timer mechanism, not the fade logic itself.
-- **UI Interaction SFX layer added**: a new one-shot sibling to the music/ambience/voice system, but deliberately *not* ink-tag-driven — button hovers, choice selects, and the like aren't a story concern, so `content/sfx.ts` (11 `SfxId`s: `buttonHover`/`buttonClick`/`choiceSelect`/`checkboxOn`/`checkboxOff`/`sliderTick`/`overlayOpen`/`overlayClose`/`insightInterject`/`checkSuccess`/`checkFailure`) is wired directly from component event handlers via a new `audioStore.playSfx(id)` instead. Unlike music/ambience/voice, `playSfx` creates a fresh un-pooled `Audio` element per call so rapid overlapping triggers don't cut each other off. Wired once at the shared UI-primitive level rather than per call site: `CyberButton` (hover/click, skipped when disabled), `NavRail`'s `RailButton` (same pair — `NavRail`'s own "no store imports" header comment now calls out this one deliberate exception rather than silently breaking it), `ChoiceRow` (select only — locked choices are native `disabled` buttons that don't fire click events at all, so no "denied" sound without restructuring that semantics, left out of this pass), `NeonCheckbox` (on/off), `NeonSlider` (tick per already-quantized value change), `OverlayHost` (open/close via a `useEffect` on `activeOverlay`, since `OverlayHost` itself never unmounts), and `InsightChip`/`CheckResultBlock` (one-shot mount-effect stings, since both genuinely mount fresh per log appearance — deliberately not tied to `GlitchText`'s own repeating `loop` variant used elsewhere). New `public/audio/sfx/` directory, `.gitkeep`'d — no SFX assets exist yet.
-- **Real UI SFX assets landed, gaining a category/variant layer `content/sfx.ts` didn't originally have**: the delivery was five labeled packs of 8–9 variants (Hover/Confirm/Close/Open/Scan), not one file per `SfxId`, so `content/sfx.ts` gained a smaller `SfxCategory` type and `SFX_ID_TO_CATEGORY` map between the two — several ids share a pool (`checkboxOn`/`checkSuccess`/`buttonClick`/`choiceSelect` → `confirm`; `checkboxOff`/`checkFailure`/`overlayClose` → `close`; `buttonHover`/`sliderTick` → `hover`; `insightInterject` → `scan`, the strongest thematic fit among the five for an Insight "reading" a scene) — and `audioStore.playSfx` now picks a random variant from the resolved category each call, so the same interaction doesn't replay the identical clip every time. Files were renamed from the delivered `Category/UI_Category_N.mp3` to `/audio/sfx/<category>/ui-<category>-<n>.mp3`, fixing two inconsistent-casing filenames (`UI_CLose_3.mp3`, `UI_OPen_4.mp3`) that were harmless on Windows but would've been a latent bug on a case-sensitive production host.
-- **SFX category folders renamed to be self-documenting**: each folder now spells out every `SfxId` drawing from it — e.g. `confirm/` became `confirm--button-click+choice-select+checkbox-on+check-success/` — so browsing `public/audio/sfx/` directly shows which interactions a pack swap would affect, without needing to cross-reference `content/sfx.ts`. A new `SFX_CATEGORY_FOLDER` map in `content/sfx.ts` is the one place that resolves a `SfxCategory` to its actual folder; the `ui-<category>-<n>.mp3` filenames inside stay short and unchanged. Kept in sync with `SFX_ID_TO_CATEGORY` by convention, not enforced by any type — a deliberate tradeoff of some duplication for the folder listing being genuinely readable on its own.
-- **`SFX_ID_OVERRIDE` added for pinning a specific id to one exact variant**: the first use is `buttonClick` → `ui-confirm-6.mp3` (a stated preference, not a pool-size issue — the confirm pool still has all 9 variants for `choiceSelect`/`checkboxOn`/`checkSuccess`, the other three ids sharing that category). `audioStore.playSfx` checks `SFX_ID_OVERRIDE` before falling back to a random pick from `SFX_CATEGORY_VARIANTS`, so this coexists with the random-variant system rather than replacing it — any `SfxId` can be pinned the same way later without touching the category/pool design.
-- **Voiceover/Audio Layer test coverage filled in**: the sfx-selection decision (override-or-random) that was inline in `audioStore.playSfx` moved out to a new pure `audioEngine.pickSfxSrc(override, categoryVariants, random?)`, same injectable-`RandomSource` style `checkResolution.resolveCheck` already established (re-exports the type rather than redefining it) — `playSfx` itself is now just "resolve a src, make an element, play it." New `content/sfx.test.ts` checks the generated data's structural integrity directly (every `SfxId` has a category, each category has its delivered variant count, every path is well-formed and lands in its own category's folder, no duplicate paths, `SFX_ID_OVERRIDE.buttonClick` is confirmed to actually be a member of the confirm pool). Deliberately not covered: `audioStore.ts`'s impure playback (real `HTMLAudioElement`s, crossfade timers) and the UI-primitive SFX wiring (`CyberButton`, `ChoiceRow`, etc.) — neither is testable without adding a DOM environment and a component-testing library, and this repo has zero `.test.tsx` files anywhere today (Vitest's `environment` is `node`); that gap is deliberately kept small by extracting every actual decision into a pure, tested function, with the remaining browser-only behavior verified by manual passes instead.
-
-### Superseded (kept for history)
-
-- ~~Full Cepheus character sheet + dice-resolved combat as core v1 systems.~~ Replaced by the Insight/check design above after the pivot to a Celestial Return / Disco Elysium–style narrative RPG. The combat-UI open question (full-screen vs. inline) is moot for now, since there is no v1 combat.
-
----
-
-*Next up (open, not yet drafted):*
-- *Real ElevenLabs voice clips — `content/voiceClips.ts`'s single `meiHongIntro` id is the only asset path left pointing at a file that doesn't exist yet; music, ambience, and UI SFX are all real as of the entries above. Generation workflow/manifest is out of scope for the engine work itself.*
-- *Later, out of current scope: exploration/combat layer if and when the project grows toward the Underrail: Expedition reference.*
+- Real ElevenLabs voice clips — `content/voiceClips.ts`'s `meiHongIntro` id
+  is still the only voice asset path pointing at a file that doesn't exist.
+  Music, ambience, and UI SFX assets are all real.
+- Real per-location narrative content beyond `checkpoint`/`noodleStall`/
+  `deltaSquat` and the `intro` scene — these remain flavor-light, not GDD-
+  canonical.
+- In-play Insight leveling (XP, investigation rewards) — doesn't exist;
+  the chargen sheet is fixed for the run.
+- Combat/tactical exploration — explicitly out of scope, distant future.

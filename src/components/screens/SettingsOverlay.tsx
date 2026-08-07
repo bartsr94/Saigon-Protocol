@@ -1,12 +1,11 @@
-// Settings (UI_DESIGN §6.6). The Save_Data section implements this doc's
-// "save/load slots" scope (Save/Persistence Layer, docs/
-// SAVE_PERSISTENCE_SPEC.md) — audio/accessibility settings themselves stay
-// session-only (that's a separate, not-yet-built persistence concern, per
-// the spec's Out of scope). Volume sliders drive the real audioStore
-// (docs/AUDIO_VOICEOVER_SPEC.md), which subscribes to this store directly —
-// no wiring needed here beyond the sliders themselves. Reduce Motion/High
-// Contrast/Large Text are real, wired effects (see App.tsx), not decorative
-// checkboxes.
+// Settings (docs/GAME_GUIDE.md §2, §7) — also serves as the pause/system
+// menu, there's no separate Pause screen. The Save_Data section implements
+// the save/load slot UX; audio/accessibility settings themselves stay
+// deliberately session-only, never part of a save blob. Volume sliders
+// drive the real audioStore (docs/GAME_GUIDE.md §8), which subscribes to
+// this store directly — no wiring needed here beyond the sliders
+// themselves. Reduce Motion/High Contrast/Large Text are real, wired
+// effects (see App.tsx), not decorative checkboxes.
 
 import { useEffect, useState } from 'react'
 import { useSettingsStore, type TextSpeed } from '../../stores/settingsStore'
@@ -47,7 +46,7 @@ function SaveDataSection() {
 
   function handleLoad(id: string) {
     if (!loadSlot(id)) return
-    // Same title-music handoff TitleScreen's Continue needs (docs/AUDIO_VOICEOVER_SPEC.md).
+    // Same title-music handoff TitleScreen's Continue needs (docs/GAME_GUIDE.md).
     if (!useStoryStore.getState().story) useAudioStore.getState().enterOverworld()
     closeOverlay()
     goToGame()

@@ -13,7 +13,7 @@ export interface NeonSliderProps {
 
 /**
  * Cyan track / magenta thumb range input — Settings overlay sliders
- * (UI_VISUAL_STYLE_SPEC §5.6). The thumb chrome lives in index.css's
+ * (docs/GAME_GUIDE.md §3). The thumb chrome lives in index.css's
  * `.neon-slider` rules since range-input pseudo-elements can't be styled
  * from an inline style prop.
  */

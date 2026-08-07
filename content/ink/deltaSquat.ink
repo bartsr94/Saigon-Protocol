@@ -1,5 +1,5 @@
 // Drowned Delta Squat (src/content/locations.ts) — flavor-light placeholder
-// scene, not real GDD content (docs/CONTENT_PIPELINE_SPEC.md).
+// scene, not real GDD content (docs/GAME_GUIDE.md).
 
 VAR static = 0
 

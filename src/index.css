@@ -7,7 +7,7 @@
 @import "@fontsource/rajdhani/700.css";
 
 /*
- * Design tokens per docs/UI_VISUAL_STYLE_SPEC.md.
+ * Design tokens per docs/GAME_GUIDE.md.
  * Colors split into chrome (generic UI frame) and semantic (content-driven)
  * layers — see spec §1. Insight identity colors are NOT tokens here; they
  * come from src/content/insights.ts and are passed through as plain CSS

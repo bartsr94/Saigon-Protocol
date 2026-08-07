@@ -18,7 +18,7 @@ export interface PortraitFrameProps {
 }
 
 /**
- * Angular corner-cut avatar frame (UI_VISUAL_STYLE_SPEC §5.1, adopted from
+ * Angular corner-cut avatar frame (docs/GAME_GUIDE.md §2.1, adopted from
  * the inspo's portrait-frame/portrait-inner). Used for the player's HUD
  * chip, chargen previews, and the Character overlay.
  */

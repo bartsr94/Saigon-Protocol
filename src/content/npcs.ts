@@ -1,8 +1,8 @@
 // NPC identity/portrait content. Minimal on purpose — the GDD doesn't name
 // NPCs beyond the case-by-case cast. Mei Hong is the Aveline Biogenetics lab
 // technician met in the intro scene (content/ink/intro.ink,
-// docs/INTRO_SCENE_SPEC.md), tagged as the speaker via the content-tagging
-// convention (docs/INK_CONTENT_TAGGING_SPEC.md), not a hardcoded test render.
+// docs/GAME_GUIDE.md), tagged as the speaker via the content-tagging
+// convention (docs/GAME_GUIDE.md), not a hardcoded test render.
 
 export type NpcId = 'meiHong'
 

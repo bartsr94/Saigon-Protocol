@@ -4,7 +4,7 @@ export interface GlitchTextProps {
   text: string
   /**
    * Continuous glitch loop. Reserved for the title/logo screen — never body
-   * text or anything read for more than a second (UI_VISUAL_STYLE_SPEC §4).
+   * text or anything read for more than a second (docs/GAME_GUIDE.md §3.4).
    */
   loop?: boolean
   className?: string

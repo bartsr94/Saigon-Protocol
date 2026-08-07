@@ -2,7 +2,7 @@
 // DialogueScreen and the ChoiceRow/InsightChip primitives render (UI_DESIGN
 // §4/§5). Pure and store-agnostic, same testable style as checkResolution.ts
 // — never imports a Zustand store or a React component.
-// See docs/INK_CONTENT_TAGGING_SPEC.md for the settled tag vocabulary.
+// See docs/GAME_GUIDE.md for the settled tag vocabulary.
 
 import { INSIGHT_IDS, type InsightId } from '../content/insights'
 import { NPC_IDS, type NpcId } from '../content/npcs'
@@ -95,7 +95,7 @@ export function parseLineBackground(tags: string[]): BackgroundId | null {
  * Resolves a line's music cue, same last-recognized-tag-wins convention as
  * `parseLineBackground` — the caller (storyStore) keeps whatever track was
  * last cued when a line carries no `music` tag. `'none'` is a real,
- * recognized `MusicId` (docs/AUDIO_VOICEOVER_SPEC.md's silence sentinel),
+ * recognized `MusicId` (docs/GAME_GUIDE.md's silence sentinel),
  * not a fallback value — an unrecognized id still resolves to `null`
  * ("no change"), not silence.
  */
@@ -140,7 +140,7 @@ export function parseLineAmbience(tags: string[]): AmbienceCue {
 }
 
 /**
- * Resolves a line's voiced-clip id (UI_DESIGN §7's curated intros/greetings).
+ * Resolves a line's voiced-clip id (docs/GAME_GUIDE.md §8's curated intros/greetings).
  * One-shot — unlike `background`/`music`, there's no "keep the last one"
  * persistence concept, so an absent/unrecognized tag simply means no clip
  * fires for this line.

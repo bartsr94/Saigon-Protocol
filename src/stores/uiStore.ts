@@ -2,7 +2,7 @@
 // navigationStore (which only tracks Overworld location state) and
 // insightStore/storyStore (simulation state) — this store owns nothing but
 // "what's on screen," per the same single-responsibility split the other
-// stores already follow (Architecture §2).
+// stores already follow (Architecture §3).
 
 import { create } from 'zustand'
 

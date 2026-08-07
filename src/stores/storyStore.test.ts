@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Compiler } from 'inkjs/full'
 import { useStoryStore } from './storyStore'
 import { useInsightStore } from './insightStore'
-import demoStoryJson from '../../content/ink/demo.json'
 import introStoryJson from '../../content/ink/intro.json'
 
 function compileToJson(inkSource: string): Record<string, unknown> {
@@ -32,6 +31,51 @@ You approach the checkpoint.
 
 == done ==
 The scene ends.
+-> END
+`
+
+const TEST_FIXTURE_INK = `
+EXTERNAL is_red_check_consumed(checkId)
+EXTERNAL roll_check(insight, targetNumber, checkId, risk)
+EXTERNAL damage_vitality(amount)
+EXTERNAL heal_vitality(amount)
+EXTERNAL damage_composure(amount)
+EXTERNAL heal_composure(amount)
+
+VAR ledger = 0
+VAR graft = 0
+VAR muscle_memory = 0
+VAR root = 0
+VAR static = 0
+VAR hustle = 0
+VAR mask = 0
+VAR archetype = ""
+
+Rain on corrugated steel. A checkpoint drone hovers at eye level, its lens hunting your face against a watchlist you're pretty sure you're on.
+{ muscle_memory >= 3:
+    Muscle Memory clocks the drone's blind spot before you've finished the thought. # speaker: insight:muscleMemory
+- else:
+    You don't know this model. You don't like that.
+}
+
+{ is_red_check_consumed("checkpoint-stare-down"):
+    The drone's already made its decision about you. No talking your way past it twice.
+    -> done
+- else:
+    * [Hold still and stare it down. # insight: muscleMemory # check: red]
+        ~ temp result = roll_check("muscleMemory", 7, "checkpoint-stare-down", "red")
+        { result:
+            The drone hesitates, logs you as low-priority, and drifts off down the alley.
+        - else:
+            It doesn't blink. A second drone drops in behind you, and your pulse spikes hard enough to feel it in your teeth.
+            ~ damage_composure(1)
+        }
+        -> done
+}
+
+== done ==
+Mei Hong steps out of a noodle stall's steam, steam curling off her collar. "You made it past the checkpoint, detective. Rare, these days." # speaker: npc:meiHong
+The moment passes, one way or another.
 -> END
 `
 
@@ -123,11 +167,11 @@ The end.
     expect(useStoryStore.getState().lastCheckResult).toBeNull()
   })
 
-  it('runs the real compiled demo content end-to-end', () => {
+  it('runs the full story-engine wiring fixture end-to-end', () => {
     useInsightStore.getState().selectArchetype('enforcer') // strength: muscleMemory, matching the demo's check
     vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5) // non-double, comfortable success
 
-    useStoryStore.getState().loadStory(demoStoryJson)
+    useStoryStore.getState().loadStory(compileToJson(TEST_FIXTURE_INK))
     const openingState = useStoryStore.getState()
     const opening = openingState.currentLines.map((l) => l.text).join(' ')
     expect(opening).toContain('Rain on corrugated steel.')
@@ -167,7 +211,7 @@ The end.
     useInsightStore.getState().selectArchetype('enforcer')
     vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5) // non-double, comfortable success
 
-    useStoryStore.getState().loadStory(demoStoryJson)
+    useStoryStore.getState().loadStory(compileToJson(TEST_FIXTURE_INK))
     const opening = useStoryStore.getState().currentLines
 
     const insightLine = opening.find((l) => l.text.includes("clocks the drone's blind spot"))
@@ -218,7 +262,7 @@ The end.
     expect(useStoryStore.getState().ended).toBe(true)
   })
 
-  it('the real intro content carries its music/ambience/voice tags through the same beats as the backdrop', () => {
+  it('the real intro content carries its music/ambience tags through the same beats as the backdrop', () => {
     useInsightStore.getState().selectArchetype('companyMan')
 
     useStoryStore.getState().loadStory(introStoryJson)
@@ -233,14 +277,13 @@ The end.
     expect(floodWallLine?.ambienceOps).toEqual({ add: ['rain'], remove: ['marketChatter'], clear: false })
     const arrivalLine = driving.find((l) => l.text.includes('The lab itself is nothing to look at'))
     // No new music tag here — introTheme carries through the drive and
-    // arrival as one continuous track (docs/AUDIO_VOICEOVER_SPEC.md).
+    // arrival as one continuous track (docs/GAME_GUIDE.md).
     expect(arrivalLine?.music).toBeNull()
     expect(arrivalLine?.ambienceOps).toEqual({ add: [], remove: ['engineIdle'], clear: false })
 
     useStoryStore.getState().choose(0) // Head in.
     const scene = useStoryStore.getState().currentLines
-    const voicedLine = scene.find((l) => l.text.includes("You're the detective"))
-    expect(voicedLine?.voice).toBe('meiHongIntro')
+    expect(scene.every((l) => l.voice === null)).toBe(true)
   })
 
   it('the intro surfaces the Root interjection for a high-Root archetype instead of the Ledger one', () => {

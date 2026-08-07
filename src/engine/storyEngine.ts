@@ -1,4 +1,4 @@
-// Wraps a bound inkjs Story: the ink<->TS boundary from Architecture §3.
+// Wraps a bound inkjs Story: the ink<->TS boundary from Architecture §6.
 // Pure and store-agnostic — takes a Story instance plus injected handlers,
 // same testable-in-isolation style as checkResolution.ts. Never imports a
 // Zustand store directly; storyStore.ts supplies the handlers.
@@ -53,7 +53,7 @@ export function bindCheckFunctions(story: Story, handlers: CheckHandlers): void 
   )
 }
 
-/** Binds the four wellbeing EXTERNALs ink calls to declare damage/healing (Architecture §3). */
+/** Binds the four wellbeing EXTERNALs ink calls to declare damage/healing (Architecture §6). */
 export function bindWellbeingFunctions(story: Story, handlers: WellbeingHandlers): void {
   story.BindExternalFunction('damage_vitality', (amount: number) => handlers.damageVitality(amount))
   story.BindExternalFunction('heal_vitality', (amount: number) => handlers.healVitality(amount))
@@ -74,7 +74,7 @@ const INSIGHT_ID_TO_INK_VAR: Record<InsightId, string> = {
 
 /**
  * Pushes Insight levels + archetype into ink globals so choices can be
- * gated/shown conditionally (Architecture §3). Skips any variable the loaded
+ * gated/shown conditionally (Architecture §6). Skips any variable the loaded
  * story didn't declare with VAR — writing an undeclared global throws in
  * inkjs, and minimal/test stories aren't expected to declare the full set.
  */

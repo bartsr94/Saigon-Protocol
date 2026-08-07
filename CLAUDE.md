@@ -5,12 +5,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 Saigon Protocol is a browser-based narrative RPG (Celestial Return / Disco
-Elysium–style), client-side only, no backend. Full technical design lives in
-`docs/SAIGON_PROTOCOL_ARCHITECTURE.md` (source of truth — read it before
-touching core systems) and lore/setting in `docs/SEA_CYBERPUNK_GDD.md`. UI
-conventions are in `docs/SAIGON_PROTOCOL_UI_DESIGN.md`. Feature specs for
-individual systems (e.g. `docs/NAVIGATION_OVERWORLD_SPEC.md`) are written
-*before* implementation and describe settled design, not aspirational ideas.
+Elysium–style), client-side only, no backend. Three docs, three jobs, no
+overlap:
+
+- `docs/SAIGON_PROTOCOL_ARCHITECTURE.md` — **as-built** technical reference:
+  code/store/engine structure, the ink↔TS boundary, how the six core
+  systems are actually wired. Read it before touching core systems.
+- `docs/GAME_GUIDE.md` — the practical reference for writing content and
+  building UI: screen layout, visual style tokens, the ink content-tagging
+  vocabulary, navigation/save/audio conventions. Read it before authoring
+  `.ink` content or touching a screen/overlay.
+- `docs/SEA_CYBERPUNK_GDD.md` — lore, setting, and narrative-design premise.
+  No technical content.
+
+All three describe settled/built state, not aspirational ideas. The eight
+older per-system spec docs (`CONTENT_PIPELINE_SPEC.md`,
+`INK_CONTENT_TAGGING_SPEC.md`, `INTRO_SCENE_SPEC.md`,
+`NAVIGATION_OVERWORLD_SPEC.md`, `SAVE_PERSISTENCE_SPEC.md`,
+`AUDIO_VOICEOVER_SPEC.md`, `UI_VISUAL_STYLE_SPEC.md`,
+`SAIGON_PROTOCOL_UI_DESIGN.md`) are superseded and now just redirect into
+`GAME_GUIDE.md` — don't add new content to them.
 
 Stack: React 19 + TypeScript (strict) + Vite + Zustand + Tailwind 4 +
 **inkjs** for branching narrative. Tested with Vitest, linted with Oxlint.
@@ -59,9 +73,15 @@ reviewing or writing code here.
   unlocked/selected locations against a static `content/locations.ts` module.
   Deliberately has no knowledge of `storyStore`/inkjs; the handoff to the
   Story Engine happens at the component layer, not inside either store.
-- **Save/Persistence Layer** — not yet built (Architecture doc §5, open).
-- **Voiceover/Audio Layer** — not yet built (pre-generated ElevenLabs clips,
-  Architecture doc §7, open).
+- **Save/Persistence Layer** (`engine/saveEngine.ts` + `stores/saveStore.ts`)
+  — one Autosave slot plus player-named manual slots in `localStorage`.
+  Serializes Insight/navigation state and, when a scene is active, the ink
+  story state alongside which compiled story it belongs to.
+- **Voiceover/Audio Layer** (`engine/audioEngine.ts` + `stores/audioStore.ts`)
+  — plain `HTMLAudioElement`-based music/ambience/voice, driven by ink line
+  tags (`music`/`ambience`/`voice`) plus a UI-interaction SFX layer wired at
+  the component level. Voice clips are pre-generated (ElevenLabs), never
+  synthesized live.
 
 Combat and tactical exploration are explicitly **out of scope for v1** — a
 distant, Underrail: Expedition–style future consideration. Don't design or
@@ -109,7 +129,7 @@ Audio assets (`public/audio/{music,ambience,voice}/*.mp3`, referenced from
 only. Source sound effects/music are often sourced as `.wav` — if any land in
 the repo, convert them with `npm run audio:convert` (`scripts/wav-to-mp3.mjs`,
 requires ffmpeg on PATH) rather than committing `.wav` files or shipping them
-directly. See `docs/AUDIO_VOICEOVER_SPEC.md` for the audio layer's design.
+directly. See `docs/GAME_GUIDE.md` §8 for the audio layer's conventions.
 
 ### Documentation workflow
 

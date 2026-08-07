@@ -1,17 +1,17 @@
-// Dialogue/Scene (UI_DESIGN §3) — the core loop. 75/25 layout per
-// UI_VISUAL_STYLE_SPEC §5: left-edge nav rail + center stage occupy the
+// Dialogue/Scene (docs/GAME_GUIDE.md §2.1) — the core loop. 75/25 layout per
+// docs/GAME_GUIDE.md §2.1: left-edge nav rail + center stage occupy the
 // left three-quarters, the scrolling dialogue log/choices/check-result
 // panel is the right quarter.
 //
 // storyStore only ever exposes "the lines since the last choice," not a
-// full transcript (Architecture §3) — the scrollback log below is this
+// full transcript (Architecture §6) — the scrollback log below is this
 // screen's own bookkeeping, appending each new batch as it arrives. A
 // persistent transcript belongs in storyStore itself if another screen
 // ever needs it too; this is a presentational accumulation, not new
 // simulation state.
 //
 // Per-line speaker rendering and per-choice mechanical tags follow the ink
-// content-tagging convention (docs/INK_CONTENT_TAGGING_SPEC.md, Architecture
+// content-tagging convention (docs/GAME_GUIDE.md, Architecture
 // §6): storyStore.currentLines carries a parsed LineSpeaker per line, and
 // each choice's raw inkjs tags are parsed here via parseChoiceTags.
 
@@ -94,7 +94,7 @@ function DialogueText({ text, className }: { text: string; className: string }) 
 }
 
 /**
- * Audio glyph for a voiced line (UI_DESIGN §7): shows near the speaker's
+ * Audio glyph for a voiced line (docs/GAME_GUIDE.md §8): shows near the speaker's
  * name/portrait when the line carries a `# voice:` tag, doubles as a replay
  * control. Only ever rendered for the latest entry's tagged line.
  */
@@ -172,6 +172,7 @@ export function DialogueScreen() {
 
   const selectedLocationId = useNavigationStore((s) => s.selectedLocationId)
   const returnToOverworld = useNavigationStore((s) => s.returnToOverworld)
+  const unlockLocation = useNavigationStore((s) => s.unlockLocation)
 
   const openOverlay = useUiStore((s) => s.openOverlay)
   const textSpeed = useSettingsStore((s) => s.textSpeed)
@@ -256,9 +257,14 @@ export function DialogueScreen() {
   }
 
   function handleReturnToOverworld() {
+    if (selectedLocationId && ended) {
+      for (const unlockedId of LOCATIONS[selectedLocationId].unlocksOnComplete ?? []) {
+        unlockLocation(unlockedId)
+      }
+    }
     returnToOverworld()
     resetStory()
-    // Leaving a scene gets the Overworld hub's own mood back (docs/AUDIO_VOICEOVER_SPEC.md).
+    // Leaving a scene gets the Overworld hub's own mood back (docs/GAME_GUIDE.md).
     useAudioStore.getState().enterOverworld()
     // Autosave checkpoint (Save/Persistence Layer): capture the "back on
     // the Overworld, no active scene" state.
@@ -282,12 +288,12 @@ export function DialogueScreen() {
       {/* Left three-quarters: player status + center stage */}
       <div className="relative flex-1 overflow-hidden">
         {/*
-          Backdrop art (UI_DESIGN §3: "Location establishing art can also
+          Backdrop art (docs/GAME_GUIDE.md §2.1: "Location establishing art can also
           render here when no character is present"), tracked from the most
           recent `# background: <id>` line tag — same persistence pattern as
           the NPC portrait below. Dimmed so HUD/portrait/text stay legible.
         */}
-        {activeBackgroundId && !backgroundLoadFailed && (
+        {activeBackgroundId && BACKGROUNDS[activeBackgroundId].imageSrc && !backgroundLoadFailed && (
           <>
             <img
               src={BACKGROUNDS[activeBackgroundId].imageSrc}
@@ -314,7 +320,7 @@ export function DialogueScreen() {
         </div>
 
         {/*
-          Center stage (UI_DESIGN §3): the active NPC's portrait, tracked
+          Center stage (docs/GAME_GUIDE.md §2.1): the active NPC's portrait, tracked
           from the most recent `# speaker: npc:<id>` line tag. No character
           art shows until a scene actually names one, per §3's "location
           establishing art can render here when no character is present."

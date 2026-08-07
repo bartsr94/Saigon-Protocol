@@ -1,15 +1,15 @@
-// Player-facing settings (UI_DESIGN §6.6 System/Settings): audio levels, the
-// global voice toggle (Architecture §7), text speed, and accessibility
-// options. Session-only for now — there's no Save/Persistence Layer yet
-// (Architecture §5, still open), so these reset on reload. No audio or
-// voiceover engine exists yet either (§7, still open); the sliders here are
-// real, live UI state with nothing downstream to drive until those land.
+// Player-facing settings (docs/GAME_GUIDE.md §2): audio levels, the global
+// voice toggle (Architecture §9), text speed, and accessibility options.
+// Deliberately session-only, not part of a save blob (Architecture §8) —
+// a persistent-preference tier, not a game-run snapshot, so it resets on
+// reload by design. audioStore subscribes to this store for live volume/
+// mute resync (Architecture §9).
 
 import { create } from 'zustand'
 
 export type TextSpeed = 'slow' | 'normal' | 'fast'
 
-/** Milliseconds per character for the dialogue typewriter (UI_VISUAL_STYLE_SPEC §5.4). */
+/** Milliseconds per character for the dialogue typewriter (docs/GAME_GUIDE.md §2.1). */
 export const TEXT_SPEED_MS: Record<TextSpeed, number> = {
   slow: 45,
   normal: 22,

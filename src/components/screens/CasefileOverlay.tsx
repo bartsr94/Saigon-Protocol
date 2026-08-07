@@ -1,4 +1,4 @@
-// Casefile/Evidence overlay (UI_DESIGN §6.5). Backed by the static
+// Casefile/Evidence overlay (docs/GAME_GUIDE.md §9). Backed by the static
 // placeholder content in content/casefile.ts — see that file's header for
 // why this can't be dynamic yet.
 

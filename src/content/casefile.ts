@@ -1,10 +1,10 @@
-// Casefile/Evidence overlay content (UI_DESIGN §6.5). Placeholder,
+// Casefile/Evidence overlay content (docs/GAME_GUIDE.md §9). Placeholder,
 // flavor-light dev fixtures standing in for real evidence — same throwaway
-// status as locations.ts and demo.ink. Purely static for now: nothing in
-// the ink<->TS boundary grants evidence yet (no EXTERNAL for it), and how
-// much of the Case Notes tab auto-populates vs. is hand-authored is an open
-// question (UI_DESIGN §8.5) — this is the fixture that question will
-// eventually replace, not an answer to it.
+// status as locations.ts. Purely static for now: nothing in the ink<->TS
+// boundary grants evidence yet (no EXTERNAL for it), and how much of the
+// Case Notes tab auto-populates vs. is hand-authored is an open question
+// (docs/GAME_GUIDE.md §9) — this is the fixture that question will eventually
+// replace, not an answer to it.
 
 export type EvidenceTier = 'flavor' | 'clue' | 'key'
 

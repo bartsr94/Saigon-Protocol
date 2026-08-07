@@ -1,5 +1,5 @@
 // Pure save-blob shape and helpers for the Save/Persistence Layer
-// (Architecture §5, docs/SAVE_PERSISTENCE_SPEC.md). No localStorage access
+// (Architecture §8, docs/GAME_GUIDE.md §7). No localStorage access
 // here — that's saveStore's job, mirroring storyEngine.ts's pure/impure
 // split.
 
