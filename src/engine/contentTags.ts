@@ -7,6 +7,9 @@
 import { INSIGHT_IDS, type InsightId } from '../content/insights'
 import { NPC_IDS, type NpcId } from '../content/npcs'
 import { BACKGROUND_IDS, type BackgroundId } from '../content/backgrounds'
+import { MUSIC_IDS, type MusicId } from '../content/music'
+import { AMBIENCE_IDS, type AmbienceId } from '../content/ambience'
+import { VOICE_CLIP_IDS, type VoiceClipId } from '../content/voiceClips'
 
 export type LineSpeaker =
   | { type: 'narrator' }
@@ -31,6 +34,18 @@ function isNpcId(value: string): value is NpcId {
 
 function isBackgroundId(value: string): value is BackgroundId {
   return (BACKGROUND_IDS as string[]).includes(value)
+}
+
+function isMusicId(value: string): value is MusicId {
+  return (MUSIC_IDS as string[]).includes(value)
+}
+
+function isAmbienceId(value: string): value is AmbienceId {
+  return (AMBIENCE_IDS as string[]).includes(value)
+}
+
+function isVoiceClipId(value: string): value is VoiceClipId {
+  return (VOICE_CLIP_IDS as string[]).includes(value)
 }
 
 /** Splits a raw ink tag string on its first `:`, trimming both sides. Returns null if there's no colon. */
@@ -72,6 +87,68 @@ export function parseLineBackground(tags: string[]): BackgroundId | null {
   for (const raw of tags) {
     const parsed = parseTag(raw)
     if (parsed && parsed.key === 'background' && isBackgroundId(parsed.value)) return parsed.value
+  }
+  return null
+}
+
+/**
+ * Resolves a line's music cue, same last-recognized-tag-wins convention as
+ * `parseLineBackground` — the caller (storyStore) keeps whatever track was
+ * last cued when a line carries no `music` tag. `'none'` is a real,
+ * recognized `MusicId` (docs/AUDIO_VOICEOVER_SPEC.md's silence sentinel),
+ * not a fallback value — an unrecognized id still resolves to `null`
+ * ("no change"), not silence.
+ */
+export function parseLineMusic(tags: string[]): MusicId | null {
+  for (const raw of tags) {
+    const parsed = parseTag(raw)
+    if (parsed && parsed.key === 'music' && isMusicId(parsed.value)) return parsed.value
+  }
+  return null
+}
+
+export interface AmbienceCue {
+  add: AmbienceId[]
+  remove: AmbienceId[]
+  clear: boolean
+}
+
+/**
+ * Resolves a line's ambience layer changes. Unlike `background`/`music`,
+ * every `ambience` tag on the line is meaningful (not just the first) — a
+ * single establishing line can add one layer and drop another at once, e.g.
+ * `# ambience: +rain` `# ambience: -marketChatter`. Returns an always-present
+ * object (empty/false) rather than null when the line carries no ambience
+ * tag, since it describes a diff to apply, not a persistent value to track.
+ */
+export function parseLineAmbience(tags: string[]): AmbienceCue {
+  const cue: AmbienceCue = { add: [], remove: [], clear: false }
+  for (const raw of tags) {
+    const parsed = parseTag(raw)
+    if (!parsed || parsed.key !== 'ambience') continue
+
+    if (parsed.value === 'clear') {
+      cue.clear = true
+      continue
+    }
+    const sigil = parsed.value[0]
+    const id = parsed.value.slice(1)
+    if (sigil === '+' && isAmbienceId(id)) cue.add.push(id)
+    else if (sigil === '-' && isAmbienceId(id)) cue.remove.push(id)
+  }
+  return cue
+}
+
+/**
+ * Resolves a line's voiced-clip id (UI_DESIGN §7's curated intros/greetings).
+ * One-shot — unlike `background`/`music`, there's no "keep the last one"
+ * persistence concept, so an absent/unrecognized tag simply means no clip
+ * fires for this line.
+ */
+export function parseLineVoice(tags: string[]): VoiceClipId | null {
+  for (const raw of tags) {
+    const parsed = parseTag(raw)
+    if (parsed && parsed.key === 'voice' && isVoiceClipId(parsed.value)) return parsed.value
   }
   return null
 }

@@ -1,7 +1,9 @@
 // Renders whichever overlay is active on top of the current screen — per
 // UI_DESIGN §2, overlays pause the view beneath rather than replacing it.
 
+import { useEffect } from 'react'
 import { useUiStore } from '../../stores/uiStore'
+import { useAudioStore } from '../../stores/audioStore'
 import { SettingsOverlay } from './SettingsOverlay'
 import { CasefileOverlay } from './CasefileOverlay'
 import { CharacterOverlay } from './CharacterOverlay'
@@ -9,6 +11,14 @@ import { CharacterOverlay } from './CharacterOverlay'
 export function OverlayHost() {
   const activeOverlay = useUiStore((s) => s.activeOverlay)
   const closeOverlay = useUiStore((s) => s.closeOverlay)
+
+  // OverlayHost itself never unmounts (App.tsx renders it unconditionally),
+  // so an effect on activeOverlay is the open/close boundary, not mount/unmount.
+  useEffect(() => {
+    if (!activeOverlay) return
+    useAudioStore.getState().playSfx('overlayOpen')
+    return () => useAudioStore.getState().playSfx('overlayClose')
+  }, [activeOverlay])
 
   if (!activeOverlay) return null
 

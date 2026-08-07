@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { ChoiceTagVariant } from '../../engine/contentTags'
+import { useAudioStore } from '../../stores/audioStore'
 
 export type { ChoiceTagVariant }
 
@@ -32,7 +33,10 @@ export function ChoiceRow({ children, tagVariant = 'none', tagLabel, insightColo
 
   return (
     <button
-      onClick={onClick}
+      onClick={() => {
+        useAudioStore.getState().playSfx('choiceSelect')
+        onClick?.()
+      }}
       disabled={locked}
       className={`group flex w-full items-start gap-3 px-3 py-2 text-left font-body text-[19px] transition-transform duration-200 ${
         locked ? 'cursor-not-allowed text-white/30' : 'cursor-pointer text-white hover:translate-x-1 hover:text-chrome-secondary'

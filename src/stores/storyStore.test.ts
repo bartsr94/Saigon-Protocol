@@ -218,6 +218,31 @@ The end.
     expect(useStoryStore.getState().ended).toBe(true)
   })
 
+  it('the real intro content carries its music/ambience/voice tags through the same beats as the backdrop', () => {
+    useInsightStore.getState().selectArchetype('companyMan')
+
+    useStoryStore.getState().loadStory(introStoryJson)
+    const opening = useStoryStore.getState().currentLines
+    const openingLine = opening.find((l) => l.text.includes("The squad car pulls out of Cholon's press"))
+    expect(openingLine?.music).toBe('introTheme')
+    expect(openingLine?.ambienceOps).toEqual({ add: ['engineIdle', 'marketChatter'], remove: [], clear: false })
+
+    useStoryStore.getState().choose(0) // Keep driving.
+    const driving = useStoryStore.getState().currentLines
+    const floodWallLine = driving.find((l) => l.text.includes('District 4 flood wall rises out of the haze'))
+    expect(floodWallLine?.ambienceOps).toEqual({ add: ['rain'], remove: ['marketChatter'], clear: false })
+    const arrivalLine = driving.find((l) => l.text.includes('The lab itself is nothing to look at'))
+    // No new music tag here — introTheme carries through the drive and
+    // arrival as one continuous track (docs/AUDIO_VOICEOVER_SPEC.md).
+    expect(arrivalLine?.music).toBeNull()
+    expect(arrivalLine?.ambienceOps).toEqual({ add: [], remove: ['engineIdle'], clear: false })
+
+    useStoryStore.getState().choose(0) // Head in.
+    const scene = useStoryStore.getState().currentLines
+    const voicedLine = scene.find((l) => l.text.includes("You're the detective"))
+    expect(voicedLine?.voice).toBe('meiHongIntro')
+  })
+
   it('the intro surfaces the Root interjection for a high-Root archetype instead of the Ledger one', () => {
     useInsightStore.getState().selectArchetype('oldSaigon') // strength: root (4), weakness: ledger (1)
 
@@ -236,6 +261,41 @@ The end.
     useStoryStore.getState().loadStory(introStoryJson)
     const opening = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
     expect(opening).toContain("That's not a briefing, that's a dare")
+  })
+
+  it('tags per-line music/ambience/voice cues, both on advance() and on restore', () => {
+    const AUDIO_INK = `
+Squad car pulls out. # music: introTheme # ambience: +engineIdle # ambience: +marketChatter
+Flood wall ahead. # ambience: -marketChatter # ambience: +rain
+"You're the detective." # voice: meiHongIntro
+* [Continue]
+    -> END
+`
+    useInsightStore.getState().selectArchetype('hustler')
+    useStoryStore.getState().loadStory(compileToJson(AUDIO_INK))
+
+    const lines = useStoryStore.getState().currentLines
+    const opening = lines.find((l) => l.text.includes('Squad car pulls out'))
+    expect(opening?.music).toBe('introTheme')
+    expect(opening?.ambienceOps).toEqual({ add: ['engineIdle', 'marketChatter'], remove: [], clear: false })
+
+    const floodWall = lines.find((l) => l.text.includes('Flood wall ahead'))
+    expect(floodWall?.music).toBeNull()
+    expect(floodWall?.ambienceOps).toEqual({ add: ['rain'], remove: ['marketChatter'], clear: false })
+
+    const voicedLine = lines.find((l) => l.text.includes("You're the detective"))
+    expect(voicedLine?.voice).toBe('meiHongIntro')
+    expect(opening?.voice).toBeNull()
+
+    // Restore path: the batch collapses to one block (documented save/restore
+    // simplification), tagged from whatever currentTags the story holds at
+    // that flattened point — same dual-parse requirement as background/speaker.
+    const savedStateJson = useStoryStore.getState().story!.state.ToJson()
+    useStoryStore.getState().reset()
+    useStoryStore.getState().loadStory(compileToJson(AUDIO_INK), savedStateJson)
+    const restored = useStoryStore.getState().currentLines
+    expect(restored).toHaveLength(1)
+    expect(restored[0].voice).toBe('meiHongIntro')
   })
 
   it('the intro surfaces the Static interjection once free points push it past the threshold', () => {

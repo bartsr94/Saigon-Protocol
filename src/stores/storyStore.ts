@@ -7,8 +7,18 @@ import { create } from 'zustand'
 import { Story } from 'inkjs'
 import type { Choice } from 'inkjs/engine/Choice'
 import { bindCheckFunctions, bindWellbeingFunctions, syncInsightVariables } from '../engine/storyEngine'
-import { parseLineBackground, parseLineSpeaker, type LineSpeaker } from '../engine/contentTags'
+import {
+  parseLineAmbience,
+  parseLineBackground,
+  parseLineMusic,
+  parseLineSpeaker,
+  parseLineVoice,
+  type AmbienceCue,
+  type LineSpeaker,
+} from '../engine/contentTags'
 import type { BackgroundId } from '../content/backgrounds'
+import type { MusicId } from '../content/music'
+import type { VoiceClipId } from '../content/voiceClips'
 import type { CheckResult } from '../engine/checkResolution'
 import { useInsightStore } from './insightStore'
 
@@ -17,6 +27,12 @@ export interface StoryLine {
   speaker: LineSpeaker
   /** Set only on lines carrying a `# background: <id>` tag; null otherwise (caller keeps the last one shown). */
   background: BackgroundId | null
+  /** Set only on lines carrying a `# music: <id>` tag; null otherwise (caller keeps whatever track was last cued). */
+  music: MusicId | null
+  /** Always present — describes the ambience-layer diff this line applies, empty/false when the line carries no `ambience` tag. */
+  ambienceOps: AmbienceCue
+  /** Set only on lines carrying a `# voice: <id>` tag; one-shot, no persistence concept. */
+  voice: VoiceClipId | null
 }
 
 interface StoryState {
@@ -49,7 +65,14 @@ function advance(story: Story, set: (partial: Partial<StoryState>) => void): voi
     const line = story.Continue()
     if (line !== null) {
       const tags = story.currentTags ?? []
-      lines.push({ text: line, speaker: parseLineSpeaker(tags), background: parseLineBackground(tags) })
+      lines.push({
+        text: line,
+        speaker: parseLineSpeaker(tags),
+        background: parseLineBackground(tags),
+        music: parseLineMusic(tags),
+        ambienceOps: parseLineAmbience(tags),
+        voice: parseLineVoice(tags),
+      })
     }
   }
   const currentChoices = story.currentChoices
@@ -72,7 +95,18 @@ function advance(story: Story, set: (partial: Partial<StoryState>) => void): voi
 function hydrateFromRestoredState(story: Story, set: (partial: Partial<StoryState>) => void): void {
   const text = story.currentText
   const tags = story.currentTags ?? []
-  const lines: StoryLine[] = text ? [{ text, speaker: parseLineSpeaker(tags), background: parseLineBackground(tags) }] : []
+  const lines: StoryLine[] = text
+    ? [
+        {
+          text,
+          speaker: parseLineSpeaker(tags),
+          background: parseLineBackground(tags),
+          music: parseLineMusic(tags),
+          ambienceOps: parseLineAmbience(tags),
+          voice: parseLineVoice(tags),
+        },
+      ]
+    : []
   const currentChoices = story.currentChoices
   set({
     currentLines: lines,

@@ -5,6 +5,7 @@
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useStoryStore } from '../../stores/storyStore'
 import { useSaveStore } from '../../stores/saveStore'
+import { useAudioStore } from '../../stores/audioStore'
 import { useUiStore } from '../../stores/uiStore'
 import { LOCATIONS, LOCATION_IDS, type LocationId } from '../../content/locations'
 import { LOCATION_STORY_JSON } from '../../content/locationStories'
@@ -20,6 +21,9 @@ export function OverworldScreen() {
   function handleSelect(id: LocationId) {
     selectLocation(id)
     loadStory(LOCATION_STORY_JSON[id])
+    // Location's baseline mood (docs/AUDIO_VOICEOVER_SPEC.md), instant on
+    // selection, before the ink content's own first-line tags (if any) take over.
+    useAudioStore.getState().enterLocation(LOCATIONS[id])
     // Autosave checkpoint (Save/Persistence Layer): capture the fresh
     // scene's opening state right after handing off to the Story Engine.
     useSaveStore.getState().autosave()

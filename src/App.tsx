@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useUiStore } from './stores/uiStore'
 import { useSettingsStore } from './stores/settingsStore'
 import { useStoryStore } from './stores/storyStore'
+import { useAudioStore } from './stores/audioStore'
 import { TitleScreen } from './components/screens/TitleScreen'
 import { CharacterCreationScreen } from './components/screens/CharacterCreationScreen'
 import { OverworldScreen } from './components/screens/OverworldScreen'
@@ -24,6 +25,18 @@ function App() {
   useEffect(() => {
     document.documentElement.style.fontSize = largeText ? '112.5%' : ''
   }, [largeText])
+
+  // Title/Boot and Character Creation share one theme (docs/AUDIO_VOICEOVER_SPEC.md).
+  // No corresponding "leave" branch here — deliberately: entering a real
+  // scene already overrides this itself (the intro's own first-line `music`
+  // tag, OverworldScreen.handleSelect's enterLocation, DialogueScreen's
+  // enterOverworld), and reacting to every non-title/chargen screen here too
+  // would race those calls within the same render pass.
+  useEffect(() => {
+    if (screen === 'title' || screen === 'chargen') {
+      useAudioStore.getState().playTitleMusic()
+    }
+  }, [screen])
 
   return (
     <main className="min-h-svh bg-bg text-white" style={{ filter: highContrast ? 'contrast(1.18) saturate(1.1)' : undefined }}>

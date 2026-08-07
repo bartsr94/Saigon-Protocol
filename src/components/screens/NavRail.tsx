@@ -1,7 +1,12 @@
 // The left-edge vertical icon rail (UI_VISUAL_STYLE_SPEC §5.3) shared by the
 // Overworld and Dialogue/Scene screens. Presentational — callbacks in, no
-// store imports; screens wire it to navigationStore/uiStore. Button order
-// (Char/Case/Map/Menu) follows the reference screenshot.
+// navigation/simulation-state store imports; screens wire it to
+// navigationStore/uiStore. Button order (Char/Case/Map/Menu) follows the
+// reference screenshot. The one exception is audioStore, for the same
+// hover/click SFX every other button gets (docs/AUDIO_VOICEOVER_SPEC.md) —
+// UI feedback, not a coupling to game state.
+
+import { useAudioStore } from '../../stores/audioStore'
 
 export interface NavRailProps {
   onChar?: () => void
@@ -27,7 +32,11 @@ function RailButton({ label, title, onClick }: { label: string; title: string; o
     <button
       type="button"
       title={title}
-      onClick={onClick}
+      onMouseEnter={() => useAudioStore.getState().playSfx('buttonHover')}
+      onClick={() => {
+        useAudioStore.getState().playSfx('buttonClick')
+        onClick()
+      }}
       className="flex h-14 w-14 items-center justify-center border border-chrome-primary bg-chrome-primary/5 font-display text-[0.65rem] font-bold uppercase tracking-wider text-chrome-primary outline-none transition-all hover:border-chrome-secondary hover:bg-chrome-secondary/15 hover:text-white hover:shadow-[0_0_15px_var(--color-chrome-secondary)] focus:border-chrome-secondary focus:shadow-[0_0_15px_var(--color-chrome-secondary)]"
       style={{
         clipPath:

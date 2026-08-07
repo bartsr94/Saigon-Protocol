@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { GlitchText } from './GlitchText'
+import { useAudioStore } from '../../stores/audioStore'
 
 export interface InsightChipProps {
   name: string
@@ -12,8 +14,18 @@ export interface InsightChipProps {
 /**
  * The small icon-swatch + name tag that marks an Insight interjection in
  * the dialogue log, and the Insight-gated choice tag (UI_DESIGN §4/§5).
+ * `glitchOnMount` also fires a one-shot sting (docs/AUDIO_VOICEOVER_SPEC.md)
+ * — each log-entry instance genuinely mounts once, so this doesn't repeat
+ * the way it would if it were tied to GlitchText's own repeating loop
+ * variant (used elsewhere, e.g. the title screen).
  */
 export function InsightChip({ name, color, glitchOnMount = false, className = '' }: InsightChipProps) {
+  useEffect(() => {
+    if (glitchOnMount) useAudioStore.getState().playSfx('insightInterject')
+    // Fire once on this instance's mount only — glitchOnMount is a per-instance constant, not something that should re-trigger the sting.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <span

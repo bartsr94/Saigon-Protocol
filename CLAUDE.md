@@ -23,6 +23,7 @@ npm run build       # tsc -b && vite build
 npm run lint         # oxlint
 npm test              # vitest run (single run, CI-style)
 npm run test:watch     # vitest watch mode
+npm run audio:convert   # batch-convert .wav -> .mp3 (scripts/wav-to-mp3.mjs, needs ffmpeg on PATH)
 ```
 
 Single test file: `npx vitest run src/stores/navigationStore.test.ts`
@@ -102,6 +103,13 @@ this shape for new content modules rather than inventing a new pattern.
 are explicitly throwaway/placeholder fixtures (flagged as such in their own
 comments and in the architecture doc), not real GDD content — don't treat
 their contents as canonical when building real features.
+
+Audio assets (`public/audio/{music,ambience,voice}/*.mp3`, referenced from
+`src/content/music.ts` / `ambience.ts` / `voiceClips.ts`) are served as mp3
+only. Source sound effects/music are often sourced as `.wav` — if any land in
+the repo, convert them with `npm run audio:convert` (`scripts/wav-to-mp3.mjs`,
+requires ffmpeg on PATH) rather than committing `.wav` files or shipping them
+directly. See `docs/AUDIO_VOICEOVER_SPEC.md` for the audio layer's design.
 
 ### Dev harnesses
 

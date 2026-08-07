@@ -41,9 +41,9 @@ already expect.
   convention is proven against real compiled ink, not just unit tests.
 
 **Out of scope** (deferred):
-- Voiceover glyphs / ElevenLabs clip references (UI_DESIGN §7, Architecture
-  §7 — a separate, not-yet-built layer; a future `voice: <clipId>` tag could
-  hang off the same line-tag mechanism later without changing this design).
+- ~~Voiceover glyphs / ElevenLabs clip references~~ — implemented via the
+  `music`/`ambience`/`voice` line tags below; see
+  `docs/AUDIO_VOICEOVER_SPEC.md`.
 - A real per-location content pipeline (compiling/loading `.ink` files per
   location) — still Architecture §6's other open half. This spec only fixes
   *what a tag means once a story is loaded*, not how stories get organized.
@@ -61,7 +61,9 @@ choice," never crash a scene.
 ### Line tags (dialogue log entries)
 
 Attach to any content line inside a knot/stitch/weave. At most one
-`speaker` tag is meaningful per line.
+`speaker`/`background`/`music` tag is meaningful per line (last one wins if
+several appear); `ambience` is the exception — every `ambience` tag on a
+line applies, since a line can add one layer and drop another at once.
 
 | Tag | Meaning | Render |
 |---|---|---|
@@ -69,10 +71,14 @@ Attach to any content line inside a knot/stitch/weave. At most one
 | `# speaker: npc:<npcId>` | An NPC line. `<npcId>` keys into `content/npcs.ts`. | Name row above the text; the center-stage portrait swaps to that NPC and stays until the next `npc:` tag. |
 | `# speaker: insight:<insightId>` | An Insight interjection (UI_DESIGN §4). `<insightId>` keys into `content/insights.ts`. | `InsightChip`-headed log entry in that Insight's color, no center-stage change. |
 | `# background: <backgroundId>` | Scene backdrop art (UI_DESIGN §3: "location establishing art can also render here when no character is present"). `<backgroundId>` keys into `content/backgrounds.ts`. Independent of `speaker` — a line can carry both, or `background` alone on an otherwise-narrator line. | Center-stage backdrop image (dimmed) behind the HUD/portrait; stays until the next `background:` tag. |
+| `# music: <musicId>` | Scene music cue (`docs/AUDIO_VOICEOVER_SPEC.md`). `<musicId>` keys into `content/music.ts`; `'none'` is a reserved id that explicitly silences music. | Crossfades to the cued track; stays until the next `music:` tag. |
+| `# ambience: +<id>` / `-<id>` / `clear` | Layerable environmental sound. `<id>` keys into `content/ambience.ts`. Additive, not replace — multiple `ambience` tags on one line all apply. | Adds/removes/clears looping ambience layers, faded in/out. |
+| `# voice: <clipId>` | A curated voiced line (UI_DESIGN §7 — intros/greetings only, not full dialogue). `<clipId>` keys into `content/voiceClips.ts`. | Plays the clip as the line appears; shows a small replay glyph on that line. One-shot, no persistence. |
 
-An unrecognized `npcId`/`insightId`/`backgroundId` (typo, or one not yet
-added to its content module) falls back to narrator rendering / no backdrop
-change for that line, rather than breaking the scene.
+An unrecognized `npcId`/`insightId`/`backgroundId`/`musicId`/`ambienceId`/
+`voiceClipId` (typo, or one not yet added to its content module) falls back
+to narrator rendering / no change for that line, rather than breaking the
+scene.
 
 Tags go on the *same source line* as the text they describe — ink attaches
 `currentTags` to whatever line is currently being built, and a standalone

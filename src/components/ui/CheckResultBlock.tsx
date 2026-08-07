@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import type { CheckResult } from '../../engine/checkResolution'
+import { useAudioStore } from '../../stores/audioStore'
 
 export interface CheckResultBlockProps {
   insightName: string
@@ -8,10 +10,19 @@ export interface CheckResultBlockProps {
 /**
  * Transparent check-result readout for the dialogue log (UI_DESIGN §5) —
  * shows the dice, modifier, target, and pass/fail rather than hiding the
- * math, on purpose. Takes the engine's own CheckResult shape directly.
+ * math, on purpose. Takes the engine's own CheckResult shape directly. Each
+ * appearance in the log is a fresh mount (a new check just fired), so a
+ * mount effect is the right moment for the success/failure sting
+ * (docs/AUDIO_VOICEOVER_SPEC.md).
  */
 export function CheckResultBlock({ insightName, result }: CheckResultBlockProps) {
   const { dice, diceTotal, modifier, targetNumber, total, success, doubles } = result
+
+  useEffect(() => {
+    useAudioStore.getState().playSfx(success ? 'checkSuccess' : 'checkFailure')
+    // Fire once for this result's mount only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const color = success ? 'var(--color-check-white)' : 'var(--color-check-red)'
   const sign = modifier >= 0 ? '+' : '−'
 

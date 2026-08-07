@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "compile:ink": "node scripts/compile-ink.mjs",
+    "audio:convert": "node scripts/wav-to-mp3.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

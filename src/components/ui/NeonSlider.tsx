@@ -1,3 +1,5 @@
+import { useAudioStore } from '../../stores/audioStore'
+
 export interface NeonSliderProps {
   label: string
   value: number
@@ -28,7 +30,13 @@ export function NeonSlider({ label, value, min = 0, max = 100, onChange, formatV
         min={min}
         max={max}
         value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        onChange={(e) => {
+          const next = Number(e.target.value)
+          // Native range inputs only fire onChange when the quantized value
+          // actually moves, so this is already "per notch," not per pixel.
+          if (next !== value) useAudioStore.getState().playSfx('sliderTick')
+          onChange(next)
+        }}
       />
     </div>
   )

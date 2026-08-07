@@ -2,14 +2,18 @@
 // "save/load slots" scope (Save/Persistence Layer, docs/
 // SAVE_PERSISTENCE_SPEC.md) — audio/accessibility settings themselves stay
 // session-only (that's a separate, not-yet-built persistence concern, per
-// the spec's Out of scope). Volume sliders have no audio engine to drive
-// yet (§7). Reduce Motion/High Contrast/Large Text are real, wired effects
-// (see App.tsx), not decorative checkboxes.
+// the spec's Out of scope). Volume sliders drive the real audioStore
+// (docs/AUDIO_VOICEOVER_SPEC.md), which subscribes to this store directly —
+// no wiring needed here beyond the sliders themselves. Reduce Motion/High
+// Contrast/Large Text are real, wired effects (see App.tsx), not decorative
+// checkboxes.
 
 import { useEffect, useState } from 'react'
 import { useSettingsStore, type TextSpeed } from '../../stores/settingsStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useUiStore } from '../../stores/uiStore'
+import { useStoryStore } from '../../stores/storyStore'
+import { useAudioStore } from '../../stores/audioStore'
 import { CyberButton, NeonCheckbox, NeonSlider, Panel } from '../ui'
 
 const TEXT_SPEEDS: TextSpeed[] = ['slow', 'normal', 'fast']
@@ -42,10 +46,11 @@ function SaveDataSection() {
   }, [])
 
   function handleLoad(id: string) {
-    if (loadSlot(id)) {
-      closeOverlay()
-      goToGame()
-    }
+    if (!loadSlot(id)) return
+    // Same title-music handoff TitleScreen's Continue needs (docs/AUDIO_VOICEOVER_SPEC.md).
+    if (!useStoryStore.getState().story) useAudioStore.getState().enterOverworld()
+    closeOverlay()
+    goToGame()
   }
 
   function handleSaveNew() {

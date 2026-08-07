@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react'
+import { useAudioStore } from '../../stores/audioStore'
 
 export interface CyberButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** Optional decorative corner tag, e.g. "SYS.01" (Title/Boot buttons). */
@@ -7,13 +8,23 @@ export interface CyberButtonProps extends ButtonHTMLAttributes<HTMLButtonElement
 
 /**
  * Cut-md chrome button — idle cyan, hover/focus magenta (UI_VISUAL_STYLE_SPEC
- * §1/§3). Used for nav-rail icons, menu buttons, Settings actions.
+ * §1/§3). Used for nav-rail icons, menu buttons, Settings actions. Hover/
+ * click SFX (docs/AUDIO_VOICEOVER_SPEC.md) fire here rather than at each
+ * call site, so every button in the app gets them for free.
  */
-export function CyberButton({ tag, className = '', children, disabled, ...props }: CyberButtonProps) {
+export function CyberButton({ tag, className = '', children, disabled, onMouseEnter, onClick, ...props }: CyberButtonProps) {
   return (
     <button
       {...props}
       disabled={disabled}
+      onMouseEnter={(e) => {
+        if (!disabled) useAudioStore.getState().playSfx('buttonHover')
+        onMouseEnter?.(e)
+      }}
+      onClick={(e) => {
+        if (!disabled) useAudioStore.getState().playSfx('buttonClick')
+        onClick?.(e)
+      }}
       className={`group relative flex items-center justify-between gap-3 border px-6 py-3 font-display text-sm font-bold uppercase tracking-widest outline-none transition-all duration-300 ${
         disabled
           ? 'cursor-not-allowed border-white/20 bg-transparent text-white/20'
