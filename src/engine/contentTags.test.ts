@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseChoiceTags, parseLineBackground, parseLineSpeaker } from './contentTags'
+import { parseChoiceTags, parseLineAmbience, parseLineBackground, parseLineMusic, parseLineSpeaker, parseLineVoice } from './contentTags'
 
 describe('parseLineSpeaker', () => {
   it('defaults to narrator when there are no tags', () => {
@@ -46,6 +46,72 @@ describe('parseLineBackground', () => {
 
   it('resolves independently of a speaker tag on the same line', () => {
     expect(parseLineBackground(['background: avelineLabExterior', 'speaker: npc:meiHong'])).toBe('avelineLabExterior')
+  })
+})
+
+describe('parseLineMusic', () => {
+  it('returns null when there is no music tag', () => {
+    expect(parseLineMusic(['speaker: npc:meiHong'])).toBeNull()
+  })
+
+  it('resolves a recognized music tag', () => {
+    expect(parseLineMusic(['music: introTheme'])).toBe('introTheme')
+  })
+
+  it('resolves the "none" sentinel as a real value, not a fallback', () => {
+    expect(parseLineMusic(['music: none'])).toBe('none')
+  })
+
+  it('falls back to null for an unrecognized musicId', () => {
+    expect(parseLineMusic(['music: someoneNotInContent'])).toBeNull()
+  })
+})
+
+describe('parseLineAmbience', () => {
+  it('returns an empty, non-clearing cue when there is no ambience tag', () => {
+    expect(parseLineAmbience(['speaker: npc:meiHong'])).toEqual({ add: [], remove: [], clear: false })
+  })
+
+  it('resolves an add tag', () => {
+    expect(parseLineAmbience(['ambience: +rain'])).toEqual({ add: ['rain'], remove: [], clear: false })
+  })
+
+  it('resolves a remove tag', () => {
+    expect(parseLineAmbience(['ambience: -rain'])).toEqual({ add: [], remove: ['rain'], clear: false })
+  })
+
+  it('resolves a clear tag', () => {
+    expect(parseLineAmbience(['ambience: clear'])).toEqual({ add: [], remove: [], clear: true })
+  })
+
+  it('collects every ambience tag on the line, not just the first', () => {
+    expect(parseLineAmbience(['ambience: +rain', 'ambience: -marketChatter'])).toEqual({
+      add: ['rain'],
+      remove: ['marketChatter'],
+      clear: false,
+    })
+  })
+
+  it('ignores an unrecognized ambienceId', () => {
+    expect(parseLineAmbience(['ambience: +someoneNotInContent'])).toEqual({ add: [], remove: [], clear: false })
+  })
+
+  it('ignores a value with no recognized sigil', () => {
+    expect(parseLineAmbience(['ambience: rain'])).toEqual({ add: [], remove: [], clear: false })
+  })
+})
+
+describe('parseLineVoice', () => {
+  it('returns null when there is no voice tag', () => {
+    expect(parseLineVoice(['speaker: npc:meiHong'])).toBeNull()
+  })
+
+  it('resolves a recognized voice tag', () => {
+    expect(parseLineVoice(['voice: meiHongIntro'])).toBe('meiHongIntro')
+  })
+
+  it('falls back to null for an unrecognized voiceClipId', () => {
+    expect(parseLineVoice(['voice: someoneNotInContent'])).toBeNull()
   })
 })
 

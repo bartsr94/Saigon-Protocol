@@ -7,6 +7,8 @@
 import { CyberButton, GlitchText } from '../ui'
 import { useUiStore } from '../../stores/uiStore'
 import { useSaveStore } from '../../stores/saveStore'
+import { useStoryStore } from '../../stores/storyStore'
+import { useAudioStore } from '../../stores/audioStore'
 
 export function TitleScreen() {
   const goToChargen = useUiStore((s) => s.goToChargen)
@@ -17,7 +19,12 @@ export function TitleScreen() {
   const canContinue = hasAnySave()
 
   function handleContinue() {
-    if (loadMostRecent()) goToGame()
+    if (!loadMostRecent()) return
+    // A loaded save with no active story lands on the Overworld — the title
+    // theme wouldn't otherwise stop there (docs/AUDIO_VOICEOVER_SPEC.md; a
+    // mid-scene save's own restored line tags already take care of this).
+    if (!useStoryStore.getState().story) useAudioStore.getState().enterOverworld()
+    goToGame()
   }
 
   return (

@@ -20,6 +20,7 @@ import { useInsightStore } from '../../stores/insightStore'
 import { useStoryStore, type StoryLine } from '../../stores/storyStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSaveStore } from '../../stores/saveStore'
+import { useAudioStore } from '../../stores/audioStore'
 import { useSettingsStore, TEXT_SPEED_MS } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { LOCATIONS } from '../../content/locations'
@@ -92,14 +93,42 @@ function DialogueText({ text, className }: { text: string; className: string }) 
   )
 }
 
-function StoryLineEntry({ line, text }: { line: StoryLine; text: string }) {
+/**
+ * Audio glyph for a voiced line (UI_DESIGN §7): shows near the speaker's
+ * name/portrait when the line carries a `# voice:` tag, doubles as a replay
+ * control. Only ever rendered for the latest entry's tagged line.
+ */
+function VoiceGlyph() {
+  const isVoicePlaying = useAudioStore((s) => s.isVoicePlaying)
+  const replayVoice = useAudioStore((s) => s.replayVoice)
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation()
+        replayVoice()
+      }}
+      title={isVoicePlaying ? 'Playing voice line' : 'Replay voice line'}
+      className={`ml-2 inline-flex items-center font-display text-[10px] uppercase tracking-widest ${
+        isVoicePlaying ? 'text-chrome-primary' : 'text-chrome-primary/50 hover:text-chrome-primary'
+      }`}
+    >
+      {isVoicePlaying ? '♪' : '⟳'}
+    </button>
+  )
+}
+
+function StoryLineEntry({ line, text, showVoiceGlyph }: { line: StoryLine; text: string; showVoiceGlyph: boolean }) {
   if (text.length === 0) return null
 
   if (line.speaker.type === 'insight') {
     const insight = INSIGHTS[line.speaker.insightId]
     return (
       <div className="space-y-1">
-        <InsightChip name={insight.name} color={insight.color} glitchOnMount />
+        <span className="inline-flex items-center">
+          <InsightChip name={insight.name} color={insight.color} glitchOnMount />
+          {showVoiceGlyph && <VoiceGlyph />}
+        </span>
         <p className="whitespace-pre-wrap pl-6 font-body text-[19px]" style={{ color: insight.color }}>
           {text}
         </p>
@@ -111,13 +140,21 @@ function StoryLineEntry({ line, text }: { line: StoryLine; text: string }) {
     const npc = NPCS[line.speaker.npcId]
     return (
       <div className="space-y-1 border-l-2 border-chrome-primary/40 pl-3">
-        <span className="font-display text-xs font-bold uppercase tracking-widest text-chrome-primary">{npc.name}</span>
+        <span className="font-display text-xs font-bold uppercase tracking-widest text-chrome-primary">
+          {npc.name}
+          {showVoiceGlyph && <VoiceGlyph />}
+        </span>
         <DialogueText text={text} className="whitespace-pre-wrap font-body text-[19px]" />
       </div>
     )
   }
 
-  return <DialogueText text={text} className="whitespace-pre-wrap font-body text-[19px]" />
+  return (
+    <div className="space-y-1">
+      {showVoiceGlyph && <VoiceGlyph />}
+      <DialogueText text={text} className="whitespace-pre-wrap font-body text-[19px]" />
+    </div>
+  )
 }
 
 export function DialogueScreen() {
@@ -148,6 +185,9 @@ export function DialogueScreen() {
   // Missing/not-yet-authored backdrop art degrades to no backdrop rather
   // than a broken-image icon (same tolerance PortraitFrame already has).
   const [backgroundLoadFailed, setBackgroundLoadFailed] = useState(false)
+  // Same tolerance for the center-stage NPC portrait — a failed/missing
+  // load degrades to just the name label rather than a raw broken-image icon.
+  const [npcPortraitLoadFailed, setNpcPortraitLoadFailed] = useState(false)
   // The log's scrollbar stays invisible while pinned to the live edge, and
   // only appears once the reader has actually scrolled up to see older
   // lines (auto-scroll-to-bottom below keeps this false during normal play).
@@ -170,8 +210,12 @@ export function DialogueScreen() {
     if (currentLines.length === 0) return
     const entry: LogEntry = { id: nextId.current++, lines: currentLines, checkResult: lastCheckResult }
     setLog((prev) => [...prev, entry])
+    useAudioStore.getState().applyStoryLines(currentLines)
     const npcLines = currentLines.filter((l): l is StoryLine & { speaker: { type: 'npc'; npcId: NpcId } } => l.speaker.type === 'npc')
-    if (npcLines.length > 0) setActiveNpcId(npcLines[npcLines.length - 1].speaker.npcId)
+    if (npcLines.length > 0) {
+      setActiveNpcId(npcLines[npcLines.length - 1].speaker.npcId)
+      setNpcPortraitLoadFailed(false)
+    }
     const backgroundLines = currentLines.filter((l) => l.background !== null)
     if (backgroundLines.length > 0) {
       setActiveBackgroundId(backgroundLines[backgroundLines.length - 1].background)
@@ -214,6 +258,8 @@ export function DialogueScreen() {
   function handleReturnToOverworld() {
     returnToOverworld()
     resetStory()
+    // Leaving a scene gets the Overworld hub's own mood back (docs/AUDIO_VOICEOVER_SPEC.md).
+    useAudioStore.getState().enterOverworld()
     // Autosave checkpoint (Save/Persistence Layer): capture the "back on
     // the Overworld, no active scene" state.
     useSaveStore.getState().autosave()
@@ -274,7 +320,7 @@ export function DialogueScreen() {
           establishing art can render here when no character is present."
         */}
         <div className="flex h-full flex-col items-center justify-end gap-3">
-          {activeNpcId && (
+          {activeNpcId && !npcPortraitLoadFailed && (
             <div
               className="relative h-[840px] w-[600px] max-h-[90%] translate-x-[100px] overflow-hidden bg-black/40"
               style={{
@@ -284,7 +330,12 @@ export function DialogueScreen() {
                   '0 0 30px color-mix(in srgb, var(--color-chrome-primary) 20%, transparent), inset 0 0 40px color-mix(in srgb, var(--color-chrome-primary) 10%, transparent)',
               }}
             >
-              <img src={NPCS[activeNpcId].portraitSrc} alt={NPCS[activeNpcId].name} className="h-full w-full object-cover" />
+              <img
+                src={NPCS[activeNpcId].portraitSrc}
+                alt={NPCS[activeNpcId].name}
+                className="h-full w-full object-cover"
+                onError={() => setNpcPortraitLoadFailed(true)}
+              />
             </div>
           )}
           <span className="font-display text-xs uppercase tracking-widest text-white/40">
@@ -306,7 +357,7 @@ export function DialogueScreen() {
             return (
               <div key={entry.id} className="space-y-2">
                 {revealed.map((r, j) => (
-                  <StoryLineEntry key={j} line={r.line} text={r.text} />
+                  <StoryLineEntry key={j} line={r.line} text={r.text} showVoiceGlyph={isLatest && r.line.voice !== null} />
                 ))}
                 {entry.checkResult && <CheckResultBlock insightName="CHECK" result={entry.checkResult} />}
               </div>
