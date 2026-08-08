@@ -99,7 +99,13 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
       unlockedLocationIds: [...navigation.unlockedLocationIds],
       selectedLocationId: navigation.selectedLocationId,
     },
-    currentHubId: gameplay.currentHubId,
+    gameplay: {
+      currentHubId: gameplay.currentHubId,
+      playerPosition: gameplay.playerPosition,
+      revealedTiles: Object.fromEntries(
+        Object.entries(gameplay.revealedTiles).map(([hubId, tiles]) => [hubId, [...(tiles ?? [])]]),
+      ),
+    },
     casefile: serializeCasefileState(casefile),
     inkStateJson: story ? story.state.ToJson() : null,
     activeStoryId: story ? useStoryStore.getState().activeStoryId : null,
@@ -150,7 +156,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
 
     useInsightStore.getState().hydrate(blob.insight)
     useNavigationStore.getState().hydrate(blob.navigation)
-    useGameplayStore.getState().hydrate({ currentHubId: blob.currentHubId })
+    useGameplayStore.getState().hydrate(blob.gameplay)
     useCasefileStore.getState().hydrate(blob.casefile)
     const storyJson = blob.activeStoryId ? resolveStoryJson(blob.activeStoryId) : null
     if (blob.inkStateJson && storyJson) {
