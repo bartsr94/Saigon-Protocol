@@ -46,6 +46,38 @@ Use **district click -> district panel -> enter sublocation/story**.
 
 That gives us a city-map feel while still supporting multiple destinations per district later.
 
+## District Street Layer (implemented)
+
+"Enters the district directly" above is now a third map layer, not an
+instant jump into a location's story. Entering a district with a street map
+places the player at one end of a small walkable **District Street** grid —
+the exact same fog-of-war tile-grid mechanics as a Location Hub
+(`docs/LOCATION_GRID_EXPLORATION_SPEC.md`; same ASCII tile vocabulary, same
+`engine/gridMovement.ts` pure movement/collision/fog math, reused rather
+than duplicated) — where each POI names a Location Hub instead of holding a
+talk/inspect interaction list. Walking onto a District Street POI is what
+transitions into that Location Hub:
+
+```
+Overworld (district select)
+  -> District Street (walkable grid; POIs = locations in this district)
+    -> Location Hub (walkable grid or card list; e.g. checkpoint's ring)
+      -> Dialogue (ink scene)
+```
+
+"Map" pops back up **one layer at a time**: leaving a Hub entered from
+within a District Street returns to that street (not the Overworld);
+leaving the street itself returns to the Overworld district-select screen.
+
+Only **District 4** has a real street map today
+(`content/districtStreets.ts`'s `DISTRICT_STREETS`, a `Partial<Record<DistrictId, …>>`)
+— same phased-rollout precedent as `checkpoint` being the only
+`layout: 'grid'` Location Hub. Districts absent from `DISTRICT_STREETS`
+(1/5/2, none of which have real destinations yet) keep the plain
+"district panel + Enter button per location" presentation described above,
+unchanged, until they earn a street map too — that's a content-only
+addition once they do, not an engine change.
+
 ## Districts in scope
 
 Case 1 should focus on these four clickable districts:

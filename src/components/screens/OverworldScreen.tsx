@@ -5,14 +5,14 @@
 
 import { useMemo, useState } from 'react'
 import { useNavigationStore } from '../../stores/navigationStore'
-import { useSaveStore } from '../../stores/saveStore'
-import { useAudioStore } from '../../stores/audioStore'
 import { useUiStore } from '../../stores/uiStore'
 import { DISTRICT_IDS, DISTRICT_REGIONS, type DistrictRegionDefinition } from '../../content/mapRegions'
+import { DISTRICT_STREETS } from '../../content/districtStreets'
 import { LOCATIONS, LOCATION_IDS, type DistrictId, type LocationId } from '../../content/locations'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { CyberButton, GlitchText, Panel } from '../ui'
 import { NavRail } from './NavRail'
+import { enterLocationHub } from './enterLocationHub'
 
 const saigonMapSrc = new URL('../../../saigon_map.jpg', import.meta.url).href
 
@@ -23,9 +23,8 @@ function polygonPoints(region: DistrictRegionDefinition): string {
 export function OverworldScreen() {
   const unlockedLocationIds = useNavigationStore((s) => s.unlockedLocationIds)
   const selectedLocationId = useNavigationStore((s) => s.selectedLocationId)
-  const selectLocation = useNavigationStore((s) => s.selectLocation)
   const openOverlay = useUiStore((s) => s.openOverlay)
-  const enterHub = useGameplayStore((s) => s.enterHub)
+  const enterDistrictStreet = useGameplayStore((s) => s.enterDistrictStreet)
   const [selectedDistrictId, setSelectedDistrictId] = useState<DistrictId>('district4')
   const [hoveredDistrictId, setHoveredDistrictId] = useState<DistrictId | null>(null)
 
@@ -44,17 +43,7 @@ export function OverworldScreen() {
 
   const selectedDistrict = DISTRICT_REGIONS[selectedDistrictId]
   const selectedDistrictLocationIds = locationIdsByDistrict[selectedDistrictId]
-
-  function handleSelect(id: LocationId) {
-    selectLocation(id)
-    enterHub(id)
-    // Hub's baseline mood (docs/GAME_GUIDE.md), instant on entry, before any
-    // encounter scene inside that location takes over with its own tags.
-    useAudioStore.getState().enterLocation(LOCATIONS[id])
-    // Autosave checkpoint (Save/Persistence Layer): capture the current hub
-    // entry so scene selection can happen from inside the location later.
-    useSaveStore.getState().autosave()
-  }
+  const selectedDistrictStreet = DISTRICT_STREETS[selectedDistrictId]
 
   return (
     <div className="flex h-svh w-full">
@@ -185,48 +174,62 @@ export function OverworldScreen() {
               <h2 className="mt-1 font-display text-lg font-bold uppercase tracking-widest text-white">{selectedDistrict.name}</h2>
               <p className="mt-2 font-body text-sm leading-5 text-white/65">{selectedDistrict.blurb}</p>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="border border-white/15 px-2 py-1 font-display text-[10px] uppercase tracking-[0.25em] text-white/55">
-                  {selectedDistrictLocationIds.filter((id) => unlockedLocationIds.has(id)).length} active lead
-                  {selectedDistrictLocationIds.filter((id) => unlockedLocationIds.has(id)).length === 1 ? '' : 's'}
-                </span>
-                <span className="border border-white/15 px-2 py-1 font-display text-[10px] uppercase tracking-[0.25em] text-white/55">
-                  {selectedDistrictLocationIds.length} node{selectedDistrictLocationIds.length === 1 ? '' : 's'}
-                </span>
-              </div>
+              {selectedDistrictStreet ? (
+                // Districts with a street map (Aveline/District 4 today) don't list
+                // their locations as a menu — you discover them by walking the
+                // street (docs/SAIGON_2226_OVERWORLD_SPEC.md's District Street
+                // Layer). Entering the district just drops you at the street's
+                // entry tile.
+                <div className="mt-4 flex flex-col gap-3">
+                  <p className="font-body text-sm text-white/55">{selectedDistrictStreet.blurb}</p>
+                  <CyberButton onClick={() => enterDistrictStreet(selectedDistrictId)}>Enter District</CyberButton>
+                </div>
+              ) : (
+                <>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="border border-white/15 px-2 py-1 font-display text-[10px] uppercase tracking-[0.25em] text-white/55">
+                      {selectedDistrictLocationIds.filter((id) => unlockedLocationIds.has(id)).length} active lead
+                      {selectedDistrictLocationIds.filter((id) => unlockedLocationIds.has(id)).length === 1 ? '' : 's'}
+                    </span>
+                    <span className="border border-white/15 px-2 py-1 font-display text-[10px] uppercase tracking-[0.25em] text-white/55">
+                      {selectedDistrictLocationIds.length} node{selectedDistrictLocationIds.length === 1 ? '' : 's'}
+                    </span>
+                  </div>
 
-              <div className="mt-4 flex flex-col gap-3">
-                {selectedDistrictLocationIds.length === 0 && (
-                  <p className="font-body text-sm text-white/45">No playable destinations are wired into this district yet. The map model is ready for future Case 1 locations here.</p>
-                )}
+                  <div className="mt-4 flex flex-col gap-3">
+                    {selectedDistrictLocationIds.length === 0 && (
+                      <p className="font-body text-sm text-white/45">No playable destinations are wired into this district yet. The map model is ready for future Case 1 locations here.</p>
+                    )}
 
-                {selectedDistrictLocationIds.map((id) => {
-                  const def = LOCATIONS[id]
-                  const unlocked = unlockedLocationIds.has(id)
+                    {selectedDistrictLocationIds.map((id) => {
+                      const def = LOCATIONS[id]
+                      const unlocked = unlockedLocationIds.has(id)
 
-                  return (
-                    <Panel
-                      key={id}
-                      size="sm"
-                      accent={unlocked ? selectedDistrict.accent : 'rgba(255,255,255,0.22)'}
-                      className={`p-4 ${unlocked ? '' : 'opacity-65'}`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="font-display text-sm font-bold uppercase tracking-wide text-white">
-                            {def.name}
-                            {!unlocked && <span className="text-white/45"> (locked)</span>}
-                          </h3>
-                          <p className="mt-1 font-body text-sm text-white/60">{def.blurb}</p>
-                        </div>
-                        <CyberButton className="shrink-0 !px-3 !py-2 !text-xs" disabled={!unlocked} onClick={() => handleSelect(id)}>
-                          Enter
-                        </CyberButton>
-                      </div>
-                    </Panel>
-                  )
-                })}
-              </div>
+                      return (
+                        <Panel
+                          key={id}
+                          size="sm"
+                          accent={unlocked ? selectedDistrict.accent : 'rgba(255,255,255,0.22)'}
+                          className={`p-4 ${unlocked ? '' : 'opacity-65'}`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <h3 className="font-display text-sm font-bold uppercase tracking-wide text-white">
+                                {def.name}
+                                {!unlocked && <span className="text-white/45"> (locked)</span>}
+                              </h3>
+                              <p className="mt-1 font-body text-sm text-white/60">{def.blurb}</p>
+                            </div>
+                            <CyberButton className="shrink-0 !px-3 !py-2 !text-xs" disabled={!unlocked} onClick={() => enterLocationHub(id)}>
+                              Enter
+                            </CyberButton>
+                          </div>
+                        </Panel>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
             </Panel>
 
             <Panel size="md" className="p-5">

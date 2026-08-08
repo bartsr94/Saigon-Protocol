@@ -1,12 +1,16 @@
 // Gameplay/location-mode layer (Architecture §7, docs/LOCATION_HUB_ENCOUNTER_FLOW_SPEC.md):
 // tracks which Location Hub the player is currently in, distinct from
 // navigationStore's overworld-level "which locations are unlocked/selected."
-// Also owns grid-hub exploration state (docs/LOCATION_GRID_EXPLORATION_SPEC.md):
-// the player's tile position inside the current hub's grid, and the
-// per-hub fog-of-war memory of which tiles have been revealed so far.
+// Also owns grid-hub exploration state (docs/LOCATION_GRID_EXPLORATION_SPEC.md)
+// and, one level up, District Street exploration state
+// (docs/SAIGON_2226_OVERWORLD_SPEC.md's District Street Layer): the
+// player's tile position inside the current hub/street's grid, and the
+// per-hub/per-street fog-of-war memory of which tiles have been revealed.
 
 import { create } from 'zustand'
 import { LOCATION_HUBS, type GridPosition, type HubId, type HubPoi } from '../content/locationHubs'
+import { DISTRICT_STREETS, type DistrictStreetPoi } from '../content/districtStreets'
+import type { DistrictId } from '../content/locations'
 import { poiAt, tilesWithinRadius } from '../engine/gridMovement'
 import type { SerializedGameplayState } from '../engine/saveEngine'
 
@@ -16,12 +20,24 @@ interface GameplayState {
   /** "x,y" tile keys revealed so far, per hub — persists once revealed (Location Grid Exploration Spec's "Fog persistence" decision). */
   revealedTiles: Partial<Record<HubId, Set<string>>>
 
+  /** The district whose street map the player is currently walking, if any — set independently of currentHubId so entering a Hub from within a street doesn't lose "where to return to." */
+  currentDistrictId: DistrictId | null
+  districtPlayerPosition: GridPosition | null
+  districtRevealedTiles: Partial<Record<DistrictId, Set<string>>>
+
   enterHub: (hubId: HubId) => void
   leaveHub: () => void
   /** Moves the player to a tile inside the current hub's grid and reveals fog around it. No-op outside a grid hub. */
   moveTo: (position: GridPosition) => void
   /** The POI (if any) at `position` inside `hubId`'s grid. */
   activePoiAt: (hubId: HubId, position: GridPosition) => HubPoi | null
+
+  enterDistrictStreet: (districtId: DistrictId) => void
+  leaveDistrictStreet: () => void
+  /** Moves the player to a tile inside the current district street's grid and reveals fog around it. No-op outside a district street. */
+  moveInDistrict: (position: GridPosition) => void
+  /** The POI (if any) at `position` inside `districtId`'s street grid. */
+  districtPoiAt: (districtId: DistrictId, position: GridPosition) => DistrictStreetPoi | null
 
   /** Bulk-restores state from a save blob (Save/Persistence Layer). */
   hydrate: (state: SerializedGameplayState) => void
@@ -36,10 +52,22 @@ function revealAround(revealed: Set<string>, hubId: HubId, position: GridPositio
   return next
 }
 
+function revealAroundInDistrict(revealed: Set<string>, districtId: DistrictId, position: GridPosition): Set<string> {
+  const street = DISTRICT_STREETS[districtId]
+  if (!street) return revealed
+  const next = new Set(revealed)
+  for (const key of tilesWithinRadius(street, position, street.visionRadius ?? 1)) next.add(key)
+  return next
+}
+
 export const useGameplayStore = create<GameplayState>((set, get) => ({
   currentHubId: null,
   playerPosition: null,
   revealedTiles: {},
+
+  currentDistrictId: null,
+  districtPlayerPosition: null,
+  districtRevealedTiles: {},
 
   enterHub: (hubId) => {
     const hub = LOCATION_HUBS[hubId]
@@ -70,6 +98,38 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
     return poiAt(hub.grid, position)
   },
 
+  enterDistrictStreet: (districtId) => {
+    const street = DISTRICT_STREETS[districtId]
+    const entryTile = street?.entryTile ?? null
+    set((state) => ({
+      currentDistrictId: districtId,
+      districtPlayerPosition: entryTile,
+      districtRevealedTiles: entryTile
+        ? { ...state.districtRevealedTiles, [districtId]: revealAroundInDistrict(state.districtRevealedTiles[districtId] ?? new Set(), districtId, entryTile) }
+        : state.districtRevealedTiles,
+    }))
+  },
+
+  leaveDistrictStreet: () => set({ currentDistrictId: null, districtPlayerPosition: null }),
+
+  moveInDistrict: (position) => {
+    const { currentDistrictId, districtRevealedTiles } = get()
+    if (!currentDistrictId) return
+    set({
+      districtPlayerPosition: position,
+      districtRevealedTiles: {
+        ...districtRevealedTiles,
+        [currentDistrictId]: revealAroundInDistrict(districtRevealedTiles[currentDistrictId] ?? new Set(), currentDistrictId, position),
+      },
+    })
+  },
+
+  districtPoiAt: (districtId, position) => {
+    const street = DISTRICT_STREETS[districtId]
+    if (!street) return null
+    return poiAt(street, position)
+  },
+
   hydrate: (state) => {
     set({
       currentHubId: state.currentHubId,
@@ -77,8 +137,21 @@ export const useGameplayStore = create<GameplayState>((set, get) => ({
       revealedTiles: Object.fromEntries(
         Object.entries(state.revealedTiles).map(([hubId, keys]) => [hubId, new Set(keys)]),
       ) as Partial<Record<HubId, Set<string>>>,
+      currentDistrictId: state.currentDistrictId,
+      districtPlayerPosition: state.districtPlayerPosition,
+      districtRevealedTiles: Object.fromEntries(
+        Object.entries(state.districtRevealedTiles).map(([districtId, keys]) => [districtId, new Set(keys)]),
+      ) as Partial<Record<DistrictId, Set<string>>>,
     })
   },
 
-  reset: () => set({ currentHubId: null, playerPosition: null, revealedTiles: {} }),
+  reset: () =>
+    set({
+      currentHubId: null,
+      playerPosition: null,
+      revealedTiles: {},
+      currentDistrictId: null,
+      districtPlayerPosition: null,
+      districtRevealedTiles: {},
+    }),
 }))

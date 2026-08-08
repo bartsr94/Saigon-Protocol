@@ -77,21 +77,36 @@ for implementation time to improvise:
 
 ## Conceptual model
 
-Three tile kinds:
+Four tile kinds — but only two of them ever draw a square. **Only enterable
+tiles (floor and POI) are rendered at all** — walls and void are both
+invisible, occupying no more than their CSS grid slot, so the room's true
+silhouette is exactly its walkable footprint rather than a rectangle with
+holes painted into it:
 
-- **Floor** — walkable, empty, no interaction.
-- **Wall** — not walkable; blocks movement, blocks vision beyond it.
+- **Floor** — walkable, empty, no interaction. Rendered.
 - **POI (point of interest)** — walkable. Holds an ordered list of
   `HubInteraction`s (talk and/or inspect entries). Standing on it opens the
-  bottom interaction bar for everything authored there.
+  bottom interaction bar for everything authored there. Rendered.
+- **Wall** — not walkable; blocks movement. Never rendered as a square (same
+  invisible treatment as void) and excluded from fog-of-war reveal
+  bookkeeping — there's nothing to reveal about a tile that's never drawn.
+- **Void** — not part of this location's floor plan at all. Not walkable,
+  never rendered, excluded from fog-of-war reveal bookkeeping. The
+  wall/void distinction is purely authorial (a deliberate obstacle vs. "the
+  room doesn't extend here") — both behave identically at runtime. This is
+  what lets a hub's walkable footprint be a non-rectangular shape — e.g. a
+  loop around a blank core — instead of always a filled rectangle. See
+  `checkpoint`'s grid in `content/locationHubs.ts` for a worked example (a
+  TiTS "deck map"-style ring).
 
-Fog-of-war state, per hub, per save:
+Fog-of-war state, per hub, per save (floor/POI tiles only — walls and void
+are never part of `revealedTiles`):
 
 - **Unrevealed** — rendered as an opaque scan-fog square; nothing under it
-  is visible, including whether it's a wall, floor, or POI.
+  is visible, including whether it's a floor or POI tile.
 - **Revealed** — rendered as a mostly-transparent HUD cell over the dimmed
-  background, showing its contents (a walkable tile, a wall glyph, or a POI
-  marker). Stays revealed permanently once uncovered.
+  background, showing its contents (a walkable tile or a POI marker). Stays
+  revealed permanently once uncovered.
 
 Player state, per active hub:
 
@@ -138,7 +153,7 @@ interface GridPosition {
   y: number
 }
 
-/** One row per grid row, one char per column: '.' floor, '#' wall, 'o' POI. */
+/** One row per grid row, one char per column: '.' floor, '#' wall, 'o' POI, ' ' void (not part of the location — see "Conceptual model" above). */
 type HubLayoutRows = string[]
 
 export interface HubInteraction {
@@ -269,11 +284,13 @@ Visual layers, back to front:
 1. Dimmed/blurred location background image (same treatment
    `LocationHubScreen` already applies today — reuse, don't reinvent).
 2. The tile grid itself as an absolutely-positioned overlay: unrevealed
-   tiles as opaque fogged squares; revealed floor/wall tiles as
+   floor/POI tiles as opaque fogged squares; revealed floor tiles as
    mostly-transparent HUD cells with a thin chrome-accent grid line; revealed
    POI tiles get a marker/glyph (and a subtle pulse when their interaction
    list has something newly available, mirroring the "urgent" treatment
    language already used for districts in `SAIGON_2226_OVERWORLD_SPEC.md`).
+   Wall and void tiles draw nothing at all — only enterable tiles are ever
+   rendered as a square.
 3. A player marker at `playerPosition`.
 4. Hub name/blurb panel (reuse existing `Panel` header treatment from
    today's screen).
@@ -281,9 +298,13 @@ Visual layers, back to front:
    already used for this exact "pick an option" job elsewhere), one per
    `HubInteraction` on the current POI, locked ones rendered as disabled
    `Panel`s exactly like today's unavailable cards.
-6. `Return to Map` action stays available at all times (via `NavRail`'s
-   existing `onMap`, not a new grid-exit tile) — grid mode doesn't need a
-   special exit tile since the current hub-exit affordance already works.
+6. `Return to Map` action stays available at all times — not a walkable
+   grid-exit tile, but (2026) not *only* `NavRail`'s small `onMap` icon
+   either: `HubGridView`/`DistrictStreetView` also render their own inline
+   "Return to Map" button in the header panel, since the icon alone wasn't
+   discoverable as "the way out" of a walkable room. Both call the same
+   handler as `NavRail`'s `onMap` — no separate exit logic, just a second,
+   more visible entry point to it.
 
 Accessibility (this repo's overworld spec already sets the bar — match it,
 don't regress it):

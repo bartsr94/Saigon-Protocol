@@ -105,6 +105,11 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
       revealedTiles: Object.fromEntries(
         Object.entries(gameplay.revealedTiles).map(([hubId, tiles]) => [hubId, [...(tiles ?? [])]]),
       ),
+      currentDistrictId: gameplay.currentDistrictId,
+      districtPlayerPosition: gameplay.districtPlayerPosition,
+      districtRevealedTiles: Object.fromEntries(
+        Object.entries(gameplay.districtRevealedTiles).map(([districtId, tiles]) => [districtId, [...(tiles ?? [])]]),
+      ),
     },
     casefile: serializeCasefileState(casefile),
     inkStateJson: story ? story.state.ToJson() : null,

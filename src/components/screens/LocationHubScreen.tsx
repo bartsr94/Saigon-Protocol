@@ -19,6 +19,7 @@ import { NavRail } from './NavRail'
 
 export function LocationHubScreen() {
   const currentHubId = useGameplayStore((s) => s.currentHubId)
+  const currentDistrictId = useGameplayStore((s) => s.currentDistrictId)
   const leaveHub = useGameplayStore((s) => s.leaveHub)
   const openOverlay = useUiStore((s) => s.openOverlay)
   const returnToOverworld = useNavigationStore((s) => s.returnToOverworld)
@@ -35,9 +36,15 @@ export function LocationHubScreen() {
     useSaveStore.getState().autosave()
   }
 
+  // "Map" pops one layer at a time (docs/SAIGON_2226_OVERWORLD_SPEC.md's
+  // District Street Layer): a Hub entered from within a district street
+  // (currentDistrictId still set) returns to that street, not all the way
+  // to the Overworld — leaveHub() alone lets App.tsx's routing fall through
+  // to DistrictStreetScreen. A Hub entered directly (no street map for its
+  // district yet) still jumps straight to the Overworld as before.
   function handleReturnToMap() {
     leaveHub()
-    returnToOverworld()
+    if (!currentDistrictId) returnToOverworld()
     useAudioStore.getState().enterOverworld()
     useSaveStore.getState().autosave()
   }
@@ -55,7 +62,7 @@ export function LocationHubScreen() {
       />
 
       {hub.layout === 'grid' ? (
-        <HubGridView hub={hub} background={background} onEnterStory={enterStory} />
+        <HubGridView hub={hub} background={background} onEnterStory={enterStory} onReturnToMap={handleReturnToMap} />
       ) : (
         <HubCardListView hub={hub} background={background} onEnterStory={enterStory} onReturnToMap={handleReturnToMap} />
       )}

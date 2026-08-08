@@ -214,7 +214,8 @@ See `GAME_GUIDE.md` for the ink content-tagging vocabulary
 `content/locations.ts`) and `selectedLocationId`. Deliberately has **no
 knowledge of `storyStore`/inkjs** — the handoff to the Story Engine
 ("selecting a location loads its story") happens at the component layer,
-in `OverworldScreen.handleSelect`, not inside either store.
+via the shared `enterLocationHub()` helper
+(`components/screens/enterLocationHub.ts`), not inside either store.
 
 `unlockLocation(id)` exists on the store but nothing in production code
 currently calls it outside of `unlocksOnComplete` wiring on the checkpoint
@@ -228,6 +229,23 @@ Rendered today as a clickable district map rather than a plain card grid.
 modern-day Saigon map image and opens a district-details panel from there;
 the background art is expected to change in a future 2226 pass without
 changing the underlying district/location split.
+
+**District Street Layer (2026):** a third map layer now sits between the
+Overworld and a Location Hub for districts that have earned one
+(`content/districtStreets.ts`'s `DISTRICT_STREETS`, currently just
+`district4`) — a walkable fog-of-war grid, mechanically identical to a
+Location Hub's (`docs/LOCATION_GRID_EXPLORATION_SPEC.md`), where each POI
+names a `LocationId` rather than a talk/inspect list; walking onto one
+calls `enterLocationHub()`. `gameplayStore` tracks this one level above the
+existing hub fields (`currentDistrictId`/`districtPlayerPosition`/
+`districtRevealedTiles`, same shape as `currentHubId`/`playerPosition`/
+`revealedTiles`), and `App.tsx` routes to the new `DistrictStreetScreen`
+between `LocationHubScreen` and `OverworldScreen`. "Map" pops one layer at
+a time — leaving a Hub entered from within a street returns to that street
+(`currentDistrictId` still set), not straight to the Overworld. Districts
+without a street map keep the plain panel-with-Enter-buttons flow described
+above, unchanged. See `docs/SAIGON_2226_OVERWORLD_SPEC.md`'s "District
+Street Layer" section for the full design.
 
 ## 8. Save/Persistence Layer
 
@@ -433,6 +451,47 @@ untested surface area to browser-only mechanics, not decision logic.
   pre-implementation design doc into the as-built reference above; each
   superseded file now just redirects to `GAME_GUIDE.md` so existing code
   comments that cite them by path stay valid.
+- **Hub grids can be non-rectangular, and only render enterable tiles
+  (2026):** `gridMovement.ts` gained a fourth tile kind, `'void'` (` ` in
+  `layoutRows`), alongside floor/wall/POI. `isWalkable` moved from a
+  blocklist (`tile !== '#'`) to an explicit allowlist via a new exported
+  `tileKindAt`, which `HubGridView` also uses instead of re-deriving tile
+  meaning itself. Only floor/POI tiles are ever rendered as a square or
+  entered into fog-of-war reveal bookkeeping — walls and void alike draw
+  nothing (not even a wall glyph or a fog square) and are never revealed, so
+  a hub's rendered silhouette is exactly its walkable footprint rather than
+  a rectangle with holes painted into it. `checkpoint`'s grid was reshaped
+  from a filled rectangle into a loop around a void core with clipped
+  corners — a TiTS "deck map"-style ring — as the first real example of the
+  shape (`docs/LOCATION_GRID_EXPLORATION_SPEC.md`).
+- **District Street Layer added (2026):** a third map layer between the
+  Overworld and a Location Hub, for districts that have earned one —
+  `content/districtStreets.ts`'s `DISTRICT_STREETS` (currently just
+  `district4`). Reuses the Location Hub grid's exact tile vocabulary and
+  pure engine rather than duplicating it: `engine/gridMovement.ts`'s
+  `tileAt`/`tileKindAt`/`isWalkable`/`step`/`tilesWithinRadius` were loosened
+  from `HubGridDefinition`-specific signatures to the minimal structural
+  shape they actually need (`{ layoutRows }`), and `poiAt` became generic
+  over any POI carrying a `position`, so `DistrictStreetGridDefinition`/
+  `DistrictStreetPoi` satisfy them with zero movement-math duplication.
+  `gameplayStore` tracks district-street position/fog one level above the
+  existing hub fields; `App.tsx` routes a new `DistrictStreetScreen` between
+  `LocationHubScreen` and `OverworldScreen`; "Map" pops one layer at a time.
+  `OverworldScreen`'s per-location "Enter" and `DistrictStreetView`'s
+  "Enter Location" both call one shared `enterLocationHub()` helper
+  (`components/screens/enterLocationHub.ts`) instead of each hand-rolling
+  the same four-step sequence. `SAVE_FORMAT_VERSION` bumped to 6. See
+  `docs/SAIGON_2226_OVERWORLD_SPEC.md`'s "District Street Layer" section.
+  The intro scene's completion (`DialogueScreen.handleReturnToOverworld`,
+  keyed off `storyStore.activeStoryId === 'intro'`) was also updated to
+  match: it now spawns the player straight into the `checkpoint` Hub with
+  `currentDistrictId` pre-set to `'district4'`, rather than landing on the
+  plain Overworld — the intro's squad-car montage narratively already ends
+  at Aveline Lab (`docs/CASE_1_LOCATION_MATRIX.md`), so the player shouldn't
+  have to separately navigate there afterward. Pre-setting
+  `currentDistrictId` means "Map" from inside the Hub still pops to the
+  District 4 street first, not straight out to the Overworld, matching
+  every other route into `checkpoint`.
 
 ### Open / not yet built
 

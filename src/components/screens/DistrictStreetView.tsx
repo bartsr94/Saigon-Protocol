@@ -1,24 +1,26 @@
-// Walkable fog-of-war Location Hub presentation
-// (docs/LOCATION_GRID_EXPLORATION_SPEC.md): a small tile grid rendered as a
-// HUD/AR-scan overlay over the dimmed location background. WASD/arrow keys
-// move the player one tile at a time (src/engine/gridMovement.ts owns the
-// pure step/collision math); standing on a POI tile surfaces its
-// interaction list in the bottom action bar.
+// Walkable fog-of-war District Street presentation
+// (docs/SAIGON_2226_OVERWORLD_SPEC.md's District Street Layer): the same
+// tile-grid/AR-scan treatment HubGridView.tsx uses one level up — a small
+// walkable street between the Overworld and a Location Hub, where each POI
+// names a Location Hub rather than a talk/inspect interaction list. Kept as
+// its own component rather than sharing a base with HubGridView (same
+// precedent as HubGridView/HubCardListView already coexisting as
+// independent siblings) since the bottom-bar content genuinely differs.
 
 import { useEffect, useMemo } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
-import type { GridHubDefinition } from '../../content/locationHubs'
-import type { LocationId } from '../../content/locations'
+import type { DistrictStreetDefinition } from '../../content/districtStreets'
 import { step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
 import { useGameplayStore } from '../../stores/gameplayStore'
+import { useNavigationStore } from '../../stores/navigationStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { CyberButton, Panel } from '../ui'
+import { enterLocationHub } from './enterLocationHub'
 
-interface HubGridViewProps {
-  hub: GridHubDefinition
+interface DistrictStreetViewProps {
+  street: DistrictStreetDefinition
   background: BackgroundDefinition | null
-  onEnterStory: (id: LocationId) => void
   onReturnToMap: () => void
 }
 
@@ -36,39 +38,36 @@ const KEY_DIRECTIONS: Record<string, GridDirection> = {
   arrowright: 'right',
 }
 
-export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: HubGridViewProps) {
-  const playerPosition = useGameplayStore((s) => s.playerPosition) ?? hub.grid.entryTile
-  const revealedTiles = useGameplayStore((s) => s.revealedTiles[hub.id]) ?? EMPTY_REVEALED
-  const moveTo = useGameplayStore((s) => s.moveTo)
+export function DistrictStreetView({ street, background, onReturnToMap }: DistrictStreetViewProps) {
+  const playerPosition = useGameplayStore((s) => s.districtPlayerPosition) ?? street.entryTile
+  const revealedTiles = useGameplayStore((s) => s.districtRevealedTiles[street.id]) ?? EMPTY_REVEALED
+  const moveInDistrict = useGameplayStore((s) => s.moveInDistrict)
+  const unlockedLocationIds = useNavigationStore((s) => s.unlockedLocationIds)
   const activeOverlay = useUiStore((s) => s.activeOverlay)
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
 
-  // Discrete tile-stepping: one keypress/repeat moves exactly one tile, per
-  // the spec's movement rules — not continuous free movement. Re-registers
-  // whenever playerPosition changes so step() always collides against the
-  // current tile, not a stale closure.
+  // Discrete tile-stepping, same rules as HubGridView: one keypress/repeat
+  // moves exactly one tile, re-registered whenever playerPosition changes so
+  // step() always collides against the current tile, not a stale closure.
   useEffect(() => {
     if (activeOverlay) return
     function handleKeyDown(event: KeyboardEvent) {
       const direction = KEY_DIRECTIONS[event.key.toLowerCase()]
       if (!direction) return
       event.preventDefault()
-      const next = step(hub.grid, playerPosition, direction)
-      if (next.x !== playerPosition.x || next.y !== playerPosition.y) moveTo(next)
+      const next = step(street, playerPosition, direction)
+      if (next.x !== playerPosition.x || next.y !== playerPosition.y) moveInDistrict(next)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeOverlay, hub.grid, playerPosition, moveTo])
+  }, [activeOverlay, street, playerPosition, moveInDistrict])
 
   const currentPoi = useMemo(
-    () => hub.grid.pois.find((poi) => poi.position.x === playerPosition.x && poi.position.y === playerPosition.y) ?? null,
-    [hub.grid.pois, playerPosition],
+    () => street.pois.find((poi) => poi.position.x === playerPosition.x && poi.position.y === playerPosition.y) ?? null,
+    [street.pois, playerPosition],
   )
 
-  const discoveredPois = useMemo(
-    () => hub.grid.pois.filter((poi) => revealedTiles.has(tileKey(poi.position))),
-    [hub.grid.pois, revealedTiles],
-  )
+  const discoveredPois = useMemo(() => street.pois.filter((poi) => revealedTiles.has(tileKey(poi.position))), [street.pois, revealedTiles])
 
   return (
     <div className="relative flex-1 overflow-hidden">
@@ -91,33 +90,29 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
       <div className="relative z-10 flex h-full flex-col gap-4 p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <Panel size="md" className="inline-flex max-w-xl flex-col gap-3 p-4">
-            <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">Location Hub — AR Scan</span>
-            <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{hub.name}</h1>
-            <p className="font-body text-base leading-6 text-white/72">{hub.blurb}</p>
-            {/* Always-visible exit — HubCardListView already has an inline
-                "Return to Map" button; grid hubs relied on NavRail's small
-                MAP icon alone, which didn't read as an obvious way out. */}
+            <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">District Street — AR Scan</span>
+            <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{street.name}</h1>
+            <p className="font-body text-base leading-6 text-white/72">{street.blurb}</p>
             <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={onReturnToMap}>
               Return to Map
             </CyberButton>
           </Panel>
 
           {/* Text fallback for keyboard/precision players and screen readers
-              (docs/LOCATION_GRID_EXPLORATION_SPEC.md's Accessibility section) —
-              only lists POIs already revealed; clicking one is equivalent to
-              walking onto it, not a fog-bypassing shortcut. */}
+              (same rationale as HubGridView's) — only lists POIs already
+              revealed; clicking one is equivalent to walking onto it. */}
           <Panel size="sm" className="max-w-xs p-3">
             <p className="font-display text-[10px] uppercase tracking-[0.3em] text-white/60">Known Places</p>
             <div className="mt-2 flex flex-col gap-1">
-              {discoveredPois.length === 0 && <p className="font-body text-xs text-white/40">Nothing mapped yet. Move to reveal the room.</p>}
+              {discoveredPois.length === 0 && <p className="font-body text-xs text-white/40">Nothing mapped yet. Move to reveal the street.</p>}
               {discoveredPois.map((poi) => (
                 <button
                   key={poi.id}
                   type="button"
-                  onClick={() => moveTo(poi.position)}
+                  onClick={() => moveInDistrict(poi.position)}
                   className="text-left font-body text-xs text-white/65 underline decoration-white/20 underline-offset-2 hover:text-chrome-secondary"
                 >
-                  {poi.interactions.map((interaction) => interaction.label).join(' / ')}
+                  {poi.label}
                 </button>
               ))}
             </div>
@@ -128,26 +123,24 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: `repeat(${hub.grid.width}, ${TILE_PX}px)`,
-              gridTemplateRows: `repeat(${hub.grid.height}, ${TILE_PX}px)`,
+              gridTemplateColumns: `repeat(${street.width}, ${TILE_PX}px)`,
+              gridTemplateRows: `repeat(${street.height}, ${TILE_PX}px)`,
               gap: 2,
             }}
           >
-            {hub.grid.layoutRows.flatMap((row, y) =>
+            {street.layoutRows.flatMap((row, y) =>
               [...row].map((_char, x) => {
                 const key = tileKey({ x, y })
-                const kind = tileKindAt(hub.grid, { x, y })
+                const kind = tileKindAt(street, { x, y })
 
                 // Only enterable tiles (floor/POI) are ever rendered as a
-                // square — walls and void alike are invisible, occupying
-                // their CSS grid slot (required for the implicit row-major
-                // auto-placement below to keep every other cell aligned)
-                // without drawing anything, since neither can be walked onto.
+                // square — same "only render what you can walk onto"
+                // treatment HubGridView uses (docs/LOCATION_GRID_EXPLORATION_SPEC.md).
                 if (kind !== 'floor' && kind !== 'poi') return <div key={key} className="pointer-events-none" />
 
                 const revealed = revealedTiles.has(key)
                 const isPlayer = playerPosition.x === x && playerPosition.y === y
-                const poi = hub.grid.pois.find((p) => p.position.x === x && p.position.y === y)
+                const poi = street.pois.find((p) => p.position.x === x && p.position.y === y)
 
                 return (
                   <div
@@ -181,25 +174,25 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
           </div>
         </div>
 
-        {/* Bottom interaction bar — only ever shows the current tile's POI, a
-            list because one POI can hold several people/things
-            (docs/LOCATION_GRID_EXPLORATION_SPEC.md's multi-interaction decision). */}
+        {/* Bottom interaction bar — a District Street POI is just a door into
+            one Location Hub, so this is a single action, not a list. */}
         <div className="min-h-[6rem]">
-          {currentPoi && (
-            <Panel size="md" className="flex flex-wrap gap-3 p-4">
-              {currentPoi.interactions.map((interaction) => (
-                <CyberButton
-                  key={interaction.id}
-                  disabled={!interaction.available}
-                  tag={interaction.type === 'talk' ? 'Talk' : 'Inspect'}
-                  title={interaction.available ? interaction.description : (interaction.lockedReason ?? interaction.description)}
-                  onClick={() => interaction.available && onEnterStory(interaction.storyLocationId)}
-                >
-                  {interaction.label}
-                </CyberButton>
-              ))}
-            </Panel>
-          )}
+          {currentPoi &&
+            (() => {
+              const available = unlockedLocationIds.has(currentPoi.locationId)
+              return (
+                <Panel size="md" className="flex flex-wrap gap-3 p-4">
+                  <CyberButton
+                    disabled={!available}
+                    tag="Enter"
+                    title={available ? currentPoi.description : (currentPoi.lockedReason ?? currentPoi.description)}
+                    onClick={() => available && enterLocationHub(currentPoi.locationId)}
+                  >
+                    {currentPoi.label}
+                  </CyberButton>
+                </Panel>
+              )
+            })()}
         </div>
       </div>
     </div>

@@ -82,9 +82,13 @@ export interface HubPoi {
 
 /**
  * `layoutRows` is a quick hand-authoring surface: one string per grid row,
- * one character per column — '#' wall, '.' floor, 'o' POI marker. 'o'
- * markers must line up 1:1 with `pois[].position`, which carries the real
- * interaction data; the ASCII grid only encodes walkability + POI presence.
+ * one character per column — '#' wall, '.' floor, 'o' POI marker, ' ' void
+ * (not part of this location at all — not walkable, never rendered, not
+ * even as fog; lets a hub's walkable footprint be a non-rectangular shape,
+ * e.g. a loop around a blank core, rather than always a filled rectangle).
+ * 'o' markers must line up 1:1 with `pois[].position`, which carries the
+ * real interaction data; the ASCII grid only encodes walkability + POI
+ * presence.
  */
 export type HubLayoutRows = string[]
 
@@ -119,11 +123,16 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
       width: 9,
       height: 6,
       entryTile: { x: 4, y: 1 },
-      layoutRows: ['#########', '#.......#', '#.o...o.#', '#...o...#', '#.o...o.#', '#########'],
+      // A loop around a blank core rather than a filled rectangle: the four
+      // corners and the 5x2 center are void, not wall — "outside what the
+      // detective's AR scan renders," which doubles as a narrative hint that
+      // the sealed inner wing (see checkpoint-inner-door below) shows up as
+      // a dead zone on the HUD rather than a solid, everyday obstacle.
+      layoutRows: [' ####### ', '#.o...o.#', '#o     o#', '#.     .#', '#...o...#', ' ####### '],
       pois: [
         {
           id: 'checkpoint-mei-hong',
-          position: { x: 2, y: 2 },
+          position: { x: 2, y: 1 },
           interactions: [
             {
               id: 'checkpoint-talk-mei-hong',
@@ -138,7 +147,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
         },
         {
           id: 'checkpoint-responding-officer',
-          position: { x: 6, y: 2 },
+          position: { x: 6, y: 1 },
           interactions: [
             {
               id: 'checkpoint-talk-responding-officer',
@@ -153,7 +162,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
         },
         {
           id: 'checkpoint-access-scanner',
-          position: { x: 4, y: 3 },
+          position: { x: 1, y: 2 },
           interactions: [
             {
               id: 'checkpoint-inspect-access-scanner',
@@ -167,7 +176,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
         },
         {
           id: 'checkpoint-sora-baek',
-          position: { x: 2, y: 4 },
+          position: { x: 7, y: 2 },
           interactions: [
             {
               id: 'checkpoint-talk-sora-baek',
@@ -183,7 +192,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
         },
         {
           id: 'checkpoint-inner-door',
-          position: { x: 6, y: 4 },
+          position: { x: 4, y: 4 },
           interactions: [
             {
               id: 'checkpoint-inspect-inner-door',

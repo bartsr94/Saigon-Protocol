@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isWalkable, poiAt, step, tileKey, tilesWithinRadius } from './gridMovement'
+import { isWalkable, poiAt, step, tileKey, tileKindAt, tilesWithinRadius } from './gridMovement'
 import type { HubGridDefinition } from '../content/locationHubs'
 
 function makeGrid(overrides: Partial<HubGridDefinition> = {}): HubGridDefinition {
@@ -29,6 +29,22 @@ function makeGrid(overrides: Partial<HubGridDefinition> = {}): HubGridDefinition
 }
 
 describe('gridMovement', () => {
+  describe('tileKindAt', () => {
+    it('classifies floor, wall, POI, and void markers', () => {
+      const grid = makeGrid({ layoutRows: ['# o  ', '.....', '#####'] })
+      expect(tileKindAt(grid, { x: 0, y: 0 })).toBe('wall')
+      expect(tileKindAt(grid, { x: 1, y: 0 })).toBe('void')
+      expect(tileKindAt(grid, { x: 2, y: 0 })).toBe('poi')
+      expect(tileKindAt(grid, { x: 0, y: 1 })).toBe('floor')
+    })
+
+    it('is null off the grid', () => {
+      const grid = makeGrid()
+      expect(tileKindAt(grid, { x: -1, y: 0 })).toBeNull()
+      expect(tileKindAt(grid, { x: 0, y: 99 })).toBeNull()
+    })
+  })
+
   describe('isWalkable', () => {
     it('is true for floor and POI tiles', () => {
       const grid = makeGrid()
@@ -41,6 +57,11 @@ describe('gridMovement', () => {
       expect(isWalkable(grid, { x: 0, y: 0 })).toBe(false)
       expect(isWalkable(grid, { x: -1, y: 1 })).toBe(false)
       expect(isWalkable(grid, { x: 1, y: 5 })).toBe(false)
+    })
+
+    it('is false for void tiles', () => {
+      const grid = makeGrid({ layoutRows: [' ...', '....', '....', '....'] })
+      expect(isWalkable(grid, { x: 0, y: 0 })).toBe(false)
     })
   })
 
@@ -62,6 +83,11 @@ describe('gridMovement', () => {
       expect(step(grid, { x: 0, y: 0 }, 'up')).toEqual({ x: 0, y: 0 })
       expect(step(grid, { x: 0, y: 0 }, 'left')).toEqual({ x: 0, y: 0 })
     })
+
+    it('stays put when the target tile is void', () => {
+      const grid = makeGrid({ layoutRows: [' ..', '...', '...'] })
+      expect(step(grid, { x: 1, y: 0 }, 'left')).toEqual({ x: 1, y: 0 })
+    })
   })
 
   describe('tilesWithinRadius', () => {
@@ -72,9 +98,21 @@ describe('gridMovement', () => {
     })
 
     it('excludes positions off the grid', () => {
-      const grid = makeGrid()
+      const grid = makeGrid({ layoutRows: ['...', '...', '...'] })
       const keys = tilesWithinRadius(grid, { x: 0, y: 0 }, 1)
       expect(new Set(keys)).toEqual(new Set(['0,0', '1,0', '0,1']))
+    })
+
+    it('excludes void tiles', () => {
+      const grid = makeGrid({ layoutRows: ['.....', '. o .', '.....'] })
+      const keys = tilesWithinRadius(grid, { x: 2, y: 1 }, 1)
+      expect(new Set(keys)).toEqual(new Set(['2,1', '2,0', '2,2']))
+    })
+
+    it('excludes wall tiles — only enterable tiles are ever revealed', () => {
+      const grid = makeGrid()
+      const keys = tilesWithinRadius(grid, { x: 0, y: 0 }, 1)
+      expect(new Set(keys)).toEqual(new Set())
     })
   })
 
