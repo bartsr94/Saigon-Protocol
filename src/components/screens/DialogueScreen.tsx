@@ -32,6 +32,7 @@ import { INSIGHTS } from '../../content/insights'
 import { parseChoiceTags } from '../../engine/contentTags'
 import type { CheckResult } from '../../engine/checkResolution'
 import { CheckResultBlock, ChoiceRow, CyberButton, InsightChip, Panel, PipTrack, PortraitFrame } from '../ui'
+import { enterLocationHub } from './enterLocationHub'
 import { NavRail } from './NavRail'
 
 interface LogEntry {
@@ -164,6 +165,7 @@ export function DialogueScreen() {
   const composure = useInsightStore((s) => s.composure)
 
   const storyInstance = useStoryStore((s) => s.story)
+  const activeStoryId = useStoryStore((s) => s.activeStoryId)
   const currentLines = useStoryStore((s) => s.currentLines)
   const currentChoices = useStoryStore((s) => s.currentChoices)
   const ended = useStoryStore((s) => s.ended)
@@ -278,9 +280,21 @@ export function DialogueScreen() {
 
   function handleReturnToOverworld() {
     finalizeEndedScene()
+    const wasIntro = activeStoryId === 'intro'
+    resetStory()
+    if (wasIntro) {
+      // The intro's squad-car montage ends at Aveline Lab
+      // (docs/CASE_1_LOCATION_MATRIX.md: "player arrives from the intro") —
+      // spawn straight into the checkpoint Hub rather than the general
+      // Overworld map. currentDistrictId is set first so "Map"/exiting the
+      // Lab returns to the District 4 street it belongs to, not all the way
+      // out to the Overworld. enterLocationHub() handles its own autosave.
+      useGameplayStore.getState().enterDistrictStreet('district4')
+      enterLocationHub('checkpoint')
+      return
+    }
     returnToOverworld()
     leaveHub()
-    resetStory()
     // Leaving a scene gets the Overworld hub's own mood back (docs/GAME_GUIDE.md).
     useAudioStore.getState().enterOverworld()
     // Autosave checkpoint (Save/Persistence Layer): capture the "back on

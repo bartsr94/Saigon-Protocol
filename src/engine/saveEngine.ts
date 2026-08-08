@@ -7,13 +7,14 @@ import { ARCHETYPES, type ArchetypeId } from '../content/archetypes'
 import type { GridPosition, HubId } from '../content/locationHubs'
 import type { SerializedCasefileState } from './casefileEngine'
 import type { InsightId } from '../content/insights'
-import { LOCATIONS, type LocationId } from '../content/locations'
+import { LOCATIONS, type DistrictId, type LocationId } from '../content/locations'
 
-// Bumped to 5 when grid-hub exploration state (player position, per-hub
-// fog-of-war) was added (docs/LOCATION_GRID_EXPLORATION_SPEC.md). There is
-// still no migration path; older saves are treated as absent rather than
-// partially restored.
-export const SAVE_FORMAT_VERSION = 5
+// Bumped to 6 when District Street exploration state (player position,
+// per-district fog-of-war) was added alongside the existing hub-level
+// fields (docs/SAIGON_2226_OVERWORLD_SPEC.md's District Street Layer).
+// There is still no migration path; older saves are treated as absent
+// rather than partially restored.
+export const SAVE_FORMAT_VERSION = 6
 export const AUTOSAVE_SLOT_ID = 'autosave'
 export const SAVE_KEY_PREFIX = 'saigon-protocol:save:'
 
@@ -35,11 +36,21 @@ export interface SerializedNavigationState {
   selectedLocationId: LocationId | null
 }
 
-/** Grid-hub exploration state (docs/LOCATION_GRID_EXPLORATION_SPEC.md) — which hub, where the player stands in it, and which of its tiles have been revealed. `revealedTiles` uses "x,y" tile keys, one array per hub, since fog-of-war persists per hub for the life of the save. */
+/**
+ * Grid-hub exploration state (docs/LOCATION_GRID_EXPLORATION_SPEC.md) — which
+ * hub, where the player stands in it, and which of its tiles have been
+ * revealed — plus, one level up, the same for District Street exploration
+ * (docs/SAIGON_2226_OVERWORLD_SPEC.md's District Street Layer). Both
+ * `revealedTiles` maps use "x,y" tile keys, one array per hub/district,
+ * since fog-of-war persists per hub/street for the life of the save.
+ */
 export interface SerializedGameplayState {
   currentHubId: HubId | null
   playerPosition: GridPosition | null
   revealedTiles: Partial<Record<HubId, string[]>>
+  currentDistrictId: DistrictId | null
+  districtPlayerPosition: GridPosition | null
+  districtRevealedTiles: Partial<Record<DistrictId, string[]>>
 }
 
 export interface SaveBlob {

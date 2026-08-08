@@ -7,6 +7,7 @@ import { useAudioStore } from './stores/audioStore'
 import { TitleScreen } from './components/screens/TitleScreen'
 import { CharacterCreationScreen } from './components/screens/CharacterCreationScreen'
 import { OverworldScreen } from './components/screens/OverworldScreen'
+import { DistrictStreetScreen } from './components/screens/DistrictStreetScreen'
 import { DialogueScreen } from './components/screens/DialogueScreen'
 import { LocationHubScreen } from './components/screens/LocationHubScreen'
 import { OverlayHost } from './components/screens/OverlayHost'
@@ -20,6 +21,7 @@ function App() {
   // was never meant to distinguish on its own.
   const activeStory = useStoryStore((s) => s.story)
   const currentHubId = useGameplayStore((s) => s.currentHubId)
+  const currentDistrictId = useGameplayStore((s) => s.currentDistrictId)
   const highContrast = useSettingsStore((s) => s.highContrast)
   const largeText = useSettingsStore((s) => s.largeText)
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
@@ -56,7 +58,16 @@ function App() {
     <main className="min-h-svh bg-bg text-white" style={{ filter: highContrast ? 'contrast(1.18) saturate(1.1)' : undefined }}>
       {screen === 'title' && <TitleScreen />}
       {screen === 'chargen' && <CharacterCreationScreen />}
-      {screen === 'game' && (activeStory ? <DialogueScreen /> : currentHubId ? <LocationHubScreen /> : <OverworldScreen />)}
+      {screen === 'game' &&
+        (activeStory ? (
+          <DialogueScreen />
+        ) : currentHubId ? (
+          <LocationHubScreen />
+        ) : currentDistrictId ? (
+          <DistrictStreetScreen />
+        ) : (
+          <OverworldScreen />
+        ))}
       <OverlayHost />
       <FailStateOverlay />
     </main>
