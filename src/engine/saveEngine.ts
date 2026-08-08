@@ -4,15 +4,16 @@
 // split.
 
 import { ARCHETYPES, type ArchetypeId } from '../content/archetypes'
-import type { HubId } from '../content/locationHubs'
+import type { GridPosition, HubId } from '../content/locationHubs'
 import type { SerializedCasefileState } from './casefileEngine'
 import type { InsightId } from '../content/insights'
 import { LOCATIONS, type LocationId } from '../content/locations'
 
-// Bumped to 4 when hub-state persistence was added alongside casefile
-// progression. There is still no migration path; older saves are treated as
-// absent rather than partially restored.
-export const SAVE_FORMAT_VERSION = 4
+// Bumped to 5 when grid-hub exploration state (player position, per-hub
+// fog-of-war) was added (docs/LOCATION_GRID_EXPLORATION_SPEC.md). There is
+// still no migration path; older saves are treated as absent rather than
+// partially restored.
+export const SAVE_FORMAT_VERSION = 5
 export const AUTOSAVE_SLOT_ID = 'autosave'
 export const SAVE_KEY_PREFIX = 'saigon-protocol:save:'
 
@@ -34,6 +35,13 @@ export interface SerializedNavigationState {
   selectedLocationId: LocationId | null
 }
 
+/** Grid-hub exploration state (docs/LOCATION_GRID_EXPLORATION_SPEC.md) — which hub, where the player stands in it, and which of its tiles have been revealed. `revealedTiles` uses "x,y" tile keys, one array per hub, since fog-of-war persists per hub for the life of the save. */
+export interface SerializedGameplayState {
+  currentHubId: HubId | null
+  playerPosition: GridPosition | null
+  revealedTiles: Partial<Record<HubId, string[]>>
+}
+
 export interface SaveBlob {
   version: number
   savedAt: number
@@ -41,7 +49,7 @@ export interface SaveBlob {
   kind: SaveSlotKind
   insight: SerializedInsightState
   navigation: SerializedNavigationState
-  currentHubId: HubId | null
+  gameplay: SerializedGameplayState
   casefile: SerializedCasefileState
   /** null when saved with no active scene (e.g. standing on the Overworld). */
   inkStateJson: string | null

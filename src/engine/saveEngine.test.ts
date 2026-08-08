@@ -21,7 +21,11 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       unlockedLocationIds: ['checkpoint', 'noodleStall'],
       selectedLocationId: 'checkpoint',
     },
-    currentHubId: 'checkpoint',
+    gameplay: {
+      currentHubId: 'checkpoint',
+      playerPosition: { x: 4, y: 1 },
+      revealedTiles: { checkpoint: ['4,1', '4,2'] },
+    },
     casefile: {
       evidenceIds: ['drone-log'],
       noteIds: ['note-01'],
