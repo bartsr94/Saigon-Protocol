@@ -407,8 +407,8 @@ entered from one, otherwise straight to the Overworld.
 ### 6.3 District Streets
 
 For districts with enough real destinations to be worth it,
-`content/districtStreets.ts`'s `DISTRICT_STREETS` (currently just
-`district4`) adds one more walkable layer between the Overworld and a
+`content/districtStreets.ts`'s `DISTRICT_STREETS` (currently `district4`
+and `district1`) adds one more walkable layer between the Overworld and a
 Location Hub: the exact same tile vocabulary and grid mechanics as §6.2
 (including `d`/`doors` locked doors), except a `DistrictStreetPoi` just
 names a `locationId` instead of carrying an interaction list — walking onto

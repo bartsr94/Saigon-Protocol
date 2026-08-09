@@ -314,8 +314,8 @@ scene ending.
 
 **District Street Layer (2026):** a third map layer now sits between the
 Overworld and a Location Hub for districts that have earned one
-(`content/districtStreets.ts`'s `DISTRICT_STREETS`, currently just
-`district4`) — a walkable fog-of-war grid using the exact same tile
+(`content/districtStreets.ts`'s `DISTRICT_STREETS`, currently `district4`
+and `district1`) — a walkable fog-of-war grid using the exact same tile
 vocabulary and pure `gridMovement.ts` functions as a Location Hub grid
 (above), where each POI names a `LocationId` rather than a talk/inspect
 list; walking onto one calls `enterLocationHub()`. `gameplayStore` tracks
@@ -679,6 +679,21 @@ persisted state, no save-format changes.
   `label`/`lockedReason` depending on lock state, falling back to the
   general `blurb` on plain floor — computed in the component, not the
   store, consistent with simulation-vs-presentation staying split.
+- **District 1 earned a street map (2026):** `district1` is now the second
+  entry in `DISTRICT_STREETS` (§7), following the exact `district4`
+  precedent — a walkable street between the Overworld and three new
+  `cardList` Location Hubs matching `CASE_1_LOCATION_MATRIX.md`'s District 1
+  section: CID Office (recurring home-base hub, always unlocked), SEZAC
+  Records / Licensing Office (paper-trail location, always unlocked), and
+  the District 1 Corporate Plaza (locked from the street — `unlockedByDefault:
+  false` plus a `lockedReason` on its street POI — until the case earns
+  enough leverage to justify the meeting; no unlock wiring exists yet, so it
+  stays permanently locked for now). Simpler geometry than District 4's
+  cross: a single T-branch (one dead-end up to SEZAC Records off a short
+  main road) since there are only three destinations to place. No new
+  mechanism — same tile vocabulary, same `enterLocationHub()` handoff, same
+  placeholder-flavor `.ink` scene shape (one Insight-gated observation, one
+  choice, `END`) the District 4 second-wave locations already established.
 
 ### Open / not yet built
 
