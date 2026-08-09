@@ -253,29 +253,42 @@ interaction data keyed by `position`; the `'o'`/`'d'` markers in
 `HubPoi` holds an ordered list of `HubInteraction`s (`type: 'talk' |
 'inspect'`) — one tile can be several things to do, not just one NPC or one
 action. Movement/collision/fog math is pure and store-agnostic
-(`engine/gridMovement.ts`'s `step`/`isWalkable`/`tileKindAt`/
-`tilesWithinRadius`/`poiAt`/`doorAt`, typed against the minimal structural
-shape each needs — `{ layoutRows }`, `{ pois }`, `{ doors? }` — rather than
-`HubGridDefinition` directly, which is what lets District Streets, below,
-reuse these functions without duplicating them). Only floor, POI, and door
-tiles are ever rendered as a square (walls and void draw nothing, not even
-a wall glyph or fog) or enter fog-of-war bookkeeping, so a hub's rendered
-silhouette is exactly its walkable footprint — `checkpoint`'s grid is a
-ring around a void core, not a filled rectangle.
+(`engine/gridMovement.ts`'s `step`/`isWalkable`/`reachableTiles`/
+`tileKindAt`/`tilesWithinRadius`/`poiAt`/`doorAt`, typed against the
+minimal structural shape each needs — `{ layoutRows }`, `{ pois }`,
+`{ doors? }`, `{ layoutRows, entryTile }` for the two that flood-fill —
+rather than `HubGridDefinition` directly, which is what lets District
+Streets, below, reuse these functions without duplicating them). Only
+floor, POI, and door tiles are ever rendered as a square (walls and void
+draw nothing, not even a wall glyph or fog) or enter fog-of-war
+bookkeeping, so a hub's rendered silhouette is exactly its walkable
+footprint — `checkpoint`'s grid is a ring around a void core, not a filled
+rectangle.
 
 **Locked doors:** a `HubDoor` (`{ id, position, unlockFlag, label,
 lockedReason }`) gates part of a hub's floor plan behind a
 `casefileStore.hasFlag(unlockFlag)` check — `gridMovement.ts` stays
-store-agnostic, so `isWalkable`/`step` take an injected `isDoorUnlocked`
-predicate rather than reading the store directly; `HubGridView`/
-`DistrictStreetView` build that predicate from `useCasefileStore` and pass
-it through. A locked door tile is revealed by fog-of-war like any other
-tile (worth seeing even when you can't pass), rendered distinctly (red
-tint + a "▣" glyph, tooltip showing `lockedReason`), and simply blocks
-`step()` until its flag is set — same shape on `DistrictStreetDefinition`
-for the shared engine, though `checkpoint`'s Inner Containment Wing (behind
-`checkpoint-inner-wing-unlocked`, `CASE_1_LOCATION_MATRIX.md`'s gated
-reveal location) is the only door authored so far.
+store-agnostic, so `reachableTiles`/`step` take an injected
+`isDoorUnlocked` predicate rather than reading the store directly;
+`HubGridView`/`DistrictStreetView` build that predicate from
+`useCasefileStore` and pass it through. `isWalkable` treats a door tile as
+walkable regardless of lock state — a locked door can always be stepped
+onto and read up close — and it's `reachableTiles` (a flood-fill from
+`grid.entryTile` that stops expanding past any door it finds locked, while
+still including the door tile itself) that actually enforces "can't pass
+beyond": `step()` only completes a move whose target is in that reachable
+set, so leaving a locked door tile is possible only back toward the free
+side, never onward into the gated area. The same `reachableTiles` gates the
+"Known Places" click-to-move shortcut in `HubGridView`/`DistrictStreetView`,
+so a POI fog-of-war reveals through a locked door (radius-1 vision reaches
+one tile past the door once you're standing on it) can be seen and listed
+but not clicked through. A locked door tile is revealed by fog-of-war like
+any other tile (worth seeing even when you can't pass), rendered distinctly
+(red tint + a "▣" glyph, tooltip showing `lockedReason`) — same shape on
+`DistrictStreetDefinition` for the shared engine, though `checkpoint`'s
+Inner Containment Wing (behind `checkpoint-inner-wing-unlocked`,
+`CASE_1_LOCATION_MATRIX.md`'s gated reveal location) is the only door
+authored so far.
 
 `gameplayStore` (deliberately separate from `navigationStore`'s
 overworld-level unlock/select bookkeeping) owns which hub is current, the
@@ -639,6 +652,33 @@ persisted state, no save-format changes.
   tool (a grid-painting UI exporting `HubGridDefinition`/
   `DistrictStreetDefinition`-shaped JSON) as its first two entries — see
   §13's "Debug Console" callout.
+- **Locked doors made enterable-but-not-passable, and the AR-scan panel
+  went per-square (2026):** locked doors originally blocked `step()`
+  outright, the same as a wall — a door tile could never actually be
+  stood on while locked. Changed so a locked door can always be stepped
+  onto (read its tooltip up close) but not walked past: `isWalkable` no
+  longer takes an `isDoorUnlocked` predicate (a door tile is walkable
+  unconditionally); a new `gridMovement.ts` export, `reachableTiles`,
+  flood-fills from `grid.entryTile` through floor/POI/unlocked-door tiles,
+  including a locked door tile itself but never expanding past it, and
+  `step()` only completes a move onto a tile that flood-fill reached —
+  which also means retreating off a locked door always works (the tile you
+  arrived from is necessarily reachable) with no extra "which way did I
+  come from" state to track or persist. Both grid shapes already carried
+  `entryTile`, so no content changes were needed. This closed a bypass the
+  old always-blocked door had implicitly prevented: standing on a locked
+  door reveals one fog-of-war tile past it (radius-1 vision from the door
+  position), so a gated POI can become "known" while still locked —
+  `HubGridView`/`DistrictStreetView`'s "Known Places" shortcut list now
+  checks `reachableTiles` too and disables (rather than hides) an
+  unreachable entry, so clicking it can't teleport past the door the way
+  walking there normally can't. Separately, the AR-scan panel's blurb line
+  (previously always the hub/street's static `blurb`) now describes
+  whatever square the player is standing on — a POI's interaction
+  description(s) (or `lockedReason` for an unavailable one), a door's
+  `label`/`lockedReason` depending on lock state, falling back to the
+  general `blurb` on plain floor — computed in the component, not the
+  store, consistent with simulation-vs-presentation staying split.
 
 ### Open / not yet built
 

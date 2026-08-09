@@ -53,34 +53,72 @@ export function tileKindAt(grid: GridLayout, position: GridPosition): TileKind |
 }
 
 /**
- * A tile is walkable if it's floor or a POI marker, or a door tile whose
- * `isDoorUnlocked` predicate returns true for that position — walls, void,
- * locked doors, and off-grid positions are not. Doors default to locked
- * (predicate omitted) so callers must explicitly wire in unlock state
- * (e.g. from casefileStore flags) rather than doors silently behaving like
- * floor.
+ * A tile is walkable if it's floor, a POI marker, or a door — a locked door
+ * can always be stepped onto (you can walk right up to a sealed door and
+ * read it), it just doesn't let movement continue past it. That "can't pass
+ * beyond" gating lives in `reachableTiles`/`step`, not here — walls, void,
+ * and off-grid positions are the only tiles never walkable.
  */
-export function isWalkable(
-  grid: GridLayout,
-  position: GridPosition,
-  isDoorUnlocked: (position: GridPosition) => boolean = () => false,
-): boolean {
+export function isWalkable(grid: GridLayout, position: GridPosition): boolean {
   const kind = tileKindAt(grid, position)
-  if (kind === 'floor' || kind === 'poi') return true
-  if (kind === 'door') return isDoorUnlocked(position)
-  return false
+  return kind === 'floor' || kind === 'poi' || kind === 'door'
 }
 
-/** The tile reached by moving one step from `from` in `direction`, or `from` unchanged if the target is a wall, a locked door, or off the grid. */
+/** The minimal shape `reachableTiles`/`step` need beyond `GridLayout` — a known spawn point to flood-fill from. */
+interface GridLayoutWithEntry extends GridLayout {
+  entryTile: GridPosition
+}
+
+/**
+ * Every tile reachable from `grid.entryTile` by walking through floor/POI
+ * tiles and unlocked doors — i.e. everywhere the player could actually walk
+ * to right now. A locked door tile is itself included (you can always step
+ * onto one) but flood-fill doesn't continue past it, so whatever's on the
+ * far side stays unreachable until it unlocks — even if that far side is
+ * otherwise open floor. Recomputed fresh on each call rather than cached:
+ * hub/street grids are small (tens of tiles), so a full flood-fill per
+ * keypress is cheap, and staying stateless means there's nothing to keep in
+ * sync with casefileStore's unlock flags.
+ */
+export function reachableTiles(
+  grid: GridLayoutWithEntry,
+  isDoorUnlocked: (position: GridPosition) => boolean = () => false,
+): Set<string> {
+  const start = grid.entryTile
+  const visited = new Set<string>([tileKey(start)])
+  const queue: GridPosition[] = [start]
+  while (queue.length > 0) {
+    const current = queue.shift() as GridPosition
+    for (const direction of Object.keys(DIRECTION_DELTAS) as GridDirection[]) {
+      const delta = DIRECTION_DELTAS[direction]
+      const next = { x: current.x + delta.x, y: current.y + delta.y }
+      const key = tileKey(next)
+      if (visited.has(key)) continue
+      const kind = tileKindAt(grid, next)
+      if (kind !== 'floor' && kind !== 'poi' && kind !== 'door') continue
+      visited.add(key)
+      if (kind === 'door' && !isDoorUnlocked(next)) continue
+      queue.push(next)
+    }
+  }
+  return visited
+}
+
+/**
+ * The tile reached by moving one step from `from` in `direction`, or `from`
+ * unchanged if the target is a wall/void/off-grid tile, or is only reachable
+ * by passing through a locked door.
+ */
 export function step(
-  grid: GridLayout,
+  grid: GridLayoutWithEntry,
   from: GridPosition,
   direction: GridDirection,
-  isDoorUnlocked?: (position: GridPosition) => boolean,
+  isDoorUnlocked: (position: GridPosition) => boolean = () => false,
 ): GridPosition {
   const delta = DIRECTION_DELTAS[direction]
   const next = { x: from.x + delta.x, y: from.y + delta.y }
-  return isWalkable(grid, next, isDoorUnlocked) ? next : from
+  if (!isWalkable(grid, next)) return from
+  return reachableTiles(grid, isDoorUnlocked).has(tileKey(next)) ? next : from
 }
 
 export function tileKey(position: GridPosition): string {
