@@ -375,19 +375,27 @@ ASCII grid below for anything bigger than a quick edit.
 4. Set `grid.entryTile` (where the player spawns from the Overworld/street)
    and, if the default "+"-shaped 1-tile vision radius isn't right for this
    room, `grid.visionRadius`.
-5. Movement is WASD/arrow keys, one tile per press; walls (and locked
-   doors) block movement outright. Standing on a POI tile opens its
-   interaction list in a bottom action bar. Fog-of-war is per-hub,
-   per-save, and never re-fogs once revealed.
+5. Movement is WASD/arrow keys, one tile per press; walls block movement
+   outright, and a locked door can be stepped onto but not walked past (see
+   "Locked doors" below). Standing on a POI tile opens its interaction list
+   in a bottom action bar. The AR-scan panel's blurb line describes
+   whatever square the player is currently standing on — a POI's or door's
+   own description/`lockedReason` if standing on one, else the hub's
+   general `blurb` — rather than staying fixed on the hub-wide blurb.
+   Fog-of-war is per-hub, per-save, and never re-fogs once revealed.
 
 **Locked doors:** a `HubDoor` (`{ id, position, unlockFlag, label,
-lockedReason }`) blocks a `d` tile until `casefileStore.hasFlag(unlockFlag)`
-is true — unlike a wall, a locked door still gets revealed by fog-of-war
-(rendered with a red tint + tooltip) since it's meant to be seen, not
-hidden. Nothing in ink can set a flag yet (§9), so until that's wired up,
-the Debug Console's Flags tool is the only way to open one for testing.
-`checkpoint`'s Inner Containment Wing (behind `checkpoint-inner-wing-unlocked`)
-is the only door authored so far.
+lockedReason }`) gates a `d` tile behind `casefileStore.hasFlag(unlockFlag)`
+— but the door tile itself can always be walked onto and read up close;
+it's only stepping *past* it into the gated area that stays blocked until
+the flag is set (walking back out the way you came always works). A POI
+glimpsed through a locked door via fog-of-war is listed in "Known Places"
+but disabled, not clickable-through. Unlike a wall, a locked door still
+gets revealed by fog-of-war (rendered with a red tint + tooltip) since it's
+meant to be seen, not hidden. Nothing in ink can set a flag yet (§9), so
+until that's wired up, the Debug Console's Flags tool is the only way to
+open one for testing. `checkpoint`'s Inner Containment Wing (behind
+`checkpoint-inner-wing-unlocked`) is the only door authored so far.
 
 Whichever layout, launching an interaction (`talk`/`inspect`) is the same
 `selectLocation` → `loadStory` → `enterLocation` (audio) → `autosave`

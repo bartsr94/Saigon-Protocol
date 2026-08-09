@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { GridHubDefinition, GridPosition } from '../../content/locationHubs'
 import type { LocationId } from '../../content/locations'
-import { doorAt, step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
+import { doorAt, reachableTiles, step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
 import { useCasefileStore } from '../../stores/casefileStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useSettingsStore } from '../../stores/settingsStore'
@@ -79,10 +79,31 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
     [hub.grid.pois, playerPosition],
   )
 
+  const currentDoor = useMemo(() => doorAt(hub.grid, playerPosition), [hub.grid, playerPosition])
+
   const discoveredPois = useMemo(
     () => hub.grid.pois.filter((poi) => revealedTiles.has(tileKey(poi.position))),
     [hub.grid.pois, revealedTiles],
   )
+
+  // Tiles actually reachable right now (locked doors block whatever's past
+  // them) — gates the "Known Places" shortcut so clicking a POI glimpsed
+  // through a sealed door can't teleport past it; walking there the normal
+  // way is already gated the same way inside step().
+  const reachable = useMemo(() => reachableTiles(hub.grid, isDoorUnlocked), [hub.grid, isDoorUnlocked])
+
+  // What the AR-scan panel says about the square the player is standing on
+  // right now, in place of a single static hub-wide blurb — a POI's or
+  // door's own description if standing on one, else the hub's general blurb.
+  const squareBlurb = useMemo(() => {
+    if (currentPoi) {
+      return currentPoi.interactions
+        .map((interaction) => (interaction.available ? interaction.description : (interaction.lockedReason ?? interaction.description)))
+        .join(' ')
+    }
+    if (currentDoor) return isDoorUnlocked(playerPosition) ? currentDoor.label : currentDoor.lockedReason
+    return hub.blurb
+  }, [currentPoi, currentDoor, isDoorUnlocked, playerPosition, hub.blurb])
 
   return (
     <div className="relative flex-1 overflow-hidden">
@@ -107,7 +128,7 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
           <Panel size="md" className="inline-flex max-w-xl flex-col gap-3 p-4">
             <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">Location Hub — AR Scan</span>
             <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{hub.name}</h1>
-            <p className="font-body text-base leading-6 text-white/72">{hub.blurb}</p>
+            <p className="font-body text-base leading-6 text-white/72">{squareBlurb}</p>
             {/* Always-visible exit — HubCardListView already has an inline
                 "Return to Map" button; grid hubs relied on NavRail's small
                 MAP icon alone, which didn't read as an obvious way out. */}
@@ -118,21 +139,29 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
 
           {/* Text fallback for keyboard/precision players and screen readers —
               only lists POIs already revealed; clicking one is equivalent to
-              walking onto it, not a fog-bypassing shortcut. */}
+              walking onto it, so a POI glimpsed through a locked door is
+              listed but disabled rather than a fog/door-bypassing shortcut. */}
           <Panel size="sm" className="max-w-xs p-3">
             <p className="font-display text-[10px] uppercase tracking-[0.3em] text-white/60">Known Places</p>
             <div className="mt-2 flex flex-col gap-1">
               {discoveredPois.length === 0 && <p className="font-body text-xs text-white/40">Nothing mapped yet. Move to reveal the room.</p>}
-              {discoveredPois.map((poi) => (
-                <button
-                  key={poi.id}
-                  type="button"
-                  onClick={() => moveTo(poi.position)}
-                  className="text-left font-body text-xs text-white/65 underline decoration-white/20 underline-offset-2 hover:text-chrome-secondary"
-                >
-                  {poi.interactions.map((interaction) => interaction.label).join(' / ')}
-                </button>
-              ))}
+              {discoveredPois.map((poi) => {
+                const isReachable = reachable.has(tileKey(poi.position))
+                return (
+                  <button
+                    key={poi.id}
+                    type="button"
+                    disabled={!isReachable}
+                    title={isReachable ? undefined : 'Sealed behind a locked door.'}
+                    onClick={() => isReachable && moveTo(poi.position)}
+                    className={`text-left font-body text-xs underline decoration-white/20 underline-offset-2 ${
+                      isReachable ? 'text-white/65 hover:text-chrome-secondary' : 'text-white/30 no-underline'
+                    }`}
+                  >
+                    {poi.interactions.map((interaction) => interaction.label).join(' / ')}
+                  </button>
+                )
+              })}
             </div>
           </Panel>
         </div>

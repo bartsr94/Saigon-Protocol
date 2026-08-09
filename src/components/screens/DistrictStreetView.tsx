@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { DistrictStreetDefinition } from '../../content/districtStreets'
 import type { GridPosition } from '../../content/locationHubs'
-import { doorAt, step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
+import { doorAt, reachableTiles, step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
 import { useCasefileStore } from '../../stores/casefileStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useNavigationStore } from '../../stores/navigationStore'
@@ -80,7 +80,24 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
     [street.pois, playerPosition],
   )
 
+  const currentDoor = useMemo(() => doorAt(street, playerPosition), [street, playerPosition])
+
   const discoveredPois = useMemo(() => street.pois.filter((poi) => revealedTiles.has(tileKey(poi.position))), [street.pois, revealedTiles])
+
+  // Same reachability gate as HubGridView's — a locked door can be seen
+  // through but not shortcut past via the "Known Places" list.
+  const reachable = useMemo(() => reachableTiles(street, isDoorUnlocked), [street, isDoorUnlocked])
+
+  // What the AR-scan panel says about the square the player is standing on
+  // right now, in place of a single static street-wide blurb.
+  const squareBlurb = useMemo(() => {
+    if (currentPoi) {
+      const available = unlockedLocationIds.has(currentPoi.locationId)
+      return available ? currentPoi.description : (currentPoi.lockedReason ?? currentPoi.description)
+    }
+    if (currentDoor) return isDoorUnlocked(playerPosition) ? currentDoor.label : currentDoor.lockedReason
+    return street.blurb
+  }, [currentPoi, currentDoor, unlockedLocationIds, isDoorUnlocked, playerPosition, street.blurb])
 
   return (
     <div className="relative flex-1 overflow-hidden">
@@ -105,7 +122,7 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
           <Panel size="md" className="inline-flex max-w-xl flex-col gap-3 p-4">
             <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">District Street — AR Scan</span>
             <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{street.name}</h1>
-            <p className="font-body text-base leading-6 text-white/72">{street.blurb}</p>
+            <p className="font-body text-base leading-6 text-white/72">{squareBlurb}</p>
             <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={onReturnToMap}>
               Return to Map
             </CyberButton>
@@ -118,16 +135,23 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
             <p className="font-display text-[10px] uppercase tracking-[0.3em] text-white/60">Known Places</p>
             <div className="mt-2 flex flex-col gap-1">
               {discoveredPois.length === 0 && <p className="font-body text-xs text-white/40">Nothing mapped yet. Move to reveal the street.</p>}
-              {discoveredPois.map((poi) => (
-                <button
-                  key={poi.id}
-                  type="button"
-                  onClick={() => moveInDistrict(poi.position)}
-                  className="text-left font-body text-xs text-white/65 underline decoration-white/20 underline-offset-2 hover:text-chrome-secondary"
-                >
-                  {poi.label}
-                </button>
-              ))}
+              {discoveredPois.map((poi) => {
+                const isReachable = reachable.has(tileKey(poi.position))
+                return (
+                  <button
+                    key={poi.id}
+                    type="button"
+                    disabled={!isReachable}
+                    title={isReachable ? undefined : 'Sealed behind a locked door.'}
+                    onClick={() => isReachable && moveInDistrict(poi.position)}
+                    className={`text-left font-body text-xs underline decoration-white/20 underline-offset-2 ${
+                      isReachable ? 'text-white/65 hover:text-chrome-secondary' : 'text-white/30 no-underline'
+                    }`}
+                  >
+                    {poi.label}
+                  </button>
+                )
+              })}
             </div>
           </Panel>
         </div>
