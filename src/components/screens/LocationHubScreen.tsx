@@ -1,7 +1,7 @@
-// Location Hub routing (Architecture §7, docs/LOCATION_HUB_ENCOUNTER_FLOW_SPEC.md):
+// Location Hub routing (Architecture §7's Location Hub Layer):
 // resolves the current hub and dispatches to one of its two presentations —
 // HubGridView for hubs with a walkable grid, HubCardListView for hubs that
-// haven't earned one yet (docs/LOCATION_GRID_EXPLORATION_SPEC.md).
+// haven't earned one yet.
 
 import { BACKGROUNDS } from '../../content/backgrounds'
 import { LOCATION_HUBS } from '../../content/locationHubs'
@@ -36,8 +36,8 @@ export function LocationHubScreen() {
     useSaveStore.getState().autosave()
   }
 
-  // "Map" pops one layer at a time (docs/SAIGON_2226_OVERWORLD_SPEC.md's
-  // District Street Layer): a Hub entered from within a district street
+  // "Map" pops one layer at a time (Architecture §7's District Street
+  // Layer): a Hub entered from within a district street
   // (currentDistrictId still set) returns to that street, not all the way
   // to the Overworld — leaveHub() alone lets App.tsx's routing fall through
   // to DistrictStreetScreen. A Hub entered directly (no street map for its

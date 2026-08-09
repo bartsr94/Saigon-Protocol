@@ -70,7 +70,24 @@ function App() {
         ))}
       <OverlayHost />
       <FailStateOverlay />
+      {import.meta.env.DEV && <DebugButton />}
     </main>
+  )
+}
+
+// Dev-build-only entry point into DebugOverlay (console commands, map
+// builder, etc.) — stripped from production builds by the DEV check above
+// rather than gated at runtime, so it never ships.
+function DebugButton() {
+  const openOverlay = useUiStore((s) => s.openOverlay)
+  return (
+    <button
+      type="button"
+      onClick={() => openOverlay('debug')}
+      className="fixed bottom-3 right-3 z-40 border border-white/30 bg-black/70 px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest text-white/50 outline-none hover:border-chrome-secondary hover:text-chrome-secondary"
+    >
+      Debug
+    </button>
   )
 }
 

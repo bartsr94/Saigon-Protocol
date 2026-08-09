@@ -1,9 +1,8 @@
-// Gameplay/location-mode layer (Architecture §7, docs/LOCATION_HUB_ENCOUNTER_FLOW_SPEC.md):
+// Gameplay/location-mode layer (Architecture §7's Location Hub Layer):
 // tracks which Location Hub the player is currently in, distinct from
 // navigationStore's overworld-level "which locations are unlocked/selected."
-// Also owns grid-hub exploration state (docs/LOCATION_GRID_EXPLORATION_SPEC.md)
-// and, one level up, District Street exploration state
-// (docs/SAIGON_2226_OVERWORLD_SPEC.md's District Street Layer): the
+// Also owns grid-hub exploration state and, one level up, District Street
+// exploration state (Architecture §7's District Street Layer): the
 // player's tile position inside the current hub/street's grid, and the
 // per-hub/per-street fog-of-war memory of which tiles have been revealed.
 

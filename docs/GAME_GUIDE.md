@@ -40,6 +40,7 @@ old files now just redirect here.*
 | Character (`character` overlay) | Overlay | Portrait, name, archetype + backstory, all seven Insights with pips/tagline/strength-weakness tag |
 | Casefile (`casefile` overlay) | Overlay | Evidence/Items grid + Case Notes log |
 | Settings (`settings` overlay) | Overlay | Audio, text speed, accessibility, save/load — also serves as the pause/system menu (there's no separate Pause screen) |
+| Debug Console (`debug` overlay, dev-only) | Overlay | `import.meta.env.DEV`-gated corner button → Map Builder (grid/POI/door authoring, exports JSON) and Flags (`casefileStore` flag toggle for testing) |
 
 Overlays render via `OverlayHost` on top of whatever full screen is
 active; `uiStore.activeOverlay` drives which one shows.
@@ -303,7 +304,9 @@ layer and adds another on the same line (`ambience: -marketChatter` +
 semantics. Mei Hong's first line carries `voice: meiHongIntro` — the
 textbook curated-greeting use case.
 
-## 6. Navigation / Overworld
+## 6. Navigation / Overworld / Location Hubs
+
+### 6.1 Overworld & Districts
 
 `content/locations.ts` defines the location list (`LocationId` union +
 `Record<LocationId, LocationDefinition>` + `LOCATION_IDS` array — currently
@@ -321,16 +324,95 @@ callable from anywhere, but in practice the only caller is
 `unlocksOnComplete` gets unlocked. There is no other unlock trigger in the
 game today (no item/flag-based unlocks).
 
-Selecting a location (`OverworldScreen.handleSelect`) does four things in
-one imperative sequence: `navigationStore.selectLocation(id)`,
-`storyStore.loadStory(LOCATION_STORY_JSON[id], undefined, id)`,
-`audioStore.enterLocation(LOCATIONS[id])`, and `saveStore.autosave()`.
+Choosing a destination from the Overworld — whether or not its district
+has a walkable street map (§6.3) — always goes through the shared
+`enterLocationHub(id)` helper (`components/screens/enterLocationHub.ts`):
+`navigationStore.selectLocation(id)`, `gameplayStore.enterHub(id)`,
+`audioStore.enterLocation(LOCATIONS[id])`, `saveStore.autosave()`. This
+lands the player in that location's **Location Hub** (§6.2), not directly
+in an ink scene — the story only loads once the player picks a specific
+interaction from inside the hub.
 
-`OverworldScreen` now uses a temporary modern-day Saigon map image as the
+`OverworldScreen` uses a temporary modern-day Saigon map image as the
 interaction surface, with SVG district hotspots for Districts 1, 4, 5, and
 2 plus a district-details panel and a text fallback list. The current map
 art is a placeholder for a future 2226-specific illustration, but the
 interaction model is intended to stay the same.
+
+### 6.2 Location Hubs
+
+Every location is a **Location Hub** (`LocationHubScreen`) before it's a
+scene — a `content/locationHubs.ts` `HubDefinition` (keyed by `HubId =
+LocationId`) describing who/what is there, rendered either as a walkable
+tile grid or a clickable card list depending on its `layout`.
+
+**Adding a `cardList` hub** (the default for a location without much
+authored content yet):
+1. Add a `HubDefinition` with `layout: 'cardList'` to `LOCATION_HUBS`.
+2. List its `characters: HubCharacterPresence[]` (each an `npcId` + an
+   `anchor` position + a `storyLocationId` to launch) and
+   `actions: HubActionDefinition[]` (`type: 'talk' | 'inspect'`).
+3. Set `available`/`lockedReason` per entry to control what's clickable yet.
+
+**Adding a `grid` hub** (once a location has enough authored content to be
+worth walking around in — currently only `checkpoint`):
+
+The Debug Console's **Map Builder** tool (§2, dev-only) paints this
+visually and exports ready-to-paste JSON — easier than hand-typing the
+ASCII grid below for anything bigger than a quick edit.
+
+1. Set `layout: 'grid'` and author `grid.layoutRows`: one string per row,
+   `.` floor, `#` wall, `o` POI, `d` door, ` ` (space) void. Void tiles
+   aren't part of the location at all — not walkable, never rendered, never
+   fogged — which is how a hub's footprint can be a non-rectangular shape,
+   like a ring around a blank core, instead of always a filled rectangle.
+2. For every `o` in `layoutRows`, add a matching `HubPoi` to `grid.pois`
+   with the same `position` — the marker and the POI entry must line up
+   1:1. A `HubPoi.interactions` is a list, so one tile can hold more than
+   one talk/inspect entry (e.g. an NPC who's also inspectable).
+3. For every `d`, add a matching `HubDoor` to `grid.doors` (same 1:1
+   `position` rule) — see "Locked doors" below.
+4. Set `grid.entryTile` (where the player spawns from the Overworld/street)
+   and, if the default "+"-shaped 1-tile vision radius isn't right for this
+   room, `grid.visionRadius`.
+5. Movement is WASD/arrow keys, one tile per press; walls (and locked
+   doors) block movement outright. Standing on a POI tile opens its
+   interaction list in a bottom action bar. Fog-of-war is per-hub,
+   per-save, and never re-fogs once revealed.
+
+**Locked doors:** a `HubDoor` (`{ id, position, unlockFlag, label,
+lockedReason }`) blocks a `d` tile until `casefileStore.hasFlag(unlockFlag)`
+is true — unlike a wall, a locked door still gets revealed by fog-of-war
+(rendered with a red tint + tooltip) since it's meant to be seen, not
+hidden. Nothing in ink can set a flag yet (§9), so until that's wired up,
+the Debug Console's Flags tool is the only way to open one for testing.
+`checkpoint`'s Inner Containment Wing (behind `checkpoint-inner-wing-unlocked`)
+is the only door authored so far.
+
+Whichever layout, launching an interaction (`talk`/`inspect`) is the same
+`selectLocation` → `loadStory` → `enterLocation` (audio) → `autosave`
+sequence, and finishing that scene returns to the hub by default, not the
+Overworld. "Map" (`NavRail` or the hub's own inline button) is the only way
+back out, popping one layer at a time — to a District Street if the hub was
+entered from one, otherwise straight to the Overworld.
+
+### 6.3 District Streets
+
+For districts with enough real destinations to be worth it,
+`content/districtStreets.ts`'s `DISTRICT_STREETS` (currently just
+`district4`) adds one more walkable layer between the Overworld and a
+Location Hub: the exact same tile vocabulary and grid mechanics as §6.2
+(including `d`/`doors` locked doors), except a `DistrictStreetPoi` just
+names a `locationId` instead of carrying an interaction list — walking onto
+one calls `enterLocationHub()` and transitions straight into that
+location's Hub. A `DistrictStreetPoi`
+deliberately doesn't store its own `available` flag; it's always derived
+live from `navigationStore.unlockedLocationIds` so the street map can never
+drift out of sync with the Overworld's own unlock tracking. Districts
+absent from `DISTRICT_STREETS` keep the plain "district panel + Enter
+button per location" flow from §6.1 — that's the default until a district
+earns a street map of its own, which is a content-only addition (author a
+`DistrictStreetDefinition`), not an engine change.
 
 ## 7. Save/Persistence
 
@@ -423,8 +505,17 @@ you want to change, no need to cross-reference `content/sfx.ts`.
 
 `content/casefile.ts` — `EVIDENCE: Record<EvidenceId, EvidenceDefinition>`
 with a three-tier `EvidenceTier` (`flavor`/`clue`/`key`, mapped to a
-color-tier system for at-a-glance importance) and a flat `CASE_NOTES`
-array. Both are currently static, flavor-light placeholders — nothing in
-the ink↔TS boundary grants evidence yet, and how much of Case Notes
-auto-populates from play vs. is hand-authored per scene is still an open
-design question, not something this doc's fixture answers.
+color-tier system for at-a-glance importance) and `CASE_NOTES:
+Record<CaseNoteId, CaseNoteDefinition>` — define the authored content.
+Ownership/unlock state is tracked separately, in `stores/casefileStore.ts`
+(`evidenceIds`/`noteIds`/`flags`, save-integrated — Architecture §13);
+`CasefileOverlay` renders only what's owned, never the full list.
+
+Both content records are still static, flavor-light placeholders — nothing
+in the ink↔TS boundary grants evidence, notes, or flags yet, and how much
+of Case Notes should auto-populate from play vs. be hand-authored per scene
+is still an open design question, not something this doc's fixture
+answers. `flags` also gates Location Hub locked doors now (§6.2) — until
+ink can set one itself, the Debug Console's Flags tool
+(`casefileStore.setFlag`/`clearFlag`) is the only way to flip one for
+testing.

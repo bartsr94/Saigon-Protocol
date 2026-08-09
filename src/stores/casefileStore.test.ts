@@ -30,6 +30,15 @@ describe('casefileStore', () => {
     expect(state.hasFlag('saw-breach')).toBe(true)
   })
 
+  it('clearFlag removes a set flag and is a no-op otherwise', () => {
+    useCasefileStore.getState().setFlag('checkpoint-inner-wing-unlocked')
+    useCasefileStore.getState().clearFlag('checkpoint-inner-wing-unlocked')
+    expect(useCasefileStore.getState().hasFlag('checkpoint-inner-wing-unlocked')).toBe(false)
+
+    useCasefileStore.getState().clearFlag('never-set')
+    expect(useCasefileStore.getState().flags.size).toBe(0)
+  })
+
   it('hydrate bulk-restores evidence, notes, and flags', () => {
     useCasefileStore.getState().hydrate({
       evidenceIds: ['burner-phone'],

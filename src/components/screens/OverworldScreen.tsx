@@ -10,7 +10,7 @@ import { DISTRICT_IDS, DISTRICT_REGIONS, type DistrictRegionDefinition } from '.
 import { DISTRICT_STREETS } from '../../content/districtStreets'
 import { LOCATIONS, LOCATION_IDS, type DistrictId, type LocationId } from '../../content/locations'
 import { useGameplayStore } from '../../stores/gameplayStore'
-import { CyberButton, GlitchText, Panel } from '../ui'
+import { CyberButton, GlitchText, Icon, Panel } from '../ui'
 import { NavRail } from './NavRail'
 import { enterLocationHub } from './enterLocationHub'
 
@@ -151,6 +151,17 @@ export function OverworldScreen() {
                         'polygon(0 0, calc(100% - var(--cut-sm)) 0, 100% var(--cut-sm), 100% 100%, var(--cut-sm) 100%, 0 calc(100% - var(--cut-sm)))',
                     }}
                   >
+                    {hasUnlockedLead && (
+                      // Top-left, not top-right: the button's chamfered clipPath cuts off
+                      // the top-right corner, which would clip an icon badged there.
+                      <Icon
+                        id="leadAlert"
+                        size={14}
+                        color="var(--color-chrome-primary)"
+                        glow
+                        className="absolute -left-1.5 -top-1.5"
+                      />
+                    )}
                     <span className="block">{region.name}</span>
                     <span className="block text-[9px] tracking-[0.15em] opacity-70">{region.shortName}</span>
                   </button>
@@ -177,9 +188,8 @@ export function OverworldScreen() {
               {selectedDistrictStreet ? (
                 // Districts with a street map (Aveline/District 4 today) don't list
                 // their locations as a menu — you discover them by walking the
-                // street (docs/SAIGON_2226_OVERWORLD_SPEC.md's District Street
-                // Layer). Entering the district just drops you at the street's
-                // entry tile.
+                // street (Architecture §7's District Street Layer). Entering
+                // the district just drops you at the street's entry tile.
                 <div className="mt-4 flex flex-col gap-3">
                   <p className="font-body text-sm text-white/55">{selectedDistrictStreet.blurb}</p>
                   <CyberButton onClick={() => enterDistrictStreet(selectedDistrictId)}>Enter District</CyberButton>
@@ -187,7 +197,10 @@ export function OverworldScreen() {
               ) : (
                 <>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <span className="border border-white/15 px-2 py-1 font-display text-[10px] uppercase tracking-[0.25em] text-white/55">
+                    <span className="inline-flex items-center gap-1.5 border border-white/15 px-2 py-1 font-display text-[10px] uppercase tracking-[0.25em] text-white/55">
+                      {selectedDistrictLocationIds.some((id) => unlockedLocationIds.has(id)) && (
+                        <Icon id="leadAlert" size={11} color="var(--color-chrome-primary)" />
+                      )}
                       {selectedDistrictLocationIds.filter((id) => unlockedLocationIds.has(id)).length} active lead
                       {selectedDistrictLocationIds.filter((id) => unlockedLocationIds.has(id)).length === 1 ? '' : 's'}
                     </span>

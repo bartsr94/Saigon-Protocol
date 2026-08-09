@@ -10,6 +10,8 @@ interface CasefileState {
   addEvidence: (id: EvidenceId) => void
   unlockNote: (id: CaseNoteId) => void
   setFlag: (flag: string) => void
+  /** Debug-console counterpart to `setFlag` — production content only ever sets flags forward. */
+  clearFlag: (flag: string) => void
 
   hasEvidence: (id: EvidenceId) => boolean
   hasNote: (id: CaseNoteId) => boolean
@@ -41,6 +43,13 @@ export const useCasefileStore = create<CasefileState>((set, get) => ({
   setFlag: (flag) => {
     if (get().flags.has(flag)) return
     set({ flags: new Set(get().flags).add(flag) })
+  },
+
+  clearFlag: (flag) => {
+    if (!get().flags.has(flag)) return
+    const next = new Set(get().flags)
+    next.delete(flag)
+    set({ flags: next })
   },
 
   hasEvidence: (id) => get().evidenceIds.has(id),

@@ -1,5 +1,5 @@
-// District Street content (docs/SAIGON_2226_OVERWORLD_SPEC.md's District
-// Street Layer section): a walkable fog-of-war grid one level above a
+// District Street content (Architecture §7's District Street Layer):
+// a walkable fog-of-war grid one level above a
 // Location Hub, sitting between the Overworld district map and a Hub like
 // `checkpoint`. POIs here don't hold talk/inspect interactions like Hub
 // POIs do — each just names a `locationId`, and walking onto it is what
@@ -16,7 +16,7 @@
 
 import type { BackgroundId } from './backgrounds'
 import type { DistrictId, LocationId } from './locations'
-import type { GridPosition, HubLayoutRows } from './locationHubs'
+import type { GridPosition, HubDoor, HubLayoutRows } from './locationHubs'
 
 /**
  * A walkable street tile leading into a Location Hub. `available` is
@@ -46,6 +46,8 @@ export interface DistrictStreetDefinition {
   entryTile: GridPosition
   layoutRows: HubLayoutRows
   pois: DistrictStreetPoi[]
+  /** Locked doors gating parts of this street's floor plan (locationHubs.ts's `HubDoor` — same shape, shared engine). Defaults to none. */
+  doors?: HubDoor[]
   /** Tiles revealed around the player's position on move. Defaults to 1 (a "+" shape) when omitted. */
   visionRadius?: number
 }

@@ -1,5 +1,5 @@
-// District Street routing (docs/SAIGON_2226_OVERWORLD_SPEC.md's District
-// Street Layer): resolves the current district's street map and renders
+// District Street routing (Architecture §7's District Street Layer):
+// resolves the current district's street map and renders
 // DistrictStreetView. Sits between OverworldScreen and LocationHubScreen in
 // App.tsx's routing — "Map" from here leaves the district entirely, back to
 // the Overworld (leaving a Hub entered from within this street instead pops
