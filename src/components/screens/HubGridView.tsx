@@ -1,19 +1,20 @@
 // Walkable fog-of-war Location Hub presentation
-// (docs/LOCATION_GRID_EXPLORATION_SPEC.md): a small tile grid rendered as a
+// (Architecture §7's Location Hub Layer): a small tile grid rendered as a
 // HUD/AR-scan overlay over the dimmed location background. WASD/arrow keys
 // move the player one tile at a time (src/engine/gridMovement.ts owns the
 // pure step/collision math); standing on a POI tile surfaces its
 // interaction list in the bottom action bar.
 
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
-import type { GridHubDefinition } from '../../content/locationHubs'
+import type { GridHubDefinition, GridPosition } from '../../content/locationHubs'
 import type { LocationId } from '../../content/locations'
-import { step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
+import { doorAt, step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
+import { useCasefileStore } from '../../stores/casefileStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
-import { CyberButton, Panel } from '../ui'
+import { CyberButton, Icon, Panel } from '../ui'
 
 interface HubGridViewProps {
   hub: GridHubDefinition
@@ -42,6 +43,19 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
   const moveTo = useGameplayStore((s) => s.moveTo)
   const activeOverlay = useUiStore((s) => s.activeOverlay)
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
+  const casefileFlags = useCasefileStore((s) => s.flags)
+
+  // Resolves a door tile's lock state from casefileStore at the component
+  // layer — gridMovement.ts stays store-agnostic (CLAUDE.md's simulation/UI
+  // separation), so `step()` takes this as an injected predicate rather
+  // than reaching for the store itself.
+  const isDoorUnlocked = useCallback(
+    (position: GridPosition) => {
+      const door = doorAt(hub.grid, position)
+      return door ? casefileFlags.has(door.unlockFlag) : false
+    },
+    [hub.grid, casefileFlags],
+  )
 
   // Discrete tile-stepping: one keypress/repeat moves exactly one tile, per
   // the spec's movement rules — not continuous free movement. Re-registers
@@ -53,12 +67,12 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
       const direction = KEY_DIRECTIONS[event.key.toLowerCase()]
       if (!direction) return
       event.preventDefault()
-      const next = step(hub.grid, playerPosition, direction)
+      const next = step(hub.grid, playerPosition, direction, isDoorUnlocked)
       if (next.x !== playerPosition.x || next.y !== playerPosition.y) moveTo(next)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeOverlay, hub.grid, playerPosition, moveTo])
+  }, [activeOverlay, hub.grid, playerPosition, moveTo, isDoorUnlocked])
 
   const currentPoi = useMemo(
     () => hub.grid.pois.find((poi) => poi.position.x === playerPosition.x && poi.position.y === playerPosition.y) ?? null,
@@ -102,8 +116,7 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
             </CyberButton>
           </Panel>
 
-          {/* Text fallback for keyboard/precision players and screen readers
-              (docs/LOCATION_GRID_EXPLORATION_SPEC.md's Accessibility section) —
+          {/* Text fallback for keyboard/precision players and screen readers —
               only lists POIs already revealed; clicking one is equivalent to
               walking onto it, not a fog-bypassing shortcut. */}
           <Panel size="sm" className="max-w-xs p-3">
@@ -138,35 +151,40 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
                 const key = tileKey({ x, y })
                 const kind = tileKindAt(hub.grid, { x, y })
 
-                // Only enterable tiles (floor/POI) are ever rendered as a
-                // square — walls and void alike are invisible, occupying
+                // Only enterable tiles (floor/POI/door) are ever rendered as
+                // a square — walls and void alike are invisible, occupying
                 // their CSS grid slot (required for the implicit row-major
                 // auto-placement below to keep every other cell aligned)
                 // without drawing anything, since neither can be walked onto.
-                if (kind !== 'floor' && kind !== 'poi') return <div key={key} className="pointer-events-none" />
+                if (kind !== 'floor' && kind !== 'poi' && kind !== 'door') return <div key={key} className="pointer-events-none" />
 
                 const revealed = revealedTiles.has(key)
                 const isPlayer = playerPosition.x === x && playerPosition.y === y
                 const poi = hub.grid.pois.find((p) => p.position.x === x && p.position.y === y)
+                const door = kind === 'door' ? doorAt(hub.grid, { x, y }) : null
+                const doorUnlocked = door ? isDoorUnlocked({ x, y }) : false
 
                 return (
                   <div
                     key={key}
+                    title={door ? (doorUnlocked ? door.label : door.lockedReason) : undefined}
                     className={`relative flex items-center justify-center border ${reduceMotion ? '' : 'transition-colors duration-150'}`}
                     style={{
                       borderColor: revealed ? 'color-mix(in srgb, var(--color-chrome-primary) 35%, transparent)' : 'rgba(255,255,255,0.05)',
                       background: !revealed
                         ? 'rgba(2,4,6,0.95)'
-                        : poi
-                          ? 'color-mix(in srgb, var(--color-chrome-secondary) 18%, transparent)'
-                          : 'color-mix(in srgb, var(--color-chrome-primary) 6%, transparent)',
+                        : door && !doorUnlocked
+                          ? 'color-mix(in srgb, #ff4444 22%, transparent)'
+                          : poi
+                            ? 'color-mix(in srgb, var(--color-chrome-secondary) 18%, transparent)'
+                            : 'color-mix(in srgb, var(--color-chrome-primary) 6%, transparent)',
                     }}
                   >
+                    {revealed && door && !isPlayer && (
+                      <Icon id="door" size={26} color={doorUnlocked ? 'rgba(255,255,255,0.55)' : '#ff6666'} glow={!doorUnlocked} />
+                    )}
                     {revealed && poi && !isPlayer && (
-                      <span
-                        className="h-2 w-2 rounded-full"
-                        style={{ background: 'var(--color-chrome-secondary)', boxShadow: '0 0 8px var(--color-chrome-secondary)' }}
-                      />
+                      <Icon id="poiMarker" size={26} color="var(--color-chrome-secondary)" glow />
                     )}
                     {isPlayer && (
                       <span
@@ -182,8 +200,7 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
         </div>
 
         {/* Bottom interaction bar — only ever shows the current tile's POI, a
-            list because one POI can hold several people/things
-            (docs/LOCATION_GRID_EXPLORATION_SPEC.md's multi-interaction decision). */}
+            list because one POI can hold several people/things. */}
         <div className="min-h-[6rem]">
           {currentPoi && (
             <Panel size="md" className="flex flex-wrap gap-3 p-4">

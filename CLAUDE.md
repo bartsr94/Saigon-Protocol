@@ -18,13 +18,14 @@ overlap:
 - `docs/SEA_CYBERPUNK_GDD.md` — lore, setting, and narrative-design premise.
   No technical content.
 
-All three describe settled/built state, not aspirational ideas. The eight
-older per-system spec docs (`CONTENT_PIPELINE_SPEC.md`,
-`INK_CONTENT_TAGGING_SPEC.md`, `INTRO_SCENE_SPEC.md`,
-`NAVIGATION_OVERWORLD_SPEC.md`, `SAVE_PERSISTENCE_SPEC.md`,
-`AUDIO_VOICEOVER_SPEC.md`, `UI_VISUAL_STYLE_SPEC.md`,
-`SAIGON_PROTOCOL_UI_DESIGN.md`) are superseded and now just redirect into
-`GAME_GUIDE.md` — don't add new content to them.
+All three describe settled/built state, not aspirational ideas. A working
+spec for a system (`docs/*_SPEC.md`) gets folded into the appropriate
+as-built doc above and deleted once that system is actually built — don't
+expect to find old spec files in `docs/` for anything already described
+above, and don't add new content to a doc name that doesn't exist; check
+git history for the original design rationale if you need it. Specs for
+content that hasn't shipped yet (e.g. `docs/CASE_1_*.md`) are the
+exception — those stay until the content they describe is real.
 
 Stack: React 19 + TypeScript (strict) + Vite + Zustand + Tailwind 4 +
 **inkjs** for branching narrative. Tested with Vitest, linted with Oxlint.

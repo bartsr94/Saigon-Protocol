@@ -11,7 +11,7 @@ import { LOCATIONS, type DistrictId, type LocationId } from '../content/location
 
 // Bumped to 6 when District Street exploration state (player position,
 // per-district fog-of-war) was added alongside the existing hub-level
-// fields (docs/SAIGON_2226_OVERWORLD_SPEC.md's District Street Layer).
+// fields (Architecture §7's District Street Layer).
 // There is still no migration path; older saves are treated as absent
 // rather than partially restored.
 export const SAVE_FORMAT_VERSION = 6
@@ -37,10 +37,10 @@ export interface SerializedNavigationState {
 }
 
 /**
- * Grid-hub exploration state (docs/LOCATION_GRID_EXPLORATION_SPEC.md) — which
+ * Grid-hub exploration state (Architecture §7's Location Hub Layer) — which
  * hub, where the player stands in it, and which of its tiles have been
  * revealed — plus, one level up, the same for District Street exploration
- * (docs/SAIGON_2226_OVERWORLD_SPEC.md's District Street Layer). Both
+ * (Architecture §7's District Street Layer). Both
  * `revealedTiles` maps use "x,y" tile keys, one array per hub/district,
  * since fog-of-war persists per hub/street for the life of the save.
  */

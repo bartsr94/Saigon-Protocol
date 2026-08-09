@@ -1,5 +1,5 @@
 // Walkable fog-of-war District Street presentation
-// (docs/SAIGON_2226_OVERWORLD_SPEC.md's District Street Layer): the same
+// (Architecture §7's District Street Layer): the same
 // tile-grid/AR-scan treatment HubGridView.tsx uses one level up — a small
 // walkable street between the Overworld and a Location Hub, where each POI
 // names a Location Hub rather than a talk/inspect interaction list. Kept as
@@ -7,15 +7,17 @@
 // precedent as HubGridView/HubCardListView already coexisting as
 // independent siblings) since the bottom-bar content genuinely differs.
 
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { DistrictStreetDefinition } from '../../content/districtStreets'
-import { step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
+import type { GridPosition } from '../../content/locationHubs'
+import { doorAt, step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
+import { useCasefileStore } from '../../stores/casefileStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
-import { CyberButton, Panel } from '../ui'
+import { CyberButton, Icon, Panel } from '../ui'
 import { enterLocationHub } from './enterLocationHub'
 
 interface DistrictStreetViewProps {
@@ -45,6 +47,17 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
   const unlockedLocationIds = useNavigationStore((s) => s.unlockedLocationIds)
   const activeOverlay = useUiStore((s) => s.activeOverlay)
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
+  const casefileFlags = useCasefileStore((s) => s.flags)
+
+  // Same store-agnostic-engine/component-resolves-flags split as
+  // HubGridView's `isDoorUnlocked`.
+  const isDoorUnlocked = useCallback(
+    (position: GridPosition) => {
+      const door = doorAt(street, position)
+      return door ? casefileFlags.has(door.unlockFlag) : false
+    },
+    [street, casefileFlags],
+  )
 
   // Discrete tile-stepping, same rules as HubGridView: one keypress/repeat
   // moves exactly one tile, re-registered whenever playerPosition changes so
@@ -55,12 +68,12 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
       const direction = KEY_DIRECTIONS[event.key.toLowerCase()]
       if (!direction) return
       event.preventDefault()
-      const next = step(street, playerPosition, direction)
+      const next = step(street, playerPosition, direction, isDoorUnlocked)
       if (next.x !== playerPosition.x || next.y !== playerPosition.y) moveInDistrict(next)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeOverlay, street, playerPosition, moveInDistrict])
+  }, [activeOverlay, street, playerPosition, moveInDistrict, isDoorUnlocked])
 
   const currentPoi = useMemo(
     () => street.pois.find((poi) => poi.position.x === playerPosition.x && poi.position.y === playerPosition.y) ?? null,
@@ -133,33 +146,38 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
                 const key = tileKey({ x, y })
                 const kind = tileKindAt(street, { x, y })
 
-                // Only enterable tiles (floor/POI) are ever rendered as a
-                // square — same "only render what you can walk onto"
-                // treatment HubGridView uses (docs/LOCATION_GRID_EXPLORATION_SPEC.md).
-                if (kind !== 'floor' && kind !== 'poi') return <div key={key} className="pointer-events-none" />
+                // Only enterable tiles (floor/POI/door) are ever rendered as
+                // a square — same "only render what you can walk onto"
+                // treatment HubGridView uses.
+                if (kind !== 'floor' && kind !== 'poi' && kind !== 'door') return <div key={key} className="pointer-events-none" />
 
                 const revealed = revealedTiles.has(key)
                 const isPlayer = playerPosition.x === x && playerPosition.y === y
                 const poi = street.pois.find((p) => p.position.x === x && p.position.y === y)
+                const door = kind === 'door' ? doorAt(street, { x, y }) : null
+                const doorUnlocked = door ? isDoorUnlocked({ x, y }) : false
 
                 return (
                   <div
                     key={key}
+                    title={door ? (doorUnlocked ? door.label : door.lockedReason) : undefined}
                     className={`relative flex items-center justify-center border ${reduceMotion ? '' : 'transition-colors duration-150'}`}
                     style={{
                       borderColor: revealed ? 'color-mix(in srgb, var(--color-chrome-primary) 35%, transparent)' : 'rgba(255,255,255,0.05)',
                       background: !revealed
                         ? 'rgba(2,4,6,0.95)'
-                        : poi
-                          ? 'color-mix(in srgb, var(--color-chrome-secondary) 18%, transparent)'
-                          : 'color-mix(in srgb, var(--color-chrome-primary) 6%, transparent)',
+                        : door && !doorUnlocked
+                          ? 'color-mix(in srgb, #ff4444 22%, transparent)'
+                          : poi
+                            ? 'color-mix(in srgb, var(--color-chrome-secondary) 18%, transparent)'
+                            : 'color-mix(in srgb, var(--color-chrome-primary) 6%, transparent)',
                     }}
                   >
+                    {revealed && door && !isPlayer && (
+                      <Icon id="door" size={26} color={doorUnlocked ? 'rgba(255,255,255,0.55)' : '#ff6666'} glow={!doorUnlocked} />
+                    )}
                     {revealed && poi && !isPlayer && (
-                      <span
-                        className="h-2 w-2 rounded-full"
-                        style={{ background: 'var(--color-chrome-secondary)', boxShadow: '0 0 8px var(--color-chrome-secondary)' }}
-                      />
+                      <Icon id="poiMarker" size={26} color="var(--color-chrome-secondary)" glow />
                     )}
                     {isPlayer && (
                       <span

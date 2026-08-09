@@ -230,22 +230,90 @@ modern-day Saigon map image and opens a district-details panel from there;
 the background art is expected to change in a future 2226 pass without
 changing the underlying district/location split.
 
+**Location Hub Layer:** entering a location from the Overworld (or a
+District Street, below) lands the player in a `LocationHubScreen` rather
+than straight into an ink scene — a `content/locationHubs.ts`
+`HubDefinition` (keyed by `HubId = LocationId`) describes what's there
+before a specific encounter is chosen. `HubDefinition` is a discriminated
+union on `layout`: `'cardList'` (the original shape — `characters:
+HubCharacterPresence[]` + `actions: HubActionDefinition[]`, rendered as
+clickable cards by `HubCardListView`) or `'grid'` (a walkable fog-of-war
+tile grid, rendered by `HubGridView`). Only `checkpoint` (Aveline Lab) uses
+`'grid'` today; `noodleStall`/`deltaSquat` stay `'cardList'` until they
+have enough authored content to be worth gridding — both shapes coexist on
+the same content module and screen, no engine-level reason to migrate a hub
+before it's ready.
+
+A grid hub's `HubGridDefinition` authors its floor plan as `layoutRows`
+(one string per row, `'.'` floor / `'#'` wall / `'o'` POI / `'d'` door /
+`' '` void — void meaning "not part of this location's floor plan," not
+just an unmarked obstacle) plus `pois: HubPoi[]` carrying the real
+interaction data keyed by `position`; the `'o'`/`'d'` markers in
+`layoutRows` must line up 1:1 with `pois[].position`/`doors[].position`. A
+`HubPoi` holds an ordered list of `HubInteraction`s (`type: 'talk' |
+'inspect'`) — one tile can be several things to do, not just one NPC or one
+action. Movement/collision/fog math is pure and store-agnostic
+(`engine/gridMovement.ts`'s `step`/`isWalkable`/`tileKindAt`/
+`tilesWithinRadius`/`poiAt`/`doorAt`, typed against the minimal structural
+shape each needs — `{ layoutRows }`, `{ pois }`, `{ doors? }` — rather than
+`HubGridDefinition` directly, which is what lets District Streets, below,
+reuse these functions without duplicating them). Only floor, POI, and door
+tiles are ever rendered as a square (walls and void draw nothing, not even
+a wall glyph or fog) or enter fog-of-war bookkeeping, so a hub's rendered
+silhouette is exactly its walkable footprint — `checkpoint`'s grid is a
+ring around a void core, not a filled rectangle.
+
+**Locked doors:** a `HubDoor` (`{ id, position, unlockFlag, label,
+lockedReason }`) gates part of a hub's floor plan behind a
+`casefileStore.hasFlag(unlockFlag)` check — `gridMovement.ts` stays
+store-agnostic, so `isWalkable`/`step` take an injected `isDoorUnlocked`
+predicate rather than reading the store directly; `HubGridView`/
+`DistrictStreetView` build that predicate from `useCasefileStore` and pass
+it through. A locked door tile is revealed by fog-of-war like any other
+tile (worth seeing even when you can't pass), rendered distinctly (red
+tint + a "▣" glyph, tooltip showing `lockedReason`), and simply blocks
+`step()` until its flag is set — same shape on `DistrictStreetDefinition`
+for the shared engine, though `checkpoint`'s Inner Containment Wing (behind
+`checkpoint-inner-wing-unlocked`, `CASE_1_LOCATION_MATRIX.md`'s gated
+reveal location) is the only door authored so far.
+
+`gameplayStore` (deliberately separate from `navigationStore`'s
+overworld-level unlock/select bookkeeping) owns which hub is current, the
+player's tile position, and fog-of-war memory: `currentHubId`,
+`playerPosition`, `revealedTiles: Partial<Record<HubId, Set<string>>>`
+(`"x,y"` keys, persists once revealed — re-entering a hub never re-fogs
+it). The component calls `gridMovement.step()` to compute a candidate
+tile, then `gameplayStore.moveTo()` to actually mutate position and reveal
+fog around it — the same pure-computation/impure-mutation split
+`checkResolution.ts`/`storyEngine.ts` already use elsewhere. Standing on a
+POI tile surfaces its interaction list in a bottom action bar; launching
+one runs the same `selectLocation`/`loadStory`/`enterLocation`
+(audio)/`autosave` sequence a card-list hub's action already used
+(`LocationHubScreen.enterStory`).
+
+Scene end returns to the current hub by default, not the Overworld —
+`DialogueScreen`'s return-to-hub handling is the seam; a card-list hub's
+click-driven positioning means nothing needs resetting, and a grid hub
+simply leaves `playerPosition` wherever it was when the encounter launched.
+Returning to the Overworld is an explicit "Map" action from the hub
+(`LocationHubScreen.handleReturnToMap`), not an automatic side effect of a
+scene ending.
+
 **District Street Layer (2026):** a third map layer now sits between the
 Overworld and a Location Hub for districts that have earned one
 (`content/districtStreets.ts`'s `DISTRICT_STREETS`, currently just
-`district4`) — a walkable fog-of-war grid, mechanically identical to a
-Location Hub's (`docs/LOCATION_GRID_EXPLORATION_SPEC.md`), where each POI
-names a `LocationId` rather than a talk/inspect list; walking onto one
-calls `enterLocationHub()`. `gameplayStore` tracks this one level above the
-existing hub fields (`currentDistrictId`/`districtPlayerPosition`/
-`districtRevealedTiles`, same shape as `currentHubId`/`playerPosition`/
-`revealedTiles`), and `App.tsx` routes to the new `DistrictStreetScreen`
-between `LocationHubScreen` and `OverworldScreen`. "Map" pops one layer at
-a time — leaving a Hub entered from within a street returns to that street
-(`currentDistrictId` still set), not straight to the Overworld. Districts
-without a street map keep the plain panel-with-Enter-buttons flow described
-above, unchanged. See `docs/SAIGON_2226_OVERWORLD_SPEC.md`'s "District
-Street Layer" section for the full design.
+`district4`) — a walkable fog-of-war grid using the exact same tile
+vocabulary and pure `gridMovement.ts` functions as a Location Hub grid
+(above), where each POI names a `LocationId` rather than a talk/inspect
+list; walking onto one calls `enterLocationHub()`. `gameplayStore` tracks
+this one level above the existing hub fields (`currentDistrictId`/
+`districtPlayerPosition`/`districtRevealedTiles`, same shape as
+`currentHubId`/`playerPosition`/`revealedTiles`), and `App.tsx` routes to
+the new `DistrictStreetScreen` between `LocationHubScreen` and
+`OverworldScreen`. "Map" pops one layer at a time — leaving a Hub entered
+from within a street returns to that street (`currentDistrictId` still
+set), not straight to the Overworld. Districts without a street map keep
+the plain panel-with-Enter-buttons flow described above, unchanged.
 
 ## 8. Save/Persistence Layer
 
@@ -375,6 +443,44 @@ behavior and real browser audio/playback are verified by manual passes
 instead, which is why the pure/impure split above matters: it keeps the
 untested surface area to browser-only mechanics, not decision logic.
 
+## 13. Casefile / Investigation Progression Layer
+
+`content/casefile.ts` defines static evidence/note content —
+`EVIDENCE: Record<EvidenceId, EvidenceDefinition>` (three-tier
+`EvidenceTier`: `flavor`/`clue`/`key`) and `CASE_NOTES: Record<CaseNoteId,
+CaseNoteDefinition>` — while ownership/unlock state lives in
+`stores/casefileStore.ts`: `evidenceIds`/`noteIds`/`flags` as `Set`s, with
+idempotent `addEvidence`/`unlockNote`/`setFlag`/`clearFlag` plus
+`hasEvidence`/`hasNote`/`hasFlag` queries (`clearFlag` exists for the debug
+console's flag toggle, below — production content only ever sets flags
+forward). `engine/casefileEngine.ts` holds the pure
+`hydrateCasefileState` the store's `hydrate()` uses. Hidden `flags` are
+never rendered in `CasefileOverlay` — reserved for story-gating logic that
+doesn't belong in front of the player.
+
+Casefile state is captured/restored as part of the `SaveBlob`
+(`SerializedCasefileState`), the same as Insight/navigation/gameplay state.
+
+**Not yet built:** nothing in the ink↔TS boundary grants evidence, notes, or
+flags — there's no `gain_evidence`/`unlock_note`/`set_case_flag` `EXTERNAL`
+(or TS-side scene-result hook) wired up yet, and `content/casefile.ts`'s
+five evidence items and two notes are still flavor-light placeholders, not
+Case 1-canonical content. Until that lands, the Debug Console's Flags tool
+(`components/screens/DebugFlagsTool.tsx`, dev-build-only) is the only way
+to set a flag — e.g. to test a Location Hub Layer locked door. See "Open /
+not yet built" below.
+
+**Debug Console (dev-only):** `App.tsx` renders a `DEV`-gated corner button
+(stripped from production builds) that opens `DebugOverlay` — a flat menu
+of one-off tools rather than a real console, since there's only ever a
+couple of these at once. Today: **Map Builder**
+(`components/screens/MapBuilderTool.tsx`), a grid-authoring UI that paints
+`layoutRows`/`pois`/`doors` and exports JSON matching `HubGridDefinition`/
+`DistrictStreetDefinition` for hand-integration into content files; and
+**Flags** (`DebugFlagsTool.tsx`), the `casefileStore.setFlag`/`clearFlag`
+toggle above. Both are plain component state / direct store calls — no new
+persisted state, no save-format changes.
+
 ---
 
 ## Key Architectural Decisions (running log)
@@ -463,7 +569,7 @@ untested surface area to browser-only mechanics, not decision logic.
   a rectangle with holes painted into it. `checkpoint`'s grid was reshaped
   from a filled rectangle into a loop around a void core with clipped
   corners — a TiTS "deck map"-style ring — as the first real example of the
-  shape (`docs/LOCATION_GRID_EXPLORATION_SPEC.md`).
+  shape.
 - **District Street Layer added (2026):** a third map layer between the
   Overworld and a Location Hub, for districts that have earned one —
   `content/districtStreets.ts`'s `DISTRICT_STREETS` (currently just
@@ -480,8 +586,7 @@ untested surface area to browser-only mechanics, not decision logic.
   `OverworldScreen`'s per-location "Enter" and `DistrictStreetView`'s
   "Enter Location" both call one shared `enterLocationHub()` helper
   (`components/screens/enterLocationHub.ts`) instead of each hand-rolling
-  the same four-step sequence. `SAVE_FORMAT_VERSION` bumped to 6. See
-  `docs/SAIGON_2226_OVERWORLD_SPEC.md`'s "District Street Layer" section.
+  the same four-step sequence. `SAVE_FORMAT_VERSION` bumped to 6.
   The intro scene's completion (`DialogueScreen.handleReturnToOverworld`,
   keyed off `storyStore.activeStoryId === 'intro'`) was also updated to
   match: it now spawns the player straight into the `checkpoint` Hub with
@@ -492,6 +597,48 @@ untested surface area to browser-only mechanics, not decision logic.
   `currentDistrictId` means "Map" from inside the Hub still pops to the
   District 4 street first, not straight out to the Overworld, matching
   every other route into `checkpoint`.
+- **Casefile progression is a real store, not static placeholder data
+  (2026):** `stores/casefileStore.ts` (`evidenceIds`/`noteIds`/`flags`,
+  idempotent grant methods) plus `engine/casefileEngine.ts` and a
+  `SerializedCasefileState` slice of the `SaveBlob` replaced the original
+  static-only `content/casefile.ts`. Ink-side grant hooks and real Case 1
+  evidence/note content remain unbuilt — see §13 and "Open / not yet
+  built" below.
+- **Second docs cleanup pass (2026):** `CASEFILE_PROGRESSION_SPEC.md`,
+  `LOCATION_GRID_EXPLORATION_SPEC.md`, `LOCATION_HUB_ENCOUNTER_FLOW_SPEC.md`,
+  and `SAIGON_2226_OVERWORLD_SPEC.md` described systems that are now fully
+  built (Location Hub Layer, District Street Layer, Casefile progression
+  store) — their content was folded into §7/§13 here and `GAME_GUIDE.md`
+  §6, and the four files were deleted outright (unlike the first cleanup
+  pass, which left redirect stubs — those stubs no longer exist either;
+  `CLAUDE.md`'s doc-routing note was corrected to stop claiming they do).
+  Every code comment citing the four deleted paths was repointed at the
+  consolidated section instead of left dangling. `docs/CASE_1_*.md` were
+  deliberately left alone in this pass — they spec Case 1 content that
+  hasn't been built yet, so they don't qualify as superseded.
+- **Locked doors added to the Location Hub Layer (2026):** a `HubDoor`
+  (`{ id, position, unlockFlag, label, lockedReason }`) blocks off part of
+  a grid hub's/district street's floor plan until a `casefileStore` flag is
+  set — `gridMovement.ts` gained a fifth tile kind, `'door'` (`'d'` in
+  `layoutRows`), and `isWalkable`/`step` take an injected
+  `isDoorUnlocked(position)` predicate (default: always locked) rather than
+  reading `casefileStore` themselves, keeping the engine store-agnostic;
+  `HubGridView`/`DistrictStreetView` build that predicate from
+  `useCasefileStore` at the component layer, the same split
+  `checkResolution.ts`/`storyEngine.ts` already use. Unlike walls/void, a
+  locked door is still revealed by fog-of-war (`tilesWithinRadius` treats
+  `'door'` as revealable regardless of lock state — a sealed door is worth
+  seeing) and renders distinctly (red tint, tooltip). Applied to
+  `checkpoint`: the grid grew from 6 to 9 rows to fit a small Inner
+  Containment Wing room behind a door gated on
+  `checkpoint-inner-wing-unlocked` (`CASE_1_LOCATION_MATRIX.md`'s gated
+  reveal location) — placeholder content proving the mechanism, not the
+  real scene. Since ink still can't set flags (§13), a new dev-only Debug
+  Console (`App.tsx`'s `DEV`-gated corner button → `DebugOverlay`) was
+  added with a Flags tool to set/clear them for testing, plus a Map Builder
+  tool (a grid-painting UI exporting `HubGridDefinition`/
+  `DistrictStreetDefinition`-shaped JSON) as its first two entries — see
+  §13's "Debug Console" callout.
 
 ### Open / not yet built
 
@@ -504,3 +651,11 @@ untested surface area to browser-only mechanics, not decision logic.
 - In-play Insight leveling (XP, investigation rewards) — doesn't exist;
   the chargen sheet is fixed for the run.
 - Combat/tactical exploration — explicitly out of scope, distant future.
+- Casefile ink integration (§13) — the store/save layer is built, but
+  nothing grants evidence, notes, or flags from ink yet, and
+  `content/casefile.ts`'s content is still placeholder. This also means
+  `checkpoint`'s locked inner-wing door (§7) has no real in-fiction unlock
+  trigger yet — only the Debug Console's Flags tool can open it today.
+- The Inner Containment Wing itself (§7's locked-door example) is a
+  placeholder room with one generic inspect POI — `CASE_1_LOCATION_MATRIX.md`'s
+  actual forensic-reveal scene for that location isn't authored yet.

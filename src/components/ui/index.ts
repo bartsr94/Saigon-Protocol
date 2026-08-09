@@ -31,3 +31,6 @@ export type { NeonCheckboxProps } from './NeonCheckbox'
 
 export { PortraitFrame } from './PortraitFrame'
 export type { PortraitFrameProps, PortraitSize } from './PortraitFrame'
+
+export { Icon } from './Icon'
+export type { IconProps } from './Icon'

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isWalkable, poiAt, step, tileKey, tileKindAt, tilesWithinRadius } from './gridMovement'
+import { doorAt, isWalkable, poiAt, step, tileKey, tileKindAt, tilesWithinRadius } from './gridMovement'
 import type { HubGridDefinition } from '../content/locationHubs'
 
 function makeGrid(overrides: Partial<HubGridDefinition> = {}): HubGridDefinition {
@@ -30,11 +30,12 @@ function makeGrid(overrides: Partial<HubGridDefinition> = {}): HubGridDefinition
 
 describe('gridMovement', () => {
   describe('tileKindAt', () => {
-    it('classifies floor, wall, POI, and void markers', () => {
-      const grid = makeGrid({ layoutRows: ['# o  ', '.....', '#####'] })
+    it('classifies floor, wall, POI, void, and door markers', () => {
+      const grid = makeGrid({ layoutRows: ['# od ', '.....', '#####'] })
       expect(tileKindAt(grid, { x: 0, y: 0 })).toBe('wall')
       expect(tileKindAt(grid, { x: 1, y: 0 })).toBe('void')
       expect(tileKindAt(grid, { x: 2, y: 0 })).toBe('poi')
+      expect(tileKindAt(grid, { x: 3, y: 0 })).toBe('door')
       expect(tileKindAt(grid, { x: 0, y: 1 })).toBe('floor')
     })
 
@@ -63,6 +64,18 @@ describe('gridMovement', () => {
       const grid = makeGrid({ layoutRows: [' ...', '....', '....', '....'] })
       expect(isWalkable(grid, { x: 0, y: 0 })).toBe(false)
     })
+
+    it('is false for a door tile when isDoorUnlocked is omitted or returns false', () => {
+      const grid = makeGrid({ layoutRows: ['d...', '....', '....', '....'] })
+      expect(isWalkable(grid, { x: 0, y: 0 })).toBe(false)
+      expect(isWalkable(grid, { x: 0, y: 0 }, () => false)).toBe(false)
+    })
+
+    it('is true for a door tile when isDoorUnlocked returns true for that position', () => {
+      const grid = makeGrid({ layoutRows: ['d...', '....', '....', '....'] })
+      expect(isWalkable(grid, { x: 0, y: 0 }, (p) => p.x === 0 && p.y === 0)).toBe(true)
+      expect(isWalkable(grid, { x: 1, y: 0 }, () => true)).toBe(true) // floor stays walkable regardless
+    })
   })
 
   describe('step', () => {
@@ -87,6 +100,12 @@ describe('gridMovement', () => {
     it('stays put when the target tile is void', () => {
       const grid = makeGrid({ layoutRows: [' ..', '...', '...'] })
       expect(step(grid, { x: 1, y: 0 }, 'left')).toEqual({ x: 1, y: 0 })
+    })
+
+    it('stays put at a locked door and passes through once isDoorUnlocked says so', () => {
+      const grid = makeGrid({ layoutRows: ['.d.', '...', '...'] })
+      expect(step(grid, { x: 0, y: 0 }, 'right')).toEqual({ x: 0, y: 0 })
+      expect(step(grid, { x: 0, y: 0 }, 'right', () => true)).toEqual({ x: 1, y: 0 })
     })
   })
 
@@ -114,6 +133,12 @@ describe('gridMovement', () => {
       const keys = tilesWithinRadius(grid, { x: 0, y: 0 }, 1)
       expect(new Set(keys)).toEqual(new Set())
     })
+
+    it('includes a locked door tile — a sealed door is still worth revealing, unlike a wall', () => {
+      const grid = makeGrid({ layoutRows: ['.....', '..d..', '.....'] })
+      const keys = tilesWithinRadius(grid, { x: 2, y: 1 }, 1)
+      expect(new Set(keys)).toEqual(new Set(['2,1', '2,0', '2,2', '1,1', '3,1']))
+    })
   })
 
   describe('poiAt', () => {
@@ -125,6 +150,18 @@ describe('gridMovement', () => {
     it('returns null for a tile with no POI', () => {
       const grid = makeGrid()
       expect(poiAt(grid, { x: 1, y: 1 })).toBeNull()
+    })
+  })
+
+  describe('doorAt', () => {
+    it('finds the door occupying a tile', () => {
+      const grid = { doors: [{ id: 'test-door', position: { x: 3, y: 3 }, unlockFlag: 'test-flag', label: 'Door', lockedReason: 'Sealed.' }] }
+      expect(doorAt(grid, { x: 3, y: 3 })?.id).toBe('test-door')
+      expect(doorAt(grid, { x: 0, y: 0 })).toBeNull()
+    })
+
+    it('returns null when the grid has no doors list', () => {
+      expect(doorAt({}, { x: 0, y: 0 })).toBeNull()
     })
   })
 

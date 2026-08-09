@@ -1,10 +1,9 @@
-// Location Hub content (Architecture §7, docs/LOCATION_HUB_ENCOUNTER_FLOW_SPEC.md).
+// Location Hub content (Architecture §7's Location Hub Layer, GAME_GUIDE.md §6.2).
 // Two presentation shapes coexist on HubDefinition, discriminated by `layout`:
 // 'cardList' is the original clickable-card presentation; 'grid' is the
-// walkable fog-of-war tile grid (docs/LOCATION_GRID_EXPLORATION_SPEC.md).
-// Hubs migrate from cardList to grid as they earn real authored content —
-// see that spec's "Rollout scope" decision for why noodleStall/deltaSquat
-// stay cardList for now.
+// walkable fog-of-war tile grid. Hubs migrate from cardList to grid as they
+// earn real authored content — see GAME_GUIDE.md §6.2 for why
+// noodleStall/deltaSquat stay cardList for now.
 
 import type { BackgroundId } from './backgrounds'
 import type { LocationId } from './locations'
@@ -57,8 +56,7 @@ export interface GridPosition {
 
 /**
  * One thing to do at a POI tile. Talk (a person) and inspect (a place/object)
- * share this shape — a single POI tile can list several of these (Location
- * Grid Exploration Spec's "multiple interactions per tile" decision), so this
+ * share this shape — a single POI tile can list several of these, so this
  * is not assumed to be one-per-tile.
  */
 export interface HubInteraction {
@@ -81,14 +79,32 @@ export interface HubPoi {
 }
 
 /**
+ * A gate blocking off part of a hub's floor plan until `unlockFlag` is set
+ * on casefileStore (`docs/LOCATION_GRID_EXPLORATION_SPEC.md`'s locked-door
+ * mechanic) — e.g. the Aveline Lab's inner containment wing, only reachable
+ * once the investigation has earned enough leverage. Walkability is resolved
+ * at the component layer (HubGridView reads `casefileStore.hasFlag`), not
+ * here — this is just the authored data, same separation `HubPoi`'s
+ * `available`/`lockedReason` already draws for interactions.
+ */
+export interface HubDoor {
+  id: string
+  position: GridPosition
+  unlockFlag: string
+  label: string
+  /** Shown while locked, e.g. as a tile tooltip. */
+  lockedReason: string
+}
+
+/**
  * `layoutRows` is a quick hand-authoring surface: one string per grid row,
- * one character per column — '#' wall, '.' floor, 'o' POI marker, ' ' void
- * (not part of this location at all — not walkable, never rendered, not
- * even as fog; lets a hub's walkable footprint be a non-rectangular shape,
- * e.g. a loop around a blank core, rather than always a filled rectangle).
- * 'o' markers must line up 1:1 with `pois[].position`, which carries the
- * real interaction data; the ASCII grid only encodes walkability + POI
- * presence.
+ * one character per column — '#' wall, '.' floor, 'o' POI marker, 'd' door
+ * marker, ' ' void (not part of this location at all — not walkable, never
+ * rendered, not even as fog; lets a hub's walkable footprint be a
+ * non-rectangular shape, e.g. a loop around a blank core, rather than always
+ * a filled rectangle). 'o'/'d' markers must line up 1:1 with
+ * `pois[].position`/`doors[].position`, which carry the real data; the
+ * ASCII grid only encodes walkability + marker presence.
  */
 export type HubLayoutRows = string[]
 
@@ -99,6 +115,8 @@ export interface HubGridDefinition {
   entryTile: GridPosition
   layoutRows: HubLayoutRows
   pois: HubPoi[]
+  /** Locked doors gating parts of this hub's floor plan. Defaults to none. */
+  doors?: HubDoor[]
   /** Tiles revealed around the player's position on move. Defaults to 1 (a "+" shape) when omitted. */
   visionRadius?: number
 }
@@ -121,14 +139,37 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
     layout: 'grid',
     grid: {
       width: 9,
-      height: 6,
+      height: 9,
       entryTile: { x: 4, y: 1 },
       // A loop around a blank core rather than a filled rectangle: the four
-      // corners and the 5x2 center are void, not wall — "outside what the
-      // detective's AR scan renders," which doubles as a narrative hint that
-      // the sealed inner wing (see checkpoint-inner-door below) shows up as
-      // a dead zone on the HUD rather than a solid, everyday obstacle.
-      layoutRows: [' ####### ', '#.o...o.#', '#o     o#', '#.     .#', '#...o...#', ' ####### '],
+      // corners and the 5x2 center of the *outer* ring (rows 0-5) are void,
+      // not wall — "outside what the detective's AR scan renders." Rows 6-8
+      // are a small containment room behind the locked door in row 5 (see
+      // `doors` below) — CASE_1_LOCATION_MATRIX.md's "Inner Containment
+      // Wing," gated on leverage/public heat rather than free to wander
+      // into. Only a placeholder room (one generic inspect POI) until that
+      // scene gets real content — proving the door mechanism works, not
+      // authoring the reveal itself.
+      layoutRows: [
+        ' ####### ',
+        '#.o...o.#',
+        '#o     o#',
+        '#.     .#',
+        '#.......#',
+        ' ###d### ',
+        '  #...#  ',
+        '  #.o.#  ',
+        '  #####  ',
+      ],
+      doors: [
+        {
+          id: 'checkpoint-inner-door',
+          position: { x: 4, y: 5 },
+          unlockFlag: 'checkpoint-inner-wing-unlocked',
+          label: 'Sealed Inner Door',
+          lockedReason: 'The inner wing stays sealed until you gather enough leverage to force the issue.',
+        },
+      ],
       pois: [
         {
           id: 'checkpoint-mei-hong',
@@ -191,17 +232,16 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
           ],
         },
         {
-          id: 'checkpoint-inner-door',
-          position: { x: 4, y: 4 },
+          id: 'checkpoint-inner-wing-chamber',
+          position: { x: 4, y: 7 },
           interactions: [
             {
-              id: 'checkpoint-inspect-inner-door',
+              id: 'checkpoint-inspect-inner-wing-chamber',
               type: 'inspect',
-              label: 'Approach the sealed inner door',
-              description: 'The deeper lab is there, but Aveline is not ready to let the detective see it.',
+              label: 'Containment Chamber',
+              description: 'The deeper lab, finally open. Whatever happened here left the room worse for it.',
               storyLocationId: 'checkpoint',
-              available: false,
-              lockedReason: 'The inner wing stays sealed until you gather enough leverage to force the issue.',
+              available: true,
             },
           ],
         },

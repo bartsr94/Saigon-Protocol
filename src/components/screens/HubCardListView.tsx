@@ -1,7 +1,7 @@
-// Legacy card-grid Location Hub presentation (docs/LOCATION_HUB_ENCOUNTER_FLOW_SPEC.md),
-// used for hubs that haven't earned a walkable grid yet
-// (docs/LOCATION_GRID_EXPLORATION_SPEC.md's "Rollout scope" decision).
-// Extracted unchanged from LocationHubScreen.tsx's original body.
+// Legacy card-grid Location Hub presentation (Architecture §7's Location
+// Hub Layer), used for hubs that haven't earned a walkable grid yet
+// (GAME_GUIDE.md §6.2). Extracted unchanged from LocationHubScreen.tsx's
+// original body.
 
 import { useMemo } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'

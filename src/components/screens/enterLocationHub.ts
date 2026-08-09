@@ -1,9 +1,8 @@
 // Shared "step into a Location Hub" sequence (Architecture §7). Used both
 // from the Overworld's flat location list (districts without a District
-// Street map yet — docs/SAIGON_2226_OVERWORLD_SPEC.md) and from a District
-// Street POI once you've walked to it — same four steps either way, so
-// this exists to keep OverworldScreen.tsx and DistrictStreetView.tsx from
-// each hand-rolling their own copy.
+// Street map yet) and from a District Street POI once you've walked to it
+// — same four steps either way, so this exists to keep OverworldScreen.tsx
+// and DistrictStreetView.tsx from each hand-rolling their own copy.
 
 import { LOCATIONS, type LocationId } from '../../content/locations'
 import { useAudioStore } from '../../stores/audioStore'
