@@ -77,8 +77,8 @@ describe('gameplayStore', () => {
   it('enterDistrictStreet places the player on the street entry tile and reveals around it, leaveDistrictStreet clears both', () => {
     useGameplayStore.getState().enterDistrictStreet('district4')
     expect(useGameplayStore.getState().currentDistrictId).toBe('district4')
-    expect(useGameplayStore.getState().districtPlayerPosition).toEqual({ x: 0, y: 1 })
-    expect(useGameplayStore.getState().districtRevealedTiles.district4?.has('0,1')).toBe(true)
+    expect(useGameplayStore.getState().districtPlayerPosition).toEqual({ x: 0, y: 3 })
+    expect(useGameplayStore.getState().districtRevealedTiles.district4?.has('0,3')).toBe(true)
 
     useGameplayStore.getState().leaveDistrictStreet()
     expect(useGameplayStore.getState().currentDistrictId).toBeNull()
@@ -86,21 +86,21 @@ describe('gameplayStore', () => {
   })
 
   it('moveInDistrict updates position and accumulates revealed tiles, and is a no-op outside a district street', () => {
-    useGameplayStore.getState().moveInDistrict({ x: 4, y: 1 })
+    useGameplayStore.getState().moveInDistrict({ x: 5, y: 3 })
     expect(useGameplayStore.getState().districtPlayerPosition).toBeNull()
 
     useGameplayStore.getState().enterDistrictStreet('district4')
-    useGameplayStore.getState().moveInDistrict({ x: 4, y: 1 })
-    expect(useGameplayStore.getState().districtPlayerPosition).toEqual({ x: 4, y: 1 })
+    useGameplayStore.getState().moveInDistrict({ x: 5, y: 3 })
+    expect(useGameplayStore.getState().districtPlayerPosition).toEqual({ x: 5, y: 3 })
     const revealed = useGameplayStore.getState().districtRevealedTiles.district4!
-    expect(revealed.has('0,1')).toBe(true) // stays revealed from entry
-    expect(revealed.has('4,1')).toBe(true)
-    expect(revealed.has('3,1')).toBe(true) // "+"-shaped radius around the new position
+    expect(revealed.has('0,3')).toBe(true) // stays revealed from entry
+    expect(revealed.has('5,3')).toBe(true)
+    expect(revealed.has('4,3')).toBe(true) // "+"-shaped radius around the new position
   })
 
   it('districtPoiAt finds a POI in a district street and returns null for a district with no street or an empty tile', () => {
-    expect(useGameplayStore.getState().districtPoiAt('district4', { x: 4, y: 1 })?.id).toBe('district4-aveline-lab')
-    expect(useGameplayStore.getState().districtPoiAt('district4', { x: 0, y: 1 })).toBeNull()
+    expect(useGameplayStore.getState().districtPoiAt('district4', { x: 10, y: 3 })?.id).toBe('district4-aveline-lab')
+    expect(useGameplayStore.getState().districtPoiAt('district4', { x: 0, y: 3 })).toBeNull()
     expect(useGameplayStore.getState().districtPoiAt('district1', { x: 0, y: 0 })).toBeNull()
   })
 })

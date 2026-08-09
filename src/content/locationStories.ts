@@ -6,10 +6,22 @@
 import checkpointJson from '../../content/ink/checkpoint.json'
 import noodleStallJson from '../../content/ink/noodleStall.json'
 import deltaSquatJson from '../../content/ink/deltaSquat.json'
+import publicIncidentSceneJson from '../../content/ink/publicIncidentScene.json'
+import workerCanteenJson from '../../content/ink/workerCanteen.json'
+import transitPlatformJson from '../../content/ink/transitPlatform.json'
+import cidOfficeJson from '../../content/ink/cidOffice.json'
+import sezacRecordsJson from '../../content/ink/sezacRecords.json'
+import corporatePlazaJson from '../../content/ink/corporatePlaza.json'
 import type { LocationId } from './locations'
 
 export const LOCATION_STORY_JSON: Record<LocationId, Record<string, unknown>> = {
   checkpoint: checkpointJson,
   noodleStall: noodleStallJson,
   deltaSquat: deltaSquatJson,
+  publicIncidentScene: publicIncidentSceneJson,
+  workerCanteen: workerCanteenJson,
+  transitPlatform: transitPlatformJson,
+  cidOffice: cidOfficeJson,
+  sezacRecords: sezacRecordsJson,
+  corporatePlaza: corporatePlazaJson,
 }

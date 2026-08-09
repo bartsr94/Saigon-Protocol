@@ -128,7 +128,17 @@ export interface GridHubDefinition extends HubDefinitionBase {
 
 export type HubDefinition = CardListHubDefinition | GridHubDefinition
 
-export const HUB_IDS: HubId[] = ['checkpoint', 'noodleStall', 'deltaSquat']
+export const HUB_IDS: HubId[] = [
+  'checkpoint',
+  'noodleStall',
+  'deltaSquat',
+  'publicIncidentScene',
+  'workerCanteen',
+  'transitPlatform',
+  'cidOffice',
+  'sezacRecords',
+  'corporatePlaza',
+]
 
 export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
   checkpoint: {
@@ -280,6 +290,114 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
         label: 'Push deeper',
         description: 'Trace the unstable edge and see what the drowned district is willing to give up.',
         storyLocationId: 'deltaSquat',
+        available: true,
+      },
+    ],
+  },
+  publicIncidentScene: {
+    id: 'publicIncidentScene',
+    name: 'District 4 Public Incident Scene',
+    blurb: 'Tape across the street, uniforms holding a perimeter, and a story about what happened here that nobody has settled on yet.',
+    backgroundId: null,
+    layout: 'cardList',
+    characters: [],
+    actions: [
+      {
+        id: 'public-incident-scene-scene',
+        type: 'inspect',
+        label: 'Duck under the tape',
+        description: 'Get past the perimeter and see what actually happened before the official version sets.',
+        storyLocationId: 'publicIncidentScene',
+        available: true,
+      },
+    ],
+  },
+  workerCanteen: {
+    id: 'workerCanteen',
+    name: 'Worker Canteen',
+    blurb: 'Steam, tray clatter, and a shift-change crowd that talks more freely than anyone inside the lab ever will.',
+    backgroundId: null,
+    layout: 'cardList',
+    characters: [],
+    actions: [
+      {
+        id: 'worker-canteen-scene',
+        type: 'inspect',
+        label: 'Sit at the counter',
+        description: 'Blend into the shift-change crowd and see what the lab looks like from the workers who never make the official statements.',
+        storyLocationId: 'workerCanteen',
+        available: true,
+      },
+    ],
+  },
+  transitPlatform: {
+    id: 'transitPlatform',
+    name: 'District Transit Platform',
+    blurb: 'A rain-slicked platform where District 4 commuters wait out a line that’s always running behind.',
+    backgroundId: null,
+    layout: 'cardList',
+    characters: [],
+    actions: [
+      {
+        id: 'transit-platform-scene',
+        type: 'inspect',
+        label: 'Wait for the next car',
+        description: 'Work the platform crowd while the line runs late, same as always.',
+        storyLocationId: 'transitPlatform',
+        available: true,
+      },
+    ],
+  },
+  cidOffice: {
+    id: 'cidOffice',
+    name: 'CID Office',
+    blurb: 'Case boards, cold coffee, and a chain of command that would rather this stayed a burglary.',
+    backgroundId: null,
+    layout: 'cardList',
+    characters: [],
+    actions: [
+      {
+        id: 'cid-office-scene',
+        type: 'inspect',
+        label: 'Check in',
+        description: 'File in, catch up on the board, and see what the department already thinks it knows.',
+        storyLocationId: 'cidOffice',
+        available: true,
+      },
+    ],
+  },
+  sezacRecords: {
+    id: 'sezacRecords',
+    name: 'SEZAC Records / Licensing Office',
+    blurb: 'Queue numbers, sun-bleached forms, and clerks who have perfected the art of telling you nothing politely.',
+    backgroundId: null,
+    layout: 'cardList',
+    characters: [],
+    actions: [
+      {
+        id: 'sezac-records-scene',
+        type: 'inspect',
+        label: 'File a records request',
+        description: 'Wade into the paper trail and see how much of Aveline’s license survives a closer read.',
+        storyLocationId: 'sezacRecords',
+        available: true,
+      },
+    ],
+  },
+  corporatePlaza: {
+    id: 'corporatePlaza',
+    name: 'District 1 Corporate Plaza',
+    blurb: 'A lobby built to remind visitors exactly how far below the top floor they still are.',
+    backgroundId: null,
+    layout: 'cardList',
+    characters: [],
+    actions: [
+      {
+        id: 'corporate-plaza-scene',
+        type: 'inspect',
+        label: 'Wait for someone to notice you',
+        description: 'Stand in the lobby and see whether anyone with real authority is willing to be seen with this case.',
+        storyLocationId: 'corporatePlaza',
         available: true,
       },
     ],
