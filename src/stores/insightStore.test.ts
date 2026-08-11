@@ -17,6 +17,16 @@ describe('insightStore', () => {
     expect(state.composure.current).toBe(state.composure.max)
   })
 
+  it('selectPortrait is independent of selectArchetype — neither clears the other', () => {
+    useInsightStore.getState().selectPortrait('p3')
+    useInsightStore.getState().selectArchetype('enforcer')
+    expect(useInsightStore.getState().portraitId).toBe('p3')
+
+    useInsightStore.getState().selectArchetype('wire')
+    expect(useInsightStore.getState().portraitId).toBe('p3')
+    expect(useInsightStore.getState().archetype).toBe('wire')
+  })
+
   it('setPlayerName stores the name entered during Character Creation confirm', () => {
     useInsightStore.getState().setPlayerName('Mai Trần')
     expect(useInsightStore.getState().playerName).toBe('Mai Trần')
@@ -89,6 +99,7 @@ describe('insightStore', () => {
   it('hydrate bulk-restores state from a save blob, including rebuilding consumedRedChecks as a Set', () => {
     useInsightStore.getState().hydrate({
       archetype: 'wire',
+      portraitId: 'p5',
       playerName: 'Restored Name',
       levels: { ledger: 2, graft: 4, muscleMemory: 2, root: 2, static: 2, hustle: 2, mask: 1 },
       freePointsRemaining: 1,
@@ -100,6 +111,7 @@ describe('insightStore', () => {
 
     const state = useInsightStore.getState()
     expect(state.archetype).toBe('wire')
+    expect(state.portraitId).toBe('p5')
     expect(state.playerName).toBe('Restored Name')
     expect(state.levels.graft).toBe(4)
     expect(state.freePointsRemaining).toBe(1)

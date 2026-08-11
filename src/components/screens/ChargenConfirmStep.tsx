@@ -2,6 +2,7 @@
 // §6.2 step 3), then into the opening scene.
 
 import { ARCHETYPES } from '../../content/archetypes'
+import { PORTRAITS } from '../../content/portraits'
 import { useInsightStore } from '../../stores/insightStore'
 import { CyberButton, Panel, PortraitFrame } from '../ui'
 
@@ -16,6 +17,7 @@ function initials(name: string): string {
 
 export function ChargenConfirmStep({ onBack, onConfirm }: ChargenConfirmStepProps) {
   const archetype = useInsightStore((s) => s.archetype)
+  const portraitId = useInsightStore((s) => s.portraitId)
   const playerName = useInsightStore((s) => s.playerName)
   const setPlayerName = useInsightStore((s) => s.setPlayerName)
 
@@ -25,7 +27,7 @@ export function ChargenConfirmStep({ onBack, onConfirm }: ChargenConfirmStepProp
   return (
     <div className="flex flex-col gap-5">
       <Panel size="sm" className="flex gap-5 p-6">
-        <PortraitFrame src={def.portraitSrc} alt={def.name} fallbackText={initials(def.name)} size="lg" />
+        <PortraitFrame src={portraitId ? PORTRAITS[portraitId].src : undefined} alt={def.name} fallbackText={initials(def.name)} size="lg" />
         <div className="flex flex-col gap-2">
           <span className="font-display text-lg font-bold uppercase tracking-wide text-white">{def.name}</span>
           <p className="font-body text-sm text-white/60">{def.backstory}</p>

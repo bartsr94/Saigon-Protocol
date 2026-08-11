@@ -4,17 +4,17 @@
 // split.
 
 import { ARCHETYPES, type ArchetypeId } from '../content/archetypes'
+import type { PortraitId } from '../content/portraits'
 import type { GridPosition, HubId } from '../content/locationHubs'
 import type { SerializedCasefileState } from './casefileEngine'
 import type { InsightId } from '../content/insights'
 import { LOCATIONS, type DistrictId, type LocationId } from '../content/locations'
 
-// Bumped to 6 when District Street exploration state (player position,
-// per-district fog-of-war) was added alongside the existing hub-level
-// fields (Architecture §7's District Street Layer).
+// Bumped to 7 when the player's chosen portrait (independent of archetype,
+// docs/GAME_GUIDE.md §2.2 step 1) was added to insight state.
 // There is still no migration path; older saves are treated as absent
 // rather than partially restored.
-export const SAVE_FORMAT_VERSION = 6
+export const SAVE_FORMAT_VERSION = 7
 export const AUTOSAVE_SLOT_ID = 'autosave'
 export const SAVE_KEY_PREFIX = 'saigon-protocol:save:'
 
@@ -22,6 +22,7 @@ export type SaveSlotKind = 'autosave' | 'manual'
 
 export interface SerializedInsightState {
   archetype: ArchetypeId | null
+  portraitId: PortraitId | null
   playerName: string
   levels: Record<InsightId, number>
   freePointsRemaining: number

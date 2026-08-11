@@ -87,6 +87,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
     kind,
     insight: {
       archetype: insight.archetype,
+      portraitId: insight.portraitId,
       playerName: insight.playerName,
       levels: insight.levels,
       freePointsRemaining: insight.freePointsRemaining,

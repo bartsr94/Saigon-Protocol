@@ -29,6 +29,7 @@ import { ARCHETYPES } from '../../content/archetypes'
 import { NPCS, type NpcId } from '../../content/npcs'
 import { BACKGROUNDS, type BackgroundId } from '../../content/backgrounds'
 import { INSIGHTS } from '../../content/insights'
+import { PORTRAITS } from '../../content/portraits'
 import { parseChoiceTags } from '../../engine/contentTags'
 import type { CheckResult } from '../../engine/checkResolution'
 import { CheckResultBlock, ChoiceRow, CyberButton, InsightChip, Panel, PipTrack, PortraitFrame } from '../ui'
@@ -161,6 +162,7 @@ function StoryLineEntry({ line, text, showVoiceGlyph }: { line: StoryLine; text:
 
 export function DialogueScreen() {
   const archetype = useInsightStore((s) => s.archetype)
+  const portraitId = useInsightStore((s) => s.portraitId)
   const vitality = useInsightStore((s) => s.vitality)
   const composure = useInsightStore((s) => s.composure)
 
@@ -338,7 +340,7 @@ export function DialogueScreen() {
 
         <div className="absolute left-4 top-4 z-10 flex items-start gap-3">
           <PortraitFrame
-            src={ARCHETYPES[archetype].portraitSrc}
+            src={portraitId ? PORTRAITS[portraitId].src : undefined}
             alt={ARCHETYPES[archetype].name}
             fallbackText={ARCHETYPES[archetype].name.replace('The ', '').slice(0, 2).toUpperCase()}
             size="sm"

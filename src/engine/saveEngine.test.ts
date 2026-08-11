@@ -9,6 +9,7 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
     kind: 'autosave',
     insight: {
       archetype: 'hustler',
+      portraitId: 'p3',
       playerName: 'Kade',
       levels: { ledger: 3, graft: 1, muscleMemory: 1, root: 1, static: 1, hustle: 4, mask: 1 },
       freePointsRemaining: 0,
