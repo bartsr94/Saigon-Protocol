@@ -144,7 +144,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
   checkpoint: {
     id: 'checkpoint',
     name: 'Aveline District 4 Laboratory',
-    blurb: 'The front lab is sealed, watched, and pretending to be calmer than it is. Aveline staff and the Constabulary are both trying to control the first impression.',
+    blurb: 'The front lab is sealed, watched, and pretending to be calmer than it is — mask seals checked at the door same as the street outside. Aveline staff and the Constabulary are both trying to control the first impression.',
     backgroundId: 'avelineLabExterior',
     layout: 'grid',
     grid: {
