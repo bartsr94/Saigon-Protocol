@@ -5,11 +5,11 @@
 // pure step/collision math); standing on a POI tile surfaces its
 // interaction list in the bottom action bar.
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { GridHubDefinition, GridPosition } from '../../content/locationHubs'
 import type { LocationId } from '../../content/locations'
-import { doorAt, reachableTiles, step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
+import { doorAt, reachableTiles, tileKey, tileKindAt } from '../../engine/gridMovement'
 import { useCasefileStore } from '../../stores/casefileStore'
 import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
@@ -19,6 +19,7 @@ import { CyberButton, Icon, Panel } from '../ui'
 import { EditableText } from '../debug/EditableText'
 import { MapEditorPanel, type SaveResult } from './MapEditorPanel'
 import { hubToBuilderState } from './mapEditorSeed'
+import { useGridKeydownMovement } from './useGridKeydownMovement'
 
 async function saveHubRecord(hubId: string, record: object): Promise<SaveResult> {
   try {
@@ -45,17 +46,6 @@ interface HubGridViewProps {
 const TILE_PX = 56
 const EMPTY_REVEALED: Set<string> = new Set()
 
-const KEY_DIRECTIONS: Record<string, GridDirection> = {
-  w: 'up',
-  arrowup: 'up',
-  s: 'down',
-  arrowdown: 'down',
-  a: 'left',
-  arrowleft: 'left',
-  d: 'right',
-  arrowright: 'right',
-}
-
 export function HubGridView({ hub, background, onEnterStory, onReturnToMap, atEntry }: HubGridViewProps) {
   const playerPosition = useGameplayStore((s) => s.playerPosition) ?? hub.grid.entryTile
   const revealedTiles = useGameplayStore((s) => s.revealedTiles[hub.id]) ?? EMPTY_REVEALED
@@ -78,22 +68,7 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap, atEn
     [hub.grid, casefileFlags],
   )
 
-  // Discrete tile-stepping: one keypress/repeat moves exactly one tile, per
-  // the spec's movement rules — not continuous free movement. Re-registers
-  // whenever playerPosition changes so step() always collides against the
-  // current tile, not a stale closure.
-  useEffect(() => {
-    if (activeOverlay) return
-    function handleKeyDown(event: KeyboardEvent) {
-      const direction = KEY_DIRECTIONS[event.key.toLowerCase()]
-      if (!direction) return
-      event.preventDefault()
-      const next = step(hub.grid, playerPosition, direction, isDoorUnlocked)
-      if (next.x !== playerPosition.x || next.y !== playerPosition.y) moveTo(next)
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeOverlay, hub.grid, playerPosition, moveTo, isDoorUnlocked])
+  useGridKeydownMovement(hub.grid, playerPosition, moveTo, isDoorUnlocked, Boolean(activeOverlay) || editingMap)
 
   const currentPoi = useMemo(
     () => hub.grid.pois.find((poi) => poi.position.x === playerPosition.x && poi.position.y === playerPosition.y) ?? null,

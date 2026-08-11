@@ -7,11 +7,11 @@
 // precedent as HubGridView/HubCardListView already coexisting as
 // independent siblings) since the bottom-bar content genuinely differs.
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { DistrictStreetDefinition } from '../../content/districtStreets'
 import type { GridPosition } from '../../content/locationHubs'
-import { doorAt, reachableTiles, step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
+import { doorAt, reachableTiles, tileKey, tileKindAt } from '../../engine/gridMovement'
 import { useCasefileStore } from '../../stores/casefileStore'
 import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
@@ -23,6 +23,7 @@ import { EditableText } from '../debug/EditableText'
 import { MapEditorPanel, type SaveResult } from './MapEditorPanel'
 import { streetToBuilderState } from './mapEditorSeed'
 import { enterLocationHub } from './enterLocationHub'
+import { useGridKeydownMovement } from './useGridKeydownMovement'
 
 async function saveStreetRecord(streetId: string, record: object): Promise<SaveResult> {
   try {
@@ -48,17 +49,6 @@ interface DistrictStreetViewProps {
 const TILE_PX = 56
 const EMPTY_REVEALED: Set<string> = new Set()
 
-const KEY_DIRECTIONS: Record<string, GridDirection> = {
-  w: 'up',
-  arrowup: 'up',
-  s: 'down',
-  arrowdown: 'down',
-  a: 'left',
-  arrowleft: 'left',
-  d: 'right',
-  arrowright: 'right',
-}
-
 export function DistrictStreetView({ street, background, onReturnToMap, atEntry }: DistrictStreetViewProps) {
   const playerPosition = useGameplayStore((s) => s.districtPlayerPosition) ?? street.entryTile
   const revealedTiles = useGameplayStore((s) => s.districtRevealedTiles[street.id]) ?? EMPTY_REVEALED
@@ -80,21 +70,7 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
     [street, casefileFlags],
   )
 
-  // Discrete tile-stepping, same rules as HubGridView: one keypress/repeat
-  // moves exactly one tile, re-registered whenever playerPosition changes so
-  // step() always collides against the current tile, not a stale closure.
-  useEffect(() => {
-    if (activeOverlay) return
-    function handleKeyDown(event: KeyboardEvent) {
-      const direction = KEY_DIRECTIONS[event.key.toLowerCase()]
-      if (!direction) return
-      event.preventDefault()
-      const next = step(street, playerPosition, direction, isDoorUnlocked)
-      if (next.x !== playerPosition.x || next.y !== playerPosition.y) moveInDistrict(next)
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeOverlay, street, playerPosition, moveInDistrict, isDoorUnlocked])
+  useGridKeydownMovement(street, playerPosition, moveInDistrict, isDoorUnlocked, Boolean(activeOverlay) || editingMap)
 
   const currentPoi = useMemo(
     () => street.pois.find((poi) => poi.position.x === playerPosition.x && poi.position.y === playerPosition.y) ?? null,

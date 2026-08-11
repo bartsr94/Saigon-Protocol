@@ -56,27 +56,22 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
   district4: {
     id: 'district4',
     name: 'District 4 — Flood Wall',
-    blurb:
-      'Service roads, hard rain, and haze that never quite clears along the sealed edge of the SEZ — a transit stub, a night canteen, and a cordoned-off block, all pretending not to watch Aveline.',
+    blurb: 'Service roads, hard rain, and haze that never quite clears along the sealed edge of the SEZ — a transit stub, a night canteen, and a cordoned-off block, all pretending not to watch Aveline.',
     backgroundId: 'district4FloodWall',
     width: 11,
-    height: 7,
-    // A cross-shaped street rather than a single corridor: a main east-west
-    // road (y=3) the player enters from the west, with two dead-end branches
-    // punched through it — north to the transit platform, south to the
-    // worker canteen — same non-rectangular-via-void convention
-    // `locationHubs.ts`'s checkpoint grid established (only the branches and
-    // main road are ever part of this location's floor plan).
+    height: 8,
     entryTile: { x: 0, y: 3 },
     layoutRows: [
-      '   #       ',
-      '  #o#      ',
-      '  #.#      ',
+      '   #   ... ',
+      '  #o#  ... ',
+      '  #.#   .  ',
       '.....o....o',
       '      #.#  ',
       '      #o#  ',
       '       #   ',
+      '           ',
     ],
+    doors: [],
     pois: [
       {
         id: 'district4-transit-platform',
@@ -97,8 +92,8 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
         id: 'district4-worker-canteen',
         position: { x: 7, y: 5 },
         locationId: 'workerCanteen',
-        label: 'Worker Canteen',
-        description: 'Steam and shift-change chatter a few doors down from the lab.',
+        label: 'Quán Bà Châu',
+        description: 'Bà Châu\'s counter — Xóm Chàm\'s canteen, a few doors down from the lab.',
       },
       {
         id: 'district4-aveline-lab',

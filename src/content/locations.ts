@@ -63,8 +63,8 @@ export const LOCATIONS: Record<LocationId, LocationDefinition> = {
   workerCanteen: {
     id: 'workerCanteen',
     districtId: 'district4',
-    name: 'Worker Canteen',
-    blurb: 'A late-shift canteen a few doors down from Aveline — ration bars on every tray, more than a few hands at the counter patched together for a job that demands it, thick with steam and shop talk.',
+    name: 'Quán Bà Châu',
+    blurb: 'Bà Châu\'s counter, a few doors down from Aveline — Xóm Chàm\'s canteen, halal by default, run by an old stevedore who traded the wharf for a ladle and still feeds half the district\'s hands and hardware.',
     unlockedByDefault: true,
     ambienceIds: ['marketChatter'],
   },
