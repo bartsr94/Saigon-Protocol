@@ -6,9 +6,9 @@
 // tinted at render time via ui/Icon.tsx's mask-image technique rather than
 // shipping pre-colored art.
 
-export type IconId = 'poiMarker' | 'door' | 'leadAlert'
+export type IconId = 'poiMarker' | 'door' | 'leadAlert' | 'exitPoint' | 'character'
 
-export const ICON_IDS: IconId[] = ['poiMarker', 'door', 'leadAlert']
+export const ICON_IDS: IconId[] = ['poiMarker', 'door', 'leadAlert', 'exitPoint', 'character']
 
 export interface IconDefinition {
   id: IconId
@@ -20,4 +20,6 @@ export const ICONS: Record<IconId, IconDefinition> = {
   poiMarker: { id: 'poiMarker', src: '/icons/poi-marker.png' },
   door: { id: 'door', src: '/icons/door.png' },
   leadAlert: { id: 'leadAlert', src: '/icons/lead-alert.png' },
+  exitPoint: { id: 'exitPoint', src: '/icons/exit-point.png' },
+  character: { id: 'character', src: '/icons/character.png' },
 }

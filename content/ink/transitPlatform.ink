@@ -6,6 +6,7 @@
 
 VAR hustle = 0
 VAR static = 0
+VAR graft = 0
 
 Rain drums on the platform awning. A vendor's working the queue with something fried and something that probably isn't quite legal.
 { hustle >= 3:
@@ -19,6 +20,13 @@ Half the crowd huddled under the awning has their filter masks up; the other hal
     Static isn't willing to make that bet. The awning blocks the rain, not whatever's still hanging in it. # speaker: insight:static
 - else:
     You keep your own mask on and leave it at that.
+}
+
+Not everyone under the awning is unmodified and hoping the rain clears the air. One commuter's knee moves too smooth under wet fabric; another's whole arm is a decade-old prosthetic, exposed hardware going green at every joint.
+{ graft >= 3:
+    Graft prices the gap in a glance — one of those jobs was done quietly, expensively, years ago and forgotten about. The other's still being paid off, one worn joint at a time. # speaker: insight:graft
+- else:
+    Just two people waiting for the same delayed car, as far as you can tell.
 }
 
 * [Wait for the next car.]

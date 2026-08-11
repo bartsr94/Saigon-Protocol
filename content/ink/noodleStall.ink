@@ -5,6 +5,7 @@
 
 VAR root = 0
 VAR hustle = 0
+VAR graft = 0
 
 Steam off a noodle cart fogs the alley. Whoever's cooking is playing music from home, not from here.
 { root >= 3:
@@ -18,6 +19,13 @@ The broth smells like actual fish sauce, not the algae-cut kind. Whatever's in t
     The Hustle prices it without trying — real garlic, real herbs, a supply line someone's risking a fine to keep open. # speaker: insight:hustle
 - else:
     It just tastes better than it should, and you leave it at that.
+}
+
+The cook's forearm has a fresh dressing taped over something that isn't a burn — a patch job, self-administered or close to it, still weeping a little at the edge.
+{ graft >= 3:
+    Graft's seen enough back-alley mod work to place it instantly — a cheap tolerance graft, no clinic, no follow-up care. Whatever job needs a body that can take this didn't come with a licensed price tag. # speaker: insight:graft
+- else:
+    Just a bandage, as far as you can tell.
 }
 
 * [Order a bowl and listen.]

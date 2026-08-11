@@ -9,6 +9,7 @@ import type { CardListHubDefinition } from '../../content/locationHubs'
 import { NPCS } from '../../content/npcs'
 import type { LocationId } from '../../content/locations'
 import { CyberButton, Panel, PortraitFrame } from '../ui'
+import { EditableText } from '../debug/EditableText'
 
 interface HubCardListViewProps {
   hub: CardListHubDefinition
@@ -54,7 +55,7 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
           <Panel size="md" className="inline-flex max-w-full flex-col gap-2 p-4">
             <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">Location Hub</span>
             <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{hub.name}</h1>
-            <p className="font-body text-base leading-6 text-white/72">{hub.blurb}</p>
+            <EditableText className="font-body text-base leading-6 text-white/72" value={hub.blurb} file="locationHubs" field="blurb" />
           </Panel>
         </div>
 
@@ -113,7 +114,7 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
                       <div className="min-w-0">
                         <p className="font-display text-xs uppercase tracking-[0.3em] text-chrome-secondary">Talk</p>
                         <h2 className="mt-1 font-display text-sm font-bold uppercase tracking-wide text-white">{presence.label}</h2>
-                        <p className="mt-2 font-body text-sm text-white/62">{presence.description}</p>
+                        <EditableText className="mt-2 font-body text-sm text-white/62" value={presence.description} file="locationHubs" field="description" />
                       </div>
                     </div>
                   </Panel>
@@ -126,7 +127,7 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
                 <Panel size="md" className="h-full p-4 transition-colors hover:!border-chrome-secondary hover:shadow-[0_0_18px_var(--color-chrome-secondary)]">
                   <p className="font-display text-xs uppercase tracking-[0.3em] text-chrome-primary">Inspect</p>
                   <h2 className="mt-1 font-display text-sm font-bold uppercase tracking-wide text-white">{action.label}</h2>
-                  <p className="mt-2 font-body text-sm text-white/62">{action.description}</p>
+                  <EditableText className="mt-2 font-body text-sm text-white/62" value={action.description} file="locationHubs" field="description" />
                 </Panel>
               </button>
             ))}
@@ -140,7 +141,11 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
                     <div className="min-w-0">
                       <p className="font-display text-xs uppercase tracking-[0.3em] text-white/45">Unavailable</p>
                       <h2 className="mt-1 font-display text-sm font-bold uppercase tracking-wide text-white">{presence.label}</h2>
-                      <p className="mt-2 font-body text-sm text-white/55">{presence.lockedReason ?? presence.description}</p>
+                      {presence.lockedReason ? (
+                        <EditableText className="mt-2 font-body text-sm text-white/55" value={presence.lockedReason} file="locationHubs" field="lockedReason" />
+                      ) : (
+                        <EditableText className="mt-2 font-body text-sm text-white/55" value={presence.description} file="locationHubs" field="description" />
+                      )}
                     </div>
                   </div>
                 </Panel>
@@ -151,7 +156,11 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
               <Panel key={`${action.id}-locked`} size="md" accent="rgba(255,255,255,0.22)" className="h-full p-4 opacity-70">
                 <p className="font-display text-xs uppercase tracking-[0.3em] text-white/45">Locked</p>
                 <h2 className="mt-1 font-display text-sm font-bold uppercase tracking-wide text-white">{action.label}</h2>
-                <p className="mt-2 font-body text-sm text-white/55">{action.lockedReason ?? action.description}</p>
+                {action.lockedReason ? (
+                  <EditableText className="mt-2 font-body text-sm text-white/55" value={action.lockedReason} file="locationHubs" field="lockedReason" />
+                ) : (
+                  <EditableText className="mt-2 font-body text-sm text-white/55" value={action.description} file="locationHubs" field="description" />
+                )}
               </Panel>
             ))}
           </div>

@@ -14,30 +14,40 @@ export interface NavRailProps {
   onCase?: () => void
   onMenu?: () => void
   className?: string
+  /** Blocks the MAP button without hiding it — e.g. a walkable hub/street requires standing on its entry tile before returning. */
+  mapDisabled?: boolean
+  /** Tooltip shown while `mapDisabled` — explains why MAP won't respond. */
+  mapTitle?: string
 }
 
-export function NavRail({ onChar, onMap, onCase, onMenu, className = '' }: NavRailProps) {
+export function NavRail({ onChar, onMap, onCase, onMenu, className = '', mapDisabled = false, mapTitle }: NavRailProps) {
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
       {onChar && <RailButton label="CHAR" title="Character" onClick={onChar} />}
-      {onMap && <RailButton label="MAP" title="Overworld" onClick={onMap} />}
+      {onMap && <RailButton label="MAP" title={mapDisabled ? mapTitle ?? 'Overworld' : 'Overworld'} onClick={onMap} disabled={mapDisabled} />}
       {onCase && <RailButton label="CASE" title="Casefile" onClick={onCase} />}
       {onMenu && <RailButton label="MENU" title="Settings" onClick={onMenu} />}
     </div>
   )
 }
 
-function RailButton({ label, title, onClick }: { label: string; title: string; onClick: () => void }) {
+function RailButton({ label, title, onClick, disabled = false }: { label: string; title: string; onClick: () => void; disabled?: boolean }) {
   return (
     <button
       type="button"
       title={title}
-      onMouseEnter={() => useAudioStore.getState().playSfx('buttonHover')}
+      disabled={disabled}
+      onMouseEnter={() => !disabled && useAudioStore.getState().playSfx('buttonHover')}
       onClick={() => {
+        if (disabled) return
         useAudioStore.getState().playSfx('buttonClick')
         onClick()
       }}
-      className="flex h-14 w-14 items-center justify-center border border-chrome-primary bg-chrome-primary/5 font-display text-[0.65rem] font-bold uppercase tracking-wider text-chrome-primary outline-none transition-all hover:border-chrome-secondary hover:bg-chrome-secondary/15 hover:text-white hover:shadow-[0_0_15px_var(--color-chrome-secondary)] focus:border-chrome-secondary focus:shadow-[0_0_15px_var(--color-chrome-secondary)]"
+      className={`flex h-14 w-14 items-center justify-center border font-display text-[0.65rem] font-bold uppercase tracking-wider outline-none transition-all ${
+        disabled
+          ? 'cursor-not-allowed border-white/20 bg-transparent text-white/20'
+          : 'cursor-pointer border-chrome-primary bg-chrome-primary/5 text-chrome-primary hover:border-chrome-secondary hover:bg-chrome-secondary/15 hover:text-white hover:shadow-[0_0_15px_var(--color-chrome-secondary)] focus:border-chrome-secondary focus:shadow-[0_0_15px_var(--color-chrome-secondary)]'
+      }`}
       style={{
         clipPath:
           'polygon(0 0, calc(100% - var(--cut-sm)) 0, 100% var(--cut-sm), 100% 100%, var(--cut-sm) 100%, 0 calc(100% - var(--cut-sm)))',

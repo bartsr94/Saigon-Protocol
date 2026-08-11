@@ -144,7 +144,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
   checkpoint: {
     id: 'checkpoint',
     name: 'Aveline District 4 Laboratory',
-    blurb: 'The front lab is sealed, watched, and pretending to be calmer than it is — mask seals checked at the door same as the street outside. Aveline staff and the Constabulary are both trying to control the first impression.',
+    blurb: 'The front lab is sealed, watched, and pretending to be calmer than it is — mask seals checked at the door same as the street outside, modification papers checked just as carefully for anyone without an Aveline badge. Aveline staff and the Constabulary are both trying to control the first impression.',
     backgroundId: 'avelineLabExterior',
     layout: 'grid',
     grid: {
@@ -369,7 +369,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
   sezacRecords: {
     id: 'sezacRecords',
     name: 'SEZAC Records / Licensing Office',
-    blurb: 'Queue numbers, sun-bleached forms, and clerks who have perfected the art of telling you nothing politely.',
+    blurb: 'Queue numbers, sun-bleached forms — water permits, ration renewals, modification licensing — and clerks who have perfected the art of telling you nothing politely.',
     backgroundId: null,
     layout: 'cardList',
     characters: [],

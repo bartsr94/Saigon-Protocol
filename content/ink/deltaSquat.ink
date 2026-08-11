@@ -3,6 +3,7 @@
 
 VAR static = 0
 VAR root = 0
+VAR graft = 0
 
 Half the squat's ground floor is underwater at high tide; the salvagers who live here just built the second floor higher.
 { static >= 3:
@@ -16,6 +17,13 @@ Someone's cleaning a bucket of foraged greens on the stairs, out past where the 
     Root recognizes the gesture more than the food — people who've done this before, in a country that isn't here anymore. # speaker: insight:root
 - else:
     You wouldn't touch it yourself.
+}
+
+One of the salvagers on the stairs favors a leg that whines faintly with every step — servo work gone unmaintained long past when it should've been replaced.
+{ graft >= 3:
+    Graft knows that whine. Out here, a mod doesn't fail because the tech's bad — it fails because nobody this far out has the parts, or the money, to keep it running right. # speaker: insight:graft
+- else:
+    Just someone favoring a bad leg, as far as you can tell.
 }
 
 * [Ask around.]

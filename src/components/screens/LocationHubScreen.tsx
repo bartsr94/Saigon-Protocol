@@ -20,6 +20,7 @@ import { NavRail } from './NavRail'
 export function LocationHubScreen() {
   const currentHubId = useGameplayStore((s) => s.currentHubId)
   const currentDistrictId = useGameplayStore((s) => s.currentDistrictId)
+  const playerPosition = useGameplayStore((s) => s.playerPosition)
   const leaveHub = useGameplayStore((s) => s.leaveHub)
   const openOverlay = useUiStore((s) => s.openOverlay)
   const returnToOverworld = useNavigationStore((s) => s.returnToOverworld)
@@ -28,6 +29,12 @@ export function LocationHubScreen() {
 
   const hub = currentHubId ? LOCATION_HUBS[currentHubId] : null
   const background = hub?.backgroundId ? BACKGROUNDS[hub.backgroundId] : null
+
+  // Card-list hubs have no walkable grid, so there's no entry tile to gate
+  // on — only a grid hub requires standing back at the entrance to leave.
+  const entryTile = hub?.layout === 'grid' ? hub.grid.entryTile : null
+  const position = playerPosition ?? entryTile
+  const atEntry = !entryTile || (position?.x === entryTile.x && position?.y === entryTile.y)
 
   function enterStory(id: LocationId) {
     selectLocation(id)
@@ -59,10 +66,12 @@ export function LocationHubScreen() {
         onMap={handleReturnToMap}
         onCase={() => openOverlay('casefile')}
         onMenu={() => openOverlay('settings')}
+        mapDisabled={!atEntry}
+        mapTitle="Return to the entrance to leave."
       />
 
       {hub.layout === 'grid' ? (
-        <HubGridView hub={hub} background={background} onEnterStory={enterStory} onReturnToMap={handleReturnToMap} />
+        <HubGridView hub={hub} background={background} onEnterStory={enterStory} onReturnToMap={handleReturnToMap} atEntry={atEntry} />
       ) : (
         <HubCardListView hub={hub} background={background} onEnterStory={enterStory} onReturnToMap={handleReturnToMap} />
       )}

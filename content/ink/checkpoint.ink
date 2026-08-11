@@ -7,6 +7,7 @@ EXTERNAL roll_check(insight, targetNumber, checkId, risk)
 
 VAR hustle = 0
 VAR static = 0
+VAR graft = 0
 
 The checkpoint queue barely moves. A bored guard waves cars through two at a time, more interested in his handheld than your badge.
 { hustle >= 3:
@@ -20,6 +21,13 @@ A mask-seal scanner and a ration-chit reader are bolted to the same post, badge 
     Static clocks the scanner's little particulate readout ticking up before you even reach it — another bad-air day nobody's bothering to announce. # speaker: insight:static
 - else:
     Just routine hardware, as far as you can tell.
+}
+
+A woman in Aveline colors clears the same post without slowing down — no mask-seal check, just a nod from the guard.
+{ graft >= 3:
+    Graft doesn't need the badge to place her — subdermal ports at the collar, skin that's never once burned under unfiltered sun. Whatever's sealed off past this checkpoint, she's not the kind of modified that queues for anything. # speaker: insight:graft
+- else:
+    Just someone who didn't have to wait, as far as you can tell.
 }
 
 { is_red_check_consumed("checkpoint-jump-queue"):

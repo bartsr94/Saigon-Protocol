@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { useUiStore } from './stores/uiStore'
 import { useSettingsStore } from './stores/settingsStore'
+import { useDebugTextEditStore } from './stores/debugTextEditStore'
+import { useDebugMapEditStore } from './stores/debugMapEditStore'
 import { useGameplayStore } from './stores/gameplayStore'
 import { useStoryStore } from './stores/storyStore'
 import { useAudioStore } from './stores/audioStore'
@@ -71,6 +73,8 @@ function App() {
       <OverlayHost />
       <FailStateOverlay />
       {import.meta.env.DEV && <DebugButton />}
+      {import.meta.env.DEV && <TextEditToggle />}
+      {import.meta.env.DEV && <MapEditToggle />}
     </main>
   )
 }
@@ -87,6 +91,49 @@ function DebugButton() {
       className="fixed bottom-3 right-3 z-40 border border-white/30 bg-black/70 px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest text-white/50 outline-none hover:border-chrome-secondary hover:text-chrome-secondary"
     >
       Debug
+    </button>
+  )
+}
+
+// Standalone sibling to DebugButton rather than a DebugOverlay submenu —
+// this needs to stay toggled on while you navigate the actual game screens
+// (src/components/debug/EditableText.tsx), not live inside a modal.
+function TextEditToggle() {
+  const enabled = useDebugTextEditStore((s) => s.enabled)
+  const toggle = useDebugTextEditStore((s) => s.toggle)
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className={`fixed bottom-3 right-20 z-40 border px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest outline-none ${
+        enabled
+          ? 'border-chrome-secondary bg-chrome-secondary/15 text-chrome-secondary'
+          : 'border-white/30 bg-black/70 text-white/50 hover:border-chrome-secondary hover:text-chrome-secondary'
+      }`}
+    >
+      Edit Text: {enabled ? 'On' : 'Off'}
+    </button>
+  )
+}
+
+// Gates the "Edit Map" button on HubGridView/DistrictStreetView — off by
+// default, same reasoning as TextEditToggle: a structural whole-record save
+// has a bigger blast radius than a text edit, so it shouldn't be one click
+// away without deliberately opting in first.
+function MapEditToggle() {
+  const enabled = useDebugMapEditStore((s) => s.enabled)
+  const toggle = useDebugMapEditStore((s) => s.toggle)
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className={`fixed bottom-3 right-40 z-40 border px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest outline-none ${
+        enabled
+          ? 'border-chrome-secondary bg-chrome-secondary/15 text-chrome-secondary'
+          : 'border-white/30 bg-black/70 text-white/50 hover:border-chrome-secondary hover:text-chrome-secondary'
+      }`}
+    >
+      Edit Map: {enabled ? 'On' : 'Off'}
     </button>
   )
 }
