@@ -528,7 +528,10 @@ export function MapEditorPanel({ initialMode = 'hub', allowModeSwitch = true, in
             <div className="flex items-center gap-2">
               <input
                 value={selectedDoor.id}
-                onChange={(e) => updateDoor(selectedDoor.id, { id: e.target.value })}
+                onChange={(e) => {
+                  updateDoor(selectedDoor.id, { id: e.target.value })
+                  setSelectedDoorId(e.target.value)
+                }}
                 className={`${INPUT_CLASS} flex-1`}
               />
               <CyberButton className="!px-3 !py-1.5 !text-xs" onClick={() => deleteDoor(selectedDoor.id)}>
@@ -562,7 +565,10 @@ export function MapEditorPanel({ initialMode = 'hub', allowModeSwitch = true, in
             <div className="flex items-center gap-2">
               <input
                 value={selectedPoi.id}
-                onChange={(e) => updatePoi(selectedPoi.id, { id: e.target.value })}
+                onChange={(e) => {
+                  updatePoi(selectedPoi.id, { id: e.target.value })
+                  setSelectedPoiId(e.target.value)
+                }}
                 className={`${INPUT_CLASS} flex-1`}
               />
               <CyberButton className="!px-3 !py-1.5 !text-xs" onClick={() => deletePoi(selectedPoi.id)}>
