@@ -6,12 +6,20 @@ EXTERNAL is_red_check_consumed(checkId)
 EXTERNAL roll_check(insight, targetNumber, checkId, risk)
 
 VAR hustle = 0
+VAR static = 0
 
 The checkpoint queue barely moves. A bored guard waves cars through two at a time, more interested in his handheld than your badge.
 { hustle >= 3:
     The Hustle reads the guard's boredom as an opening — a story here could shave ten minutes off the wait. # speaker: insight:hustle
 - else:
     You settle in for the wait like everyone else.
+}
+
+A mask-seal scanner and a ration-chit reader are bolted to the same post, badge check third in line. Nobody questions the order anymore.
+{ static >= 3:
+    Static clocks the scanner's little particulate readout ticking up before you even reach it — another bad-air day nobody's bothering to announce. # speaker: insight:static
+- else:
+    Just routine hardware, as far as you can tell.
 }
 
 { is_red_check_consumed("checkpoint-jump-queue"):

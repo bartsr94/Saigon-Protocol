@@ -6,9 +6,9 @@
 
 VAR ledger = 0
 
-A queue number, a counter, and a clerk who has perfected telling you nothing politely. Every request form has a box for "official case number" you're not sure you should fill in yet.
+A queue number, a counter, and a clerk who has perfected telling you nothing politely. Every request form has a box for "official case number" you're not sure you should fill in yet. The rack behind the counter is stacked as high with water-permit and ration-schedule renewals as anything Aveline-related.
 { ledger >= 3:
-    The Ledger prices the delay before you even finish reading the form — this counter isn't slow, it's built to be. # speaker: insight:ledger
+    The Ledger prices the delay before you even finish reading the form — this counter isn't slow, it's built to be. Whatever actually decides who gets water, food, or answers, it isn't happening at this window. # speaker: insight:ledger
 - else:
     It's just a slow counter, as far as you can tell.
 }

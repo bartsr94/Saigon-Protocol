@@ -314,10 +314,10 @@ This does not require a huge simulation layer yet. It does require content struc
 
 Likely docs and content additions:
 
-- `docs/lore/Locations/District 1.md`
-- `docs/lore/Locations/District 2.md`
-- `docs/lore/Locations/District 4.md`
-- `docs/lore/Cases/Case 1 cast notes.md`
+- `04. Saigon Protocol/Locations/District 1.md` (vault)
+- `04. Saigon Protocol/Locations/District 2.md` (vault)
+- `04. Saigon Protocol/Locations/District 4.md` (vault)
+- `04. Saigon Protocol/Cases/Case 1 cast notes.md` (vault)
 - `content/ink/district1.ink`
 - `content/ink/district4.ink`
 - `content/ink/district5.ink`

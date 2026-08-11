@@ -57,7 +57,7 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
     id: 'district4',
     name: 'District 4 — Flood Wall',
     blurb:
-      'Service roads and hard rain along the sealed edge of the SEZ — a transit stub, a night canteen, and a cordoned-off block, all pretending not to watch Aveline.',
+      'Service roads, hard rain, and haze that never quite clears along the sealed edge of the SEZ — a transit stub, a night canteen, and a cordoned-off block, all pretending not to watch Aveline.',
     backgroundId: 'district4FloodWall',
     width: 11,
     height: 7,
@@ -83,7 +83,7 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
         position: { x: 3, y: 1 },
         locationId: 'transitPlatform',
         label: 'District Transit Platform',
-        description: 'An elevated platform under a buzzing awning, half a block off the main road.',
+        description: 'An elevated platform under a buzzing awning, half a block off the main road — the awning keeps the rain off, not whatever the rain carries.',
       },
       {
         id: 'district4-incident-scene',
@@ -112,7 +112,7 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
   district1: {
     id: 'district1',
     name: 'District 1 — Core',
-    blurb: 'Administrative towers and filtered air. A CID bullpen, a records counter, and a lobby that only opens for the right people.',
+    blurb: 'Administrative towers and filtered air — the one stretch of the city where nobody bothers with a mask. A CID bullpen, a records counter, and a lobby that only opens for the right people.',
     backgroundId: null,
     width: 11,
     height: 3,
@@ -136,7 +136,7 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
         position: { x: 7, y: 1 },
         locationId: 'sezacRecords',
         label: 'SEZAC Records / Licensing Office',
-        description: 'A counter, a queue number, and a clerk who has perfected telling you nothing politely.',
+        description: 'A counter, a queue number, and a clerk who has perfected telling you nothing politely — water permits and ration renewals filed in the same stack as everything else.',
       },
       {
         id: 'district1-corporate-plaza',
