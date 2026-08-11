@@ -4,6 +4,7 @@
 
 import { ARCHETYPES } from '../../content/archetypes'
 import { INSIGHT_IDS, INSIGHT_MAX, INSIGHTS } from '../../content/insights'
+import { PORTRAITS } from '../../content/portraits'
 import { useInsightStore } from '../../stores/insightStore'
 import { useUiStore } from '../../stores/uiStore'
 import { CyberButton, Panel, PipTrack, PortraitFrame } from '../ui'
@@ -15,6 +16,7 @@ function initials(name: string): string {
 export function CharacterOverlay() {
   const closeOverlay = useUiStore((s) => s.closeOverlay)
   const archetype = useInsightStore((s) => s.archetype)
+  const portraitId = useInsightStore((s) => s.portraitId)
   const playerName = useInsightStore((s) => s.playerName)
   const levels = useInsightStore((s) => s.levels)
 
@@ -29,7 +31,7 @@ export function CharacterOverlay() {
       </div>
 
       <div className="flex gap-5">
-        <PortraitFrame src={def.portraitSrc} alt={def.name} fallbackText={initials(def.name)} size="lg" />
+        <PortraitFrame src={portraitId ? PORTRAITS[portraitId].src : undefined} alt={def.name} fallbackText={initials(def.name)} size="lg" />
         <div className="flex flex-col gap-1">
           <span className="font-display text-lg font-bold uppercase tracking-wide text-white">{playerName || 'Unnamed'}</span>
           <span className="font-display text-sm uppercase tracking-widest text-chrome-secondary">{def.name}</span>

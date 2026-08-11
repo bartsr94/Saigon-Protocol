@@ -4,6 +4,7 @@
 import { create } from 'zustand'
 import { INSIGHT_IDS, INSIGHT_MAX, type InsightId } from '../content/insights'
 import { ARCHETYPES, type ArchetypeId } from '../content/archetypes'
+import type { PortraitId } from '../content/portraits'
 import { computeMaxComposure, computeMaxVitality } from '../content/wellbeing'
 import { resolveCheck, type CheckResult } from '../engine/checkResolution'
 import type { SerializedInsightState } from '../engine/saveEngine'
@@ -36,6 +37,8 @@ function clampToNewMax(
 
 interface InsightState {
   archetype: ArchetypeId | null
+  /** Chosen independently of archetype (docs/GAME_GUIDE.md §2.2 step 1) — picking one never clears the other. */
+  portraitId: PortraitId | null
   /** Set during Character Creation's confirm step (docs/GAME_GUIDE.md §2.2 step 3). */
   playerName: string
   levels: Record<InsightId, number>
@@ -47,6 +50,7 @@ interface InsightState {
   failState: FailStateCause
 
   selectArchetype: (id: ArchetypeId) => void
+  selectPortrait: (id: PortraitId) => void
   setPlayerName: (name: string) => void
   spendFreePoint: (id: InsightId) => void
   refundFreePoint: (id: InsightId) => void
@@ -71,6 +75,7 @@ const UNINITIALIZED_LEVELS: Record<InsightId, number> = Object.fromEntries(
 
 const INITIAL_INSIGHT_STATE = {
   archetype: null,
+  portraitId: null as PortraitId | null,
   playerName: '',
   levels: UNINITIALIZED_LEVELS,
   freePointsRemaining: 0,
@@ -98,6 +103,8 @@ export const useInsightStore = create<InsightState>((set, get) => ({
       failState: null,
     })
   },
+
+  selectPortrait: (id) => set({ portraitId: id }),
 
   setPlayerName: (name) => set({ playerName: name }),
 
@@ -168,6 +175,7 @@ export const useInsightStore = create<InsightState>((set, get) => ({
   hydrate: (state) => {
     set({
       archetype: state.archetype,
+      portraitId: state.portraitId,
       playerName: state.playerName,
       levels: state.levels,
       freePointsRemaining: state.freePointsRemaining,

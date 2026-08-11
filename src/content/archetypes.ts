@@ -14,8 +14,6 @@ export interface ArchetypeDefinition {
   /** Starting Insight levels before free-point spend (placeholder numbers — GDD §3 tuning-pass item). */
   baseline: Record<InsightId, number>
   freePoints: number
-  /** `/portraits/archetypes/<id>.png` — served from public/ once art lands; absent falls back to initials (PortraitFrame). */
-  portraitSrc?: string
 }
 
 // PLACEHOLDER values (GDD §3 tuning-pass item): baseline spread and free-point pool size.

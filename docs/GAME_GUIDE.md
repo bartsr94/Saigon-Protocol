@@ -95,8 +95,12 @@ quarter is the dialogue panel.
 
 Three steps, orchestrated by `CharacterCreationScreen` over local step
 state:
-1. **`ChargenArchetypeStep`** — the six archetypes as cards; picking one
-   commits immediately to `insightStore` (baseline levels + archetype).
+1. **`ChargenArchetypeStep`** — split view: the six archetypes as cards in
+   one column, a flat portrait gallery (`content/portraits.ts`) in the
+   other. Picking an archetype commits immediately to `insightStore`
+   (baseline levels + archetype); picking a portrait commits independently
+   (`selectPortrait`) and neither choice clears the other. "Continue" is
+   disabled until both an archetype and a portrait are chosen.
 2. **`ChargenFreePointsStep`** — spend the archetype's free-point pool
    (`spendFreePoint`/`refundFreePoint`); refunding can't drop a level below
    the archetype's own baseline for that Insight.
