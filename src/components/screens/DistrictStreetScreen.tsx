@@ -17,12 +17,16 @@ import { NavRail } from './NavRail'
 
 export function DistrictStreetScreen() {
   const currentDistrictId = useGameplayStore((s) => s.currentDistrictId)
+  const districtPlayerPosition = useGameplayStore((s) => s.districtPlayerPosition)
   const leaveDistrictStreet = useGameplayStore((s) => s.leaveDistrictStreet)
   const openOverlay = useUiStore((s) => s.openOverlay)
   const returnToOverworld = useNavigationStore((s) => s.returnToOverworld)
 
   const street = currentDistrictId ? DISTRICT_STREETS[currentDistrictId] : null
   const background = street?.backgroundId ? BACKGROUNDS[street.backgroundId] : null
+
+  const position = districtPlayerPosition ?? street?.entryTile ?? null
+  const atEntry = !street || (position?.x === street.entryTile.x && position?.y === street.entryTile.y)
 
   function handleReturnToMap() {
     leaveDistrictStreet()
@@ -41,9 +45,11 @@ export function DistrictStreetScreen() {
         onMap={handleReturnToMap}
         onCase={() => openOverlay('casefile')}
         onMenu={() => openOverlay('settings')}
+        mapDisabled={!atEntry}
+        mapTitle="Return to the entrance to leave."
       />
 
-      <DistrictStreetView street={street} background={background} onReturnToMap={handleReturnToMap} />
+      <DistrictStreetView street={street} background={background} onReturnToMap={handleReturnToMap} atEntry={atEntry} />
     </div>
   )
 }

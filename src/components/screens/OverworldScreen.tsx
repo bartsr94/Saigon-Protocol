@@ -11,6 +11,7 @@ import { DISTRICT_STREETS } from '../../content/districtStreets'
 import { LOCATIONS, LOCATION_IDS, type DistrictId, type LocationId } from '../../content/locations'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { CyberButton, GlitchText, Icon, Panel } from '../ui'
+import { EditableText } from '../debug/EditableText'
 import { NavRail } from './NavRail'
 import { enterLocationHub } from './enterLocationHub'
 
@@ -191,7 +192,12 @@ export function OverworldScreen() {
                 // street (Architecture §7's District Street Layer). Entering
                 // the district just drops you at the street's entry tile.
                 <div className="mt-4 flex flex-col gap-3">
-                  <p className="font-body text-sm text-white/55">{selectedDistrictStreet.blurb}</p>
+                  <EditableText
+                    className="font-body text-sm text-white/55"
+                    value={selectedDistrictStreet.blurb}
+                    file="districtStreets"
+                    field="blurb"
+                  />
                   <CyberButton onClick={() => enterDistrictStreet(selectedDistrictId)}>Enter District</CyberButton>
                 </div>
               ) : (
@@ -231,7 +237,7 @@ export function OverworldScreen() {
                                 {def.name}
                                 {!unlocked && <span className="text-white/45"> (locked)</span>}
                               </h3>
-                              <p className="mt-1 font-body text-sm text-white/60">{def.blurb}</p>
+                              <EditableText className="mt-1 font-body text-sm text-white/60" value={def.blurb} file="locations" field="blurb" />
                             </div>
                             <CyberButton className="shrink-0 !px-3 !py-2 !text-xs" disabled={!unlocked} onClick={() => enterLocationHub(id)}>
                               Enter

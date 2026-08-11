@@ -6,6 +6,7 @@
 
 VAR mask = 0
 VAR static = 0
+VAR graft = 0
 
 Fluorescent light, cold coffee, and a case board that's still mostly empty pins and string. Someone up the chain wants a status update by end of shift.
 { mask >= 3:
@@ -19,6 +20,13 @@ Nobody in the bullpen is wearing a mask. Filtered air, recycled and metered but 
     Static usually has something to say about the air. In here, for once, it doesn't — and that silence is its own kind of tell about who this room was built for. # speaker: insight:static
 - else:
     It's just quiet, the way an office is supposed to be.
+}
+
+A detective two desks over rolls a stiff shoulder that never quite moved right after a field mod job nobody in the bullpen has ever asked about.
+{ graft >= 3:
+    Graft doesn't flinch at it the way the street would. In here, a patched-together body is just a coworker's old case file, not a confession. # speaker: insight:graft
+- else:
+    Just someone stretching out a long shift, as far as you can tell.
 }
 
 * [File the update and get back to it.]

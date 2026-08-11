@@ -9,7 +9,7 @@ VAR hustle = 0
 
 Shift-change crowd at the canteen counter, elbow to elbow under one buzzing strip light. Half the hands reaching for trays aren't fully human anymore.
 { graft >= 3:
-    Graft clocks the prosthetics and ports under the sleeves before you register the faces — this crew works somewhere that eats bodies. # speaker: insight:graft
+    Graft clocks the prosthetics and ports under the sleeves before you register the faces — this crew works somewhere that eats bodies. Nothing here was chosen for how it looks. Every seam is functional, replaceable, the kind of modification you get because the job demands it, not because you wanted it. # speaker: insight:graft
 - else:
     Just tired workers grabbing a late meal, as far as you can tell.
 }

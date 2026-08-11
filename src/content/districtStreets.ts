@@ -136,7 +136,7 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
         position: { x: 7, y: 1 },
         locationId: 'sezacRecords',
         label: 'SEZAC Records / Licensing Office',
-        description: 'A counter, a queue number, and a clerk who has perfected telling you nothing politely — water permits and ration renewals filed in the same stack as everything else.',
+        description: 'A counter, a queue number, and a clerk who has perfected telling you nothing politely — water permits, ration renewals, and modification licensing filed in the same stack as everything else.',
       },
       {
         id: 'district1-corporate-plaza',

@@ -2,10 +2,10 @@ import { useState } from 'react'
 
 export type PortraitSize = 'sm' | 'md' | 'lg'
 
-const OUTER_PX: Record<PortraitSize, number> = { sm: 64, md: 96, lg: 160 }
-const OUTER_CUT: Record<PortraitSize, string> = { sm: '10px', md: '14px', lg: '20px' }
-const INNER_CUT: Record<PortraitSize, string> = { sm: '6px', md: '9px', lg: '14px' }
-const FALLBACK_TEXT_CLASS: Record<PortraitSize, string> = { sm: 'text-[0.6rem]', md: 'text-xs', lg: 'text-base' }
+const OUTER_PX: Record<PortraitSize, number> = { sm: 64, md: 144, lg: 160 }
+const OUTER_CUT: Record<PortraitSize, string> = { sm: '10px', md: '21px', lg: '20px' }
+const INNER_CUT: Record<PortraitSize, string> = { sm: '6px', md: '14px', lg: '14px' }
+const FALLBACK_TEXT_CLASS: Record<PortraitSize, string> = { sm: 'text-[0.6rem]', md: 'text-sm', lg: 'text-base' }
 
 export interface PortraitFrameProps {
   /** `undefined`/missing/failed-to-load all fall through to the initials fallback below — art hasn't landed yet. */

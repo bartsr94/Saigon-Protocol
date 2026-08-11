@@ -6,6 +6,7 @@
 
 VAR mask = 0
 VAR ledger = 0
+VAR graft = 0
 
 Polished stone, filtered air, and private security that watches you the way people watch something that might scratch the floor. Nobody with real authority takes meetings with beat detectives — not yet.
 { mask >= 3:
@@ -19,6 +20,13 @@ A fruit bowl sits on the reception desk, untouched and clearly not synthesized. 
     The Ledger does the math anyway — that bowl alone is worth more than most of District 4 sees in a month of rations. # speaker: insight:ledger
 - else:
     It's just fruit, as far as you can tell.
+}
+
+Two visitors wait near the elevators, both clearly used to rooms like this one. One carries an old-money severity — pale, sharp-featured, dressed like capital that's never once had to prove itself. The other doesn't read as any one place at all, features blended too precisely to be an accident.
+{ graft >= 3:
+    Graft clocks the second one first — gene-level work, not surgical, not survival-tier. The kind of blend that says a family paid for the best of two different pedigrees before the kid was even born. The first one's a different flex entirely: old capital still betting a certain look means something in a city the Compact actually runs. # speaker: insight:graft
+- else:
+    Just two well-dressed strangers waiting for an elevator, as far as you can tell.
 }
 
 * [Wait to see if anyone worth talking to actually comes down.]

@@ -5,22 +5,41 @@
 // pure step/collision math); standing on a POI tile surfaces its
 // interaction list in the bottom action bar.
 
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { GridHubDefinition, GridPosition } from '../../content/locationHubs'
 import type { LocationId } from '../../content/locations'
 import { doorAt, reachableTiles, step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
 import { useCasefileStore } from '../../stores/casefileStore'
+import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { CyberButton, Icon, Panel } from '../ui'
+import { EditableText } from '../debug/EditableText'
+import { MapEditorPanel, type SaveResult } from './MapEditorPanel'
+import { hubToBuilderState } from './mapEditorSeed'
+
+async function saveHubRecord(hubId: string, record: object): Promise<SaveResult> {
+  try {
+    const res = await fetch('/__debug/save-map-record', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: 'locationHubs', id: hubId, record }),
+    })
+    const body: { error?: string } = await res.json()
+    return res.ok ? { ok: true } : { ok: false, error: body.error ?? 'Save failed.' }
+  } catch {
+    return { ok: false, error: 'Save failed — is the dev server running?' }
+  }
+}
 
 interface HubGridViewProps {
   hub: GridHubDefinition
   background: BackgroundDefinition | null
   onEnterStory: (id: LocationId) => void
   onReturnToMap: () => void
+  atEntry: boolean
 }
 
 const TILE_PX = 56
@@ -37,13 +56,15 @@ const KEY_DIRECTIONS: Record<string, GridDirection> = {
   arrowright: 'right',
 }
 
-export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: HubGridViewProps) {
+export function HubGridView({ hub, background, onEnterStory, onReturnToMap, atEntry }: HubGridViewProps) {
   const playerPosition = useGameplayStore((s) => s.playerPosition) ?? hub.grid.entryTile
   const revealedTiles = useGameplayStore((s) => s.revealedTiles[hub.id]) ?? EMPTY_REVEALED
   const moveTo = useGameplayStore((s) => s.moveTo)
   const activeOverlay = useUiStore((s) => s.activeOverlay)
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
   const casefileFlags = useCasefileStore((s) => s.flags)
+  const mapEditEnabled = useDebugMapEditStore((s) => s.enabled)
+  const [editingMap, setEditingMap] = useState(false)
 
   // Resolves a door tile's lock state from casefileStore at the component
   // layer — gridMovement.ts stays store-agnostic (CLAUDE.md's simulation/UI
@@ -95,6 +116,10 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
   // What the AR-scan panel says about the square the player is standing on
   // right now, in place of a single static hub-wide blurb — a POI's or
   // door's own description if standing on one, else the hub's general blurb.
+  // Only the hub-blurb fallback is a single atomic field, so it's the only
+  // case wrapped for editing below — the POI branch joins several
+  // interactions' descriptions into one string, which isn't a single source
+  // field to write back to.
   const squareBlurb = useMemo(() => {
     if (currentPoi) {
       return currentPoi.interactions
@@ -104,8 +129,10 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
     if (currentDoor) return isDoorUnlocked(playerPosition) ? currentDoor.label : currentDoor.lockedReason
     return hub.blurb
   }, [currentPoi, currentDoor, isDoorUnlocked, playerPosition, hub.blurb])
+  const squareBlurbIsHubBlurb = !currentPoi && !currentDoor
 
   return (
+    <>
     <div className="relative flex-1 overflow-hidden">
       {background?.imageSrc && (
         <>
@@ -128,13 +155,31 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
           <Panel size="md" className="inline-flex max-w-xl flex-col gap-3 p-4">
             <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">Location Hub — AR Scan</span>
             <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{hub.name}</h1>
-            <p className="font-body text-base leading-6 text-white/72">{squareBlurb}</p>
-            {/* Always-visible exit — HubCardListView already has an inline
-                "Return to Map" button; grid hubs relied on NavRail's small
-                MAP icon alone, which didn't read as an obvious way out. */}
-            <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={onReturnToMap}>
-              Return to Map
-            </CyberButton>
+            {squareBlurbIsHubBlurb ? (
+              <EditableText className="font-body text-base leading-6 text-white/72" value={squareBlurb} file="locationHubs" field="blurb" />
+            ) : (
+              <p className="font-body text-base leading-6 text-white/72">{squareBlurb}</p>
+            )}
+            {/* HubCardListView already has an inline "Return to Map" button;
+                grid hubs relied on NavRail's small MAP icon alone, which
+                didn't read as an obvious way out. Gated on standing at the
+                grid's entry tile — the same square you walked in on is the
+                only way back out, same as entering. */}
+            <div className="flex gap-2">
+              <CyberButton
+                className="self-start !px-3 !py-2 !text-xs"
+                disabled={!atEntry}
+                title={atEntry ? undefined : 'Return to the entrance to leave.'}
+                onClick={onReturnToMap}
+              >
+                Return to Map
+              </CyberButton>
+              {import.meta.env.DEV && mapEditEnabled && (
+                <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={() => setEditingMap(true)}>
+                  Edit Map
+                </CyberButton>
+              )}
+            </div>
           </Panel>
 
           {/* Text fallback for keyboard/precision players and screen readers —
@@ -192,11 +237,16 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
                 const poi = hub.grid.pois.find((p) => p.position.x === x && p.position.y === y)
                 const door = kind === 'door' ? doorAt(hub.grid, { x, y }) : null
                 const doorUnlocked = door ? isDoorUnlocked({ x, y }) : false
+                const isEntry = hub.grid.entryTile.x === x && hub.grid.entryTile.y === y
+                // A POI reads as "a person" only when every interaction on it
+                // is talk — a tile mixing talk and inspect (or inspect-only)
+                // still gets the generic poiMarker, since it isn't just a person.
+                const isPureCharacter = Boolean(poi && poi.interactions.length > 0 && poi.interactions.every((i) => i.type === 'talk'))
 
                 return (
                   <div
                     key={key}
-                    title={door ? (doorUnlocked ? door.label : door.lockedReason) : undefined}
+                    title={door ? (doorUnlocked ? door.label : door.lockedReason) : isEntry ? 'Entrance — return here to leave.' : undefined}
                     className={`relative flex items-center justify-center border ${reduceMotion ? '' : 'transition-colors duration-150'}`}
                     style={{
                       borderColor: revealed ? 'color-mix(in srgb, var(--color-chrome-primary) 35%, transparent)' : 'rgba(255,255,255,0.05)',
@@ -210,10 +260,13 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
                     }}
                   >
                     {revealed && door && !isPlayer && (
-                      <Icon id="door" size={26} color={doorUnlocked ? 'rgba(255,255,255,0.55)' : '#ff6666'} glow={!doorUnlocked} />
+                      <Icon id="door" size={52} color={doorUnlocked ? 'rgba(255,255,255,0.55)' : '#ff6666'} glow={!doorUnlocked} />
                     )}
                     {revealed && poi && !isPlayer && (
-                      <Icon id="poiMarker" size={26} color="var(--color-chrome-secondary)" glow />
+                      <Icon id={isPureCharacter ? 'character' : 'poiMarker'} size={52} color="var(--color-chrome-secondary)" glow />
+                    )}
+                    {revealed && isEntry && !poi && !door && !isPlayer && (
+                      <Icon id="exitPoint" size={52} color="var(--color-chrome-primary)" glow />
                     )}
                     {isPlayer && (
                       <span
@@ -249,5 +302,23 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap }: Hu
         </div>
       </div>
     </div>
+    {editingMap && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={() => setEditingMap(false)}>
+        <Panel size="lg" className="flex h-[95vh] w-[95vw] max-w-[1600px] flex-col gap-4 p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h1 className="font-display text-lg font-bold uppercase tracking-widest text-chrome-primary">Edit_Map — {hub.id}</h1>
+            <CyberButton onClick={() => setEditingMap(false)}>Close</CyberButton>
+          </div>
+          <MapEditorPanel
+            initialMode="hub"
+            allowModeSwitch={false}
+            initialData={hubToBuilderState(hub)}
+            onSave={(record) => saveHubRecord(hub.id, record)}
+            saveLabel="Save to locationHubs.ts"
+          />
+        </Panel>
+      </div>
+    )}
+    </>
   )
 }

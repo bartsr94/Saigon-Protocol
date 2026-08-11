@@ -7,23 +7,42 @@
 // precedent as HubGridView/HubCardListView already coexisting as
 // independent siblings) since the bottom-bar content genuinely differs.
 
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { DistrictStreetDefinition } from '../../content/districtStreets'
 import type { GridPosition } from '../../content/locationHubs'
 import { doorAt, reachableTiles, step, tileKey, tileKindAt, type GridDirection } from '../../engine/gridMovement'
 import { useCasefileStore } from '../../stores/casefileStore'
+import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { CyberButton, Icon, Panel } from '../ui'
+import { EditableText } from '../debug/EditableText'
+import { MapEditorPanel, type SaveResult } from './MapEditorPanel'
+import { streetToBuilderState } from './mapEditorSeed'
 import { enterLocationHub } from './enterLocationHub'
+
+async function saveStreetRecord(streetId: string, record: object): Promise<SaveResult> {
+  try {
+    const res = await fetch('/__debug/save-map-record', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: 'districtStreets', id: streetId, record }),
+    })
+    const body: { error?: string } = await res.json()
+    return res.ok ? { ok: true } : { ok: false, error: body.error ?? 'Save failed.' }
+  } catch {
+    return { ok: false, error: 'Save failed — is the dev server running?' }
+  }
+}
 
 interface DistrictStreetViewProps {
   street: DistrictStreetDefinition
   background: BackgroundDefinition | null
   onReturnToMap: () => void
+  atEntry: boolean
 }
 
 const TILE_PX = 56
@@ -40,7 +59,7 @@ const KEY_DIRECTIONS: Record<string, GridDirection> = {
   arrowright: 'right',
 }
 
-export function DistrictStreetView({ street, background, onReturnToMap }: DistrictStreetViewProps) {
+export function DistrictStreetView({ street, background, onReturnToMap, atEntry }: DistrictStreetViewProps) {
   const playerPosition = useGameplayStore((s) => s.districtPlayerPosition) ?? street.entryTile
   const revealedTiles = useGameplayStore((s) => s.districtRevealedTiles[street.id]) ?? EMPTY_REVEALED
   const moveInDistrict = useGameplayStore((s) => s.moveInDistrict)
@@ -48,6 +67,8 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
   const activeOverlay = useUiStore((s) => s.activeOverlay)
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
   const casefileFlags = useCasefileStore((s) => s.flags)
+  const mapEditEnabled = useDebugMapEditStore((s) => s.enabled)
+  const [editingMap, setEditingMap] = useState(false)
 
   // Same store-agnostic-engine/component-resolves-flags split as
   // HubGridView's `isDoorUnlocked`.
@@ -89,17 +110,24 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
   const reachable = useMemo(() => reachableTiles(street, isDoorUnlocked), [street, isDoorUnlocked])
 
   // What the AR-scan panel says about the square the player is standing on
-  // right now, in place of a single static street-wide blurb.
-  const squareBlurb = useMemo(() => {
+  // right now, in place of a single static street-wide blurb. Also tracks
+  // which single source field (if any) that text came from, so the panel
+  // below can offer it for editing — a door's label/lockedReason isn't in
+  // the editable-fields allow-list, so that case stays plain text.
+  const squareBlurb = useMemo((): { value: string; field: 'blurb' | 'description' | 'lockedReason' | null } => {
     if (currentPoi) {
       const available = unlockedLocationIds.has(currentPoi.locationId)
-      return available ? currentPoi.description : (currentPoi.lockedReason ?? currentPoi.description)
+      if (available) return { value: currentPoi.description, field: 'description' }
+      return currentPoi.lockedReason
+        ? { value: currentPoi.lockedReason, field: 'lockedReason' }
+        : { value: currentPoi.description, field: 'description' }
     }
-    if (currentDoor) return isDoorUnlocked(playerPosition) ? currentDoor.label : currentDoor.lockedReason
-    return street.blurb
+    if (currentDoor) return { value: isDoorUnlocked(playerPosition) ? currentDoor.label : currentDoor.lockedReason, field: null }
+    return { value: street.blurb, field: 'blurb' }
   }, [currentPoi, currentDoor, unlockedLocationIds, isDoorUnlocked, playerPosition, street.blurb])
 
   return (
+    <>
     <div className="relative flex-1 overflow-hidden">
       {background?.imageSrc && (
         <>
@@ -122,10 +150,28 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
           <Panel size="md" className="inline-flex max-w-xl flex-col gap-3 p-4">
             <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">District Street — AR Scan</span>
             <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{street.name}</h1>
-            <p className="font-body text-base leading-6 text-white/72">{squareBlurb}</p>
-            <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={onReturnToMap}>
-              Return to Map
-            </CyberButton>
+            {squareBlurb.field ? (
+              <EditableText className="font-body text-base leading-6 text-white/72" value={squareBlurb.value} file="districtStreets" field={squareBlurb.field} />
+            ) : (
+              <p className="font-body text-base leading-6 text-white/72">{squareBlurb.value}</p>
+            )}
+            {/* Gated on standing at the street's entry tile — the same square
+                you walked in on is the only way back out, same as entering. */}
+            <div className="flex gap-2">
+              <CyberButton
+                className="self-start !px-3 !py-2 !text-xs"
+                disabled={!atEntry}
+                title={atEntry ? undefined : 'Return to the entrance to leave.'}
+                onClick={onReturnToMap}
+              >
+                Return to Map
+              </CyberButton>
+              {import.meta.env.DEV && mapEditEnabled && (
+                <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={() => setEditingMap(true)}>
+                  Edit Map
+                </CyberButton>
+              )}
+            </div>
           </Panel>
 
           {/* Text fallback for keyboard/precision players and screen readers
@@ -180,11 +226,12 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
                 const poi = street.pois.find((p) => p.position.x === x && p.position.y === y)
                 const door = kind === 'door' ? doorAt(street, { x, y }) : null
                 const doorUnlocked = door ? isDoorUnlocked({ x, y }) : false
+                const isEntry = street.entryTile.x === x && street.entryTile.y === y
 
                 return (
                   <div
                     key={key}
-                    title={door ? (doorUnlocked ? door.label : door.lockedReason) : undefined}
+                    title={door ? (doorUnlocked ? door.label : door.lockedReason) : isEntry ? 'Entrance — return here to leave.' : undefined}
                     className={`relative flex items-center justify-center border ${reduceMotion ? '' : 'transition-colors duration-150'}`}
                     style={{
                       borderColor: revealed ? 'color-mix(in srgb, var(--color-chrome-primary) 35%, transparent)' : 'rgba(255,255,255,0.05)',
@@ -198,10 +245,13 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
                     }}
                   >
                     {revealed && door && !isPlayer && (
-                      <Icon id="door" size={26} color={doorUnlocked ? 'rgba(255,255,255,0.55)' : '#ff6666'} glow={!doorUnlocked} />
+                      <Icon id="door" size={52} color={doorUnlocked ? 'rgba(255,255,255,0.55)' : '#ff6666'} glow={!doorUnlocked} />
                     )}
                     {revealed && poi && !isPlayer && (
-                      <Icon id="poiMarker" size={26} color="var(--color-chrome-secondary)" glow />
+                      <Icon id="poiMarker" size={52} color="var(--color-chrome-secondary)" glow />
+                    )}
+                    {revealed && isEntry && !poi && !door && !isPlayer && (
+                      <Icon id="exitPoint" size={52} color="var(--color-chrome-primary)" glow />
                     )}
                     {isPlayer && (
                       <span
@@ -238,5 +288,23 @@ export function DistrictStreetView({ street, background, onReturnToMap }: Distri
         </div>
       </div>
     </div>
+    {editingMap && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={() => setEditingMap(false)}>
+        <Panel size="lg" className="flex h-[95vh] w-[95vw] max-w-[1600px] flex-col gap-4 p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h1 className="font-display text-lg font-bold uppercase tracking-widest text-chrome-primary">Edit_Map — {street.id}</h1>
+            <CyberButton onClick={() => setEditingMap(false)}>Close</CyberButton>
+          </div>
+          <MapEditorPanel
+            initialMode="street"
+            allowModeSwitch={false}
+            initialData={streetToBuilderState(street)}
+            onSave={(record) => saveStreetRecord(street.id, record)}
+            saveLabel="Save to districtStreets.ts"
+          />
+        </Panel>
+      </div>
+    )}
+    </>
   )
 }
