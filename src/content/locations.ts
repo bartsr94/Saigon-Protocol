@@ -12,6 +12,7 @@ export type LocationId =
   | 'deltaSquat'
   | 'publicIncidentScene'
   | 'workerCanteen'
+  | 'mosque'
   | 'transitPlatform'
   | 'cidOffice'
   | 'sezacRecords'
@@ -23,6 +24,7 @@ export const LOCATION_IDS: LocationId[] = [
   'deltaSquat',
   'publicIncidentScene',
   'workerCanteen',
+  'mosque',
   'transitPlatform',
   'cidOffice',
   'sezacRecords',
@@ -47,7 +49,7 @@ export const LOCATIONS: Record<LocationId, LocationDefinition> = {
     id: 'checkpoint',
     districtId: 'district4',
     name: 'SEZ Checkpoint',
-    blurb: 'The border crossing into the corporate core — mask seal checked, ration chit scanned, badge last. Where every case starts.',
+    blurb: 'The border crossing into the corporate core — mask seal checked, ration chit scanned, badge last, all under a recruitment screen looping lunar wage figures at the queue. Where every case starts.',
     unlockedByDefault: true,
     unlocksOnComplete: ['noodleStall', 'publicIncidentScene'],
     ambienceIds: ['rain', 'filterStatic', 'rationQueue'],
@@ -68,11 +70,18 @@ export const LOCATIONS: Record<LocationId, LocationDefinition> = {
     unlockedByDefault: true,
     ambienceIds: ['marketChatter'],
   },
+  mosque: {
+    id: 'mosque',
+    districtId: 'district4',
+    name: 'Musholla Al-Falah',
+    blurb: 'A converted platform-level room, mats and a tape-marked qibla — the Kampung\'s prayer house, newer and poorer than Xóm Chàm\'s counter, and just as watched, if you know who\'s counting heads.',
+    unlockedByDefault: true,
+  },
   transitPlatform: {
     id: 'transitPlatform',
     districtId: 'district4',
     name: 'District Transit Platform',
-    blurb: 'A rain-slicked platform where District 4 waits out the haze for a line that never quite runs on time.',
+    blurb: 'A rain-slicked platform where District 4 waits out the haze for a line that never quite runs on time, under a wall ad cycling the same green Martian horizon on loop.',
     unlockedByDefault: true,
     ambienceIds: ['engineIdle', 'filterStatic', 'hazeWind'],
   },
@@ -95,7 +104,7 @@ export const LOCATIONS: Record<LocationId, LocationDefinition> = {
     id: 'corporatePlaza',
     districtId: 'district1',
     name: 'District 1 Corporate Plaza',
-    blurb: 'Polished stone, filtered air, and a fruit bowl in the lobby that isn’t synthesized — like everyone waiting on it, bred rather than merely afforded. The public face of the people who actually run District 1.',
+    blurb: 'Polished stone, filtered air, and a fruit bowl in the lobby that isn’t synthesized — like everyone waiting on it, bred rather than merely afforded. A recruitment screen near the elevators pitches Mars acreage like a vacation brochure, aimed at people who’ll never need the wage. The public face of the people who actually run District 1.',
     unlockedByDefault: false,
   },
   noodleStall: {

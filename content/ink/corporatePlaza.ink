@@ -29,6 +29,13 @@ Two visitors wait near the elevators, both clearly used to rooms like this one. 
     Just two well-dressed strangers waiting for an elevator, as far as you can tell.
 }
 
+Near the elevators, a discreet screen no bigger than a picture frame cycles a very different message than anything back at the checkpoint — Terra Nova, Mars acreage, presented like a vacation package instead of an escape hatch.
+{ ledger >= 3:
+    The Ledger clocks the difference immediately — the wage pitch outside is aimed at people who need it, this one's aimed at people who don't, sold as a lifestyle instead of a lifeline. # speaker: insight:ledger
+- else:
+    Just another screen, easy to ignore in a lobby built entirely out of things you're not meant to look at directly.
+}
+
 * [Wait to see if anyone worth talking to actually comes down.]
     -> done
 

@@ -8,6 +8,7 @@ EXTERNAL roll_check(insight, targetNumber, checkId, risk)
 VAR hustle = 0
 VAR static = 0
 VAR graft = 0
+VAR ledger = 0
 
 The checkpoint queue barely moves. A bored guard waves cars through two at a time, more interested in his handheld than your badge.
 { hustle >= 3:
@@ -28,6 +29,13 @@ A woman in Aveline colors clears the same post without slowing down — no mask-
     Graft doesn't need the badge to place her — subdermal ports at the collar, skin that's never once burned under unfiltered sun. Whatever's sealed off past this checkpoint, she's not the kind of modified that queues for anything. # speaker: insight:graft
 - else:
     Just someone who didn't have to wait, as far as you can tell.
+}
+
+Above the queue, a recruitment screen loops Terra Nova's pitch on a three-second cycle — lunar wage figures scrolling past the mask-seal readouts like just more processing data. EARTH IS HOME. THE FUTURE ISN'T HERE ANYMORE, it finishes, then starts again.
+{ ledger >= 3:
+    The Ledger's already subtracting before the loop resets — full board, filtered air, and a transit debt eating that multiple down to something a lot closer to Saigon scale. # speaker: insight:ledger
+- else:
+    Big numbers. Gone before you can read whatever's printed underneath them.
 }
 
 { is_red_check_consumed("checkpoint-jump-queue"):

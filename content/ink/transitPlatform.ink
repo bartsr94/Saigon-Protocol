@@ -29,6 +29,13 @@ Not everyone under the awning is unmodified and hoping the rain clears the air. 
     Just two people waiting for the same delayed car, as far as you can tell.
 }
 
+A wall ad two poles down cycles the same three seconds on loop — a green horizon that isn't Earth's, a hand planting a survey flag. TERRA NOVA: 1,000 HECTARES, YOURS TO CLAIM. EARTH IS HOME. THE FUTURE ISN'T HERE ANYMORE.
+{ hustle >= 3:
+    The Hustle's run this exact pitch shape a dozen times at street level — free thing today, real cost buried three steps downstream where nobody's still reading. # speaker: insight:hustle
+- else:
+    Big enough promise that nobody under the awning even looks up at it anymore.
+}
+
 * [Wait for the next car.]
     -> done
 

@@ -42,6 +42,13 @@ A SEZAC registry poster is taped by the door, the same box ticked for "Xóm Chà
     Somebody's scrawled a correction under the box in pen. It won't change anything, but it's there.
 }
 
+Someone two tables over is telling a story that isn't new — a cousin who signed a lunar labor contract two winters back, wired money home for a while, then stopped answering anything but the automated check-ins.
+{ root >= 3:
+    Root's heard versions of this story from three different tables in this district alone. Nobody ever says the word missing. They just stop mentioning the cousin's name after a while, the way you stop mentioning anything that's stopped answering. # speaker: insight:root
+- else:
+    Just canteen talk. You've heard some version of it before, somewhere else.
+}
+
 * [Sit at the counter and listen.]
     -> done
 
