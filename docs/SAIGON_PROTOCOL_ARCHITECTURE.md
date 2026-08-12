@@ -268,21 +268,24 @@ rectangle.
 **Locked doors:** a `HubDoor` (`{ id, position, unlockFlag, label,
 lockedReason }`) gates part of a hub's floor plan behind a
 `casefileStore.hasFlag(unlockFlag)` check — `gridMovement.ts` stays
-store-agnostic, so `reachableTiles`/`step` take an injected
-`isDoorUnlocked` predicate rather than reading the store directly;
-`HubGridView`/`DistrictStreetView` build that predicate from
-`useCasefileStore` and pass it through. `isWalkable` treats a door tile as
-walkable regardless of lock state — a locked door can always be stepped
-onto and read up close — and it's `reachableTiles` (a flood-fill from
-`grid.entryTile` that stops expanding past any door it finds locked, while
-still including the door tile itself) that actually enforces "can't pass
-beyond": `step()` only completes a move whose target is in that reachable
-set, so leaving a locked door tile is possible only back toward the free
-side, never onward into the gated area. The same `reachableTiles` gates the
-"Known Places" click-to-move shortcut in `HubGridView`/`DistrictStreetView`,
-so a POI fog-of-war reveals through a locked door (radius-1 vision reaches
-one tile past the door once you're standing on it) can be seen and listed
-but not clicked through. A locked door tile is revealed by fog-of-war like
+store-agnostic, so `reachableTiles` takes an injected `isDoorUnlocked`
+predicate rather than reading the store directly; `HubGridView`/
+`DistrictStreetView` build that predicate from `useCasefileStore` and pass
+it through. `isWalkable` treats a door tile as walkable regardless of lock
+state — a locked door can always be stepped onto and read up close — and
+it's `reachableTiles` (a flood-fill from `grid.entryTile` that stops
+expanding past any door it finds locked, while still including the door
+tile itself) that actually enforces "can't pass beyond": `step()` takes
+that same `reachable` set as a plain parameter — computed once per move by
+the caller, not recomputed inside `step()` itself — and only completes a
+move whose target is in it, so leaving a locked door tile is possible only
+back toward the free side, never onward into the gated area. The same
+`reachableTiles` result also gates the "Known Places" click-to-move
+shortcut in `HubGridView`/`DistrictStreetView` — one flood-fill per move,
+shared by both consumers rather than each recomputing its own — so a POI
+fog-of-war reveals through a locked door (radius-1 vision reaches one tile
+past the door once you're standing on it) can be seen and listed but not
+clicked through. A locked door tile is revealed by fog-of-war like
 any other tile (worth seeing even when you can't pass), rendered distinctly
 (red tint + a "▣" glyph, tooltip showing `lockedReason`) — same shape on
 `DistrictStreetDefinition` for the shared engine, though `checkpoint`'s
@@ -694,6 +697,28 @@ persisted state, no save-format changes.
   mechanism — same tile vocabulary, same `enterLocationHub()` handoff, same
   placeholder-flavor `.ink` scene shape (one Insight-gated observation, one
   choice, `END`) the District 4 second-wave locations already established.
+- **Performance pass (2026):** three hot-path fixes from a review of what
+  actually re-runs at high frequency in a game with no per-frame simulation
+  tick. `gridMovement.ts`'s `step()` no longer recomputes `reachableTiles`
+  internally — it now takes an already-computed `reachable: Set<string>`
+  parameter (§7 above), so `HubGridView`/`DistrictStreetView` flood-fill
+  once per move and share the result between their keydown handler and
+  their "Known Places" panel instead of each running its own;
+  `useGridKeydownMovement` was updated to match. `storyTranscript.tsx`'s
+  `TranscriptLog` now renders each entry through a `React.memo`'d
+  `LogEntryRow`, keeping every already-typed entry's props referentially
+  stable so only the entry currently typing re-renders on a typewriter
+  tick — previously every tick (as fast as 8ms on the `fast` text-speed
+  setting) re-rendered and re-parsed the *entire* transcript regardless of
+  how many entries it held. `useTranscript` also gained an optional
+  `maxEntries` cap; `ConversationScreen` passes `40` since its ink Story
+  stays parked on one topic-loop session indefinitely (unlike
+  `DialogueScreen`'s one-scene sessions, left uncapped). `audioStore.fadeTo`
+  now tracks one in-flight fade interval per `HTMLAudioElement` in a
+  module-scope `WeakMap` and cancels it before starting a new one, closing
+  a case where advancing dialogue faster than `CROSSFADE_MS` could leave
+  two intervals racing on the same element's volume. `PERFORMANCE_PASS_SPEC.md`
+  covered the original findings and is now folded in here and deleted.
 
 ### Open / not yet built
 

@@ -64,7 +64,7 @@ export function isWalkable(grid: GridLayout, position: GridPosition): boolean {
   return kind === 'floor' || kind === 'poi' || kind === 'door'
 }
 
-/** The minimal shape `reachableTiles`/`step` need beyond `GridLayout` — a known spawn point to flood-fill from. */
+/** The minimal shape `reachableTiles` needs beyond `GridLayout` — a known spawn point to flood-fill from. */
 interface GridLayoutWithEntry extends GridLayout {
   entryTile: GridPosition
 }
@@ -107,18 +107,17 @@ export function reachableTiles(
 /**
  * The tile reached by moving one step from `from` in `direction`, or `from`
  * unchanged if the target is a wall/void/off-grid tile, or is only reachable
- * by passing through a locked door.
+ * by passing through a locked door. Takes an already-computed `reachable`
+ * set (from `reachableTiles`) rather than flood-filling it itself — callers
+ * already need that same set for their own UI (e.g. gating a "Known Places"
+ * shortcut list), so computing it once per move and sharing it avoids
+ * running the flood-fill twice per keypress (PERFORMANCE_PASS_SPEC.md §2).
  */
-export function step(
-  grid: GridLayoutWithEntry,
-  from: GridPosition,
-  direction: GridDirection,
-  isDoorUnlocked: (position: GridPosition) => boolean = () => false,
-): GridPosition {
+export function step(grid: GridLayout, from: GridPosition, direction: GridDirection, reachable: Set<string>): GridPosition {
   const delta = DIRECTION_DELTAS[direction]
   const next = { x: from.x + delta.x, y: from.y + delta.y }
   if (!isWalkable(grid, next)) return from
-  return reachableTiles(grid, isDoorUnlocked).has(tileKey(next)) ? next : from
+  return reachable.has(tileKey(next)) ? next : from
 }
 
 export function tileKey(position: GridPosition): string {

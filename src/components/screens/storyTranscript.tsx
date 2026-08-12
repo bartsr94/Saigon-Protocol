@@ -9,6 +9,7 @@
 // (docs/GAME_GUIDE.md, Architecture §6): storyStore.currentLines carries a
 // parsed LineSpeaker per line.
 
+import { memo } from 'react'
 import { useAudioStore } from '../../stores/audioStore'
 import type { StoryLine } from '../../stores/storyStore'
 import { NPCS } from '../../content/npcs'
@@ -138,21 +139,35 @@ export interface TranscriptLogProps {
   endedLabel?: string
 }
 
+/**
+ * One transcript entry's rows, split out from `TranscriptLog` and wrapped in
+ * `React.memo` (PERFORMANCE_PASS_SPEC.md §1) — the typewriter effect ticks
+ * `typedChars` as fast as every 8ms, and without this, every already-typed
+ * entry above the current one would re-run `revealLines`/
+ * `splitDialogueSegments` on every tick for no reason. `TranscriptLog` only
+ * ever passes a live `typedChars` value to the entry currently typing;
+ * every other entry gets a fixed `0` so its props stay referentially equal
+ * tick to tick and `memo` bails out.
+ */
+const LogEntryRow = memo(function LogEntryRow({ entry, isLatest, typedChars }: { entry: LogEntry; isLatest: boolean; typedChars: number }) {
+  const revealed = isLatest ? revealLines(entry.lines, typedChars) : entry.lines.map((line) => ({ line, text: line.text }))
+  return (
+    <div className="space-y-2">
+      {revealed.map((r, j) => (
+        <StoryLineEntry key={j} line={r.line} text={r.text} showVoiceGlyph={isLatest && r.line.voice !== null} />
+      ))}
+      {entry.checkResult && <CheckResultBlock insightName="CHECK" result={entry.checkResult} />}
+    </div>
+  )
+})
+
 /** The scrollable entries themselves — callers own the surrounding Panel/scroll-container div (logRef/onScroll/onClick go there, not here). */
 export function TranscriptLog({ log, latestEntry, typedChars, endedLabel }: TranscriptLogProps) {
   return (
     <>
       {log.map((entry) => {
         const isLatest = entry.id === latestEntry?.id
-        const revealed = isLatest ? revealLines(entry.lines, typedChars) : entry.lines.map((line) => ({ line, text: line.text }))
-        return (
-          <div key={entry.id} className="space-y-2">
-            {revealed.map((r, j) => (
-              <StoryLineEntry key={j} line={r.line} text={r.text} showVoiceGlyph={isLatest && r.line.voice !== null} />
-            ))}
-            {entry.checkResult && <CheckResultBlock insightName="CHECK" result={entry.checkResult} />}
-          </div>
-        )
+        return <LogEntryRow key={entry.id} entry={entry} isLatest={isLatest} typedChars={isLatest ? typedChars : 0} />
       })}
       {endedLabel && <p className="font-body text-xs uppercase tracking-widest text-white/40">{endedLabel}</p>}
     </>

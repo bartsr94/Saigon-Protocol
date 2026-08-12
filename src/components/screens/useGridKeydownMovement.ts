@@ -12,7 +12,6 @@ import { step, type GridDirection } from '../../engine/gridMovement'
 /** The minimal shape `step()` needs — same structural typing gridMovement.ts uses throughout. */
 interface SteppableGrid {
   layoutRows: string[]
-  entryTile: GridPosition
 }
 
 const KEY_DIRECTIONS: Record<string, GridDirection> = {
@@ -34,12 +33,17 @@ const KEY_DIRECTIONS: Record<string, GridDirection> = {
  * pass every state that should suspend movement (an open overlay, the live
  * Map Editor, anything else added later) so a text field elsewhere on
  * screen never loses its keystrokes to the player walking around behind it.
+ *
+ * `reachable` is the caller's own `reachableTiles()` result, not recomputed
+ * here — callers (HubGridView/DistrictStreetView) already flood-fill it for
+ * their "Known Places" panel, so sharing it avoids a second flood-fill per
+ * keypress (PERFORMANCE_PASS_SPEC.md §2).
  */
 export function useGridKeydownMovement(
   grid: SteppableGrid,
   playerPosition: GridPosition,
   moveTo: (position: GridPosition) => void,
-  isDoorUnlocked: (position: GridPosition) => boolean,
+  reachable: Set<string>,
   blocked: boolean,
 ) {
   useEffect(() => {
@@ -48,10 +52,10 @@ export function useGridKeydownMovement(
       const direction = KEY_DIRECTIONS[event.key.toLowerCase()]
       if (!direction) return
       event.preventDefault()
-      const next = step(grid, playerPosition, direction, isDoorUnlocked)
+      const next = step(grid, playerPosition, direction, reachable)
       if (next.x !== playerPosition.x || next.y !== playerPosition.y) moveTo(next)
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [blocked, grid, playerPosition, moveTo, isDoorUnlocked])
+  }, [blocked, grid, playerPosition, moveTo, reachable])
 }

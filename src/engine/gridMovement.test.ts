@@ -92,45 +92,53 @@ describe('gridMovement', () => {
   describe('step', () => {
     it('moves one tile in the given direction when walkable', () => {
       const grid = makeGrid()
-      expect(step(grid, { x: 2, y: 2 }, 'up')).toEqual({ x: 2, y: 1 })
-      expect(step(grid, { x: 2, y: 2 }, 'left')).toEqual({ x: 1, y: 2 })
+      const reachable = reachableTiles(grid)
+      expect(step(grid, { x: 2, y: 2 }, 'up', reachable)).toEqual({ x: 2, y: 1 })
+      expect(step(grid, { x: 2, y: 2 }, 'left', reachable)).toEqual({ x: 1, y: 2 })
     })
 
     it('stays put when the target tile is a wall', () => {
       const grid = makeGrid()
-      expect(step(grid, { x: 1, y: 1 }, 'up')).toEqual({ x: 1, y: 1 })
-      expect(step(grid, { x: 1, y: 1 }, 'left')).toEqual({ x: 1, y: 1 })
+      const reachable = reachableTiles(grid)
+      expect(step(grid, { x: 1, y: 1 }, 'up', reachable)).toEqual({ x: 1, y: 1 })
+      expect(step(grid, { x: 1, y: 1 }, 'left', reachable)).toEqual({ x: 1, y: 1 })
     })
 
     it('stays put when the target is off the grid', () => {
       const grid = makeGrid({ layoutRows: ['...', '...', '...'] })
-      expect(step(grid, { x: 0, y: 0 }, 'up')).toEqual({ x: 0, y: 0 })
-      expect(step(grid, { x: 0, y: 0 }, 'left')).toEqual({ x: 0, y: 0 })
+      const reachable = reachableTiles(grid)
+      expect(step(grid, { x: 0, y: 0 }, 'up', reachable)).toEqual({ x: 0, y: 0 })
+      expect(step(grid, { x: 0, y: 0 }, 'left', reachable)).toEqual({ x: 0, y: 0 })
     })
 
     it('stays put when the target tile is void', () => {
       const grid = makeGrid({ layoutRows: [' ..', '...', '...'] })
-      expect(step(grid, { x: 1, y: 0 }, 'left')).toEqual({ x: 1, y: 0 })
+      const reachable = reachableTiles(grid)
+      expect(step(grid, { x: 1, y: 0 }, 'left', reachable)).toEqual({ x: 1, y: 0 })
     })
 
     it('always steps onto a locked door tile', () => {
       const grid = makeGrid({ entryTile: { x: 0, y: 0 }, layoutRows: ['.d.'] })
-      expect(step(grid, { x: 0, y: 0 }, 'right')).toEqual({ x: 1, y: 0 })
+      const reachable = reachableTiles(grid)
+      expect(step(grid, { x: 0, y: 0 }, 'right', reachable)).toEqual({ x: 1, y: 0 })
     })
 
     it('does not let a locked door tile be passed through to what lies beyond it', () => {
       const grid = makeGrid({ entryTile: { x: 0, y: 0 }, layoutRows: ['.d.'] })
-      expect(step(grid, { x: 1, y: 0 }, 'right')).toEqual({ x: 1, y: 0 })
+      const reachable = reachableTiles(grid)
+      expect(step(grid, { x: 1, y: 0 }, 'right', reachable)).toEqual({ x: 1, y: 0 })
     })
 
-    it('passes through once isDoorUnlocked says so', () => {
+    it('passes through once the reachable set includes what lies beyond the door', () => {
       const grid = makeGrid({ entryTile: { x: 0, y: 0 }, layoutRows: ['.d.'] })
-      expect(step(grid, { x: 1, y: 0 }, 'right', () => true)).toEqual({ x: 2, y: 0 })
+      const reachable = reachableTiles(grid, () => true)
+      expect(step(grid, { x: 1, y: 0 }, 'right', reachable)).toEqual({ x: 2, y: 0 })
     })
 
     it('still allows retreating back off a locked door tile the way the player came', () => {
       const grid = makeGrid({ entryTile: { x: 0, y: 0 }, layoutRows: ['.d.'] })
-      expect(step(grid, { x: 1, y: 0 }, 'left')).toEqual({ x: 0, y: 0 })
+      const reachable = reachableTiles(grid)
+      expect(step(grid, { x: 1, y: 0 }, 'left', reachable)).toEqual({ x: 0, y: 0 })
     })
   })
 
