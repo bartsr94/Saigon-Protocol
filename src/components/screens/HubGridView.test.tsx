@@ -22,7 +22,7 @@ describe('HubGridView — live Map Editor keyboard interaction', () => {
     const user = userEvent.setup()
     useDebugMapEditStore.setState({ enabled: true })
 
-    render(<HubGridView hub={checkpoint} background={null} onEnterStory={vi.fn()} onReturnToMap={vi.fn()} atEntry={true} />)
+    render(<HubGridView hub={checkpoint} background={null} onEnterInteraction={vi.fn()} onReturnToMap={vi.fn()} atEntry={true} />)
 
     const positionBefore = useGameplayStore.getState().playerPosition
 

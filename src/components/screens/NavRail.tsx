@@ -18,15 +18,24 @@ export interface NavRailProps {
   mapDisabled?: boolean
   /** Tooltip shown while `mapDisabled` — explains why MAP won't respond. */
   mapTitle?: string
+  /** Disables every button in the rail — e.g. while a full-screen dev Map Editor modal is open, so its overlay can't stack with another one behind it (UI_PASS_SPEC.md §3). */
+  disabled?: boolean
 }
 
-export function NavRail({ onChar, onMap, onCase, onMenu, className = '', mapDisabled = false, mapTitle }: NavRailProps) {
+export function NavRail({ onChar, onMap, onCase, onMenu, className = '', mapDisabled = false, mapTitle, disabled = false }: NavRailProps) {
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
-      {onChar && <RailButton label="CHAR" title="Character" onClick={onChar} />}
-      {onMap && <RailButton label="MAP" title={mapDisabled ? mapTitle ?? 'Overworld' : 'Overworld'} onClick={onMap} disabled={mapDisabled} />}
-      {onCase && <RailButton label="CASE" title="Casefile" onClick={onCase} />}
-      {onMenu && <RailButton label="MENU" title="Settings" onClick={onMenu} />}
+      {onChar && <RailButton label="CHAR" title="Character" onClick={onChar} disabled={disabled} />}
+      {onMap && (
+        <RailButton
+          label="MAP"
+          title={mapDisabled ? mapTitle ?? 'Overworld' : 'Overworld'}
+          onClick={onMap}
+          disabled={disabled || mapDisabled}
+        />
+      )}
+      {onCase && <RailButton label="CASE" title="Casefile" onClick={onCase} disabled={disabled} />}
+      {onMenu && <RailButton label="MENU" title="Settings" onClick={onMenu} disabled={disabled} />}
     </div>
   )
 }

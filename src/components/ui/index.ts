@@ -32,5 +32,14 @@ export type { NeonCheckboxProps } from './NeonCheckbox'
 export { PortraitFrame } from './PortraitFrame'
 export type { PortraitFrameProps, PortraitSize } from './PortraitFrame'
 
+export { NpcStagePortrait } from './NpcStagePortrait'
+export type { NpcStagePortraitProps } from './NpcStagePortrait'
+
 export { Icon } from './Icon'
 export type { IconProps } from './Icon'
+
+export { PageControls } from './PageControls'
+export type { PageControlsProps } from './PageControls'
+
+export { usePagination } from './pagination'
+export type { Pagination } from './pagination'

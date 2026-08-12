@@ -12,11 +12,13 @@ import { useGameplayStore } from '../../stores/gameplayStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useUiStore } from '../../stores/uiStore'
+import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
 import { DistrictStreetView } from './DistrictStreetView'
 import { NavRail } from './NavRail'
 
 export function DistrictStreetScreen() {
   const currentDistrictId = useGameplayStore((s) => s.currentDistrictId)
+  const editingMap = useDebugMapEditStore((s) => s.editingMap)
   const districtPlayerPosition = useGameplayStore((s) => s.districtPlayerPosition)
   const leaveDistrictStreet = useGameplayStore((s) => s.leaveDistrictStreet)
   const openOverlay = useUiStore((s) => s.openOverlay)
@@ -47,6 +49,7 @@ export function DistrictStreetScreen() {
         onMenu={() => openOverlay('settings')}
         mapDisabled={!atEntry}
         mapTitle="Return to the entrance to leave."
+        disabled={editingMap}
       />
 
       <DistrictStreetView street={street} background={background} onReturnToMap={handleReturnToMap} atEntry={atEntry} />

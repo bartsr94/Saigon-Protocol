@@ -26,7 +26,9 @@ import {
 } from '../engine/saveEngine'
 import { SAVE_FORMAT_VERSION } from '../engine/saveEngine'
 import { serializeCasefileState } from '../engine/casefileEngine'
+import { serializeConversationState } from '../engine/conversationEngine'
 import { useCasefileStore } from './casefileStore'
+import { useConversationStore } from './conversationStore'
 import { useGameplayStore } from './gameplayStore'
 import { useInsightStore } from './insightStore'
 import { useNavigationStore } from './navigationStore'
@@ -77,8 +79,10 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
 
   const navigation = useNavigationStore.getState()
   const casefile = useCasefileStore.getState()
+  const conversation = useConversationStore.getState()
   const gameplay = useGameplayStore.getState()
-  const story = useStoryStore.getState().story
+  const storyState = useStoryStore.getState()
+  const story = storyState.story
 
   return {
     version: SAVE_FORMAT_VERSION,
@@ -113,8 +117,11 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
       ),
     },
     casefile: serializeCasefileState(casefile),
+    conversation: serializeConversationState(conversation),
     inkStateJson: story ? story.state.ToJson() : null,
-    activeStoryId: story ? useStoryStore.getState().activeStoryId : null,
+    activeStoryId: story ? storyState.activeStoryId : null,
+    storyMode: story ? storyState.storyMode : 'scene',
+    activeNpcId: story ? storyState.activeNpcId : null,
   }
 }
 
@@ -164,9 +171,13 @@ export const useSaveStore = create<SaveState>((set, get) => ({
     useNavigationStore.getState().hydrate(blob.navigation)
     useGameplayStore.getState().hydrate(blob.gameplay)
     useCasefileStore.getState().hydrate(blob.casefile)
+    useConversationStore.getState().hydrate(blob.conversation)
     const storyJson = blob.activeStoryId ? resolveStoryJson(blob.activeStoryId) : null
     if (blob.inkStateJson && storyJson) {
-      useStoryStore.getState().loadStory(storyJson, blob.inkStateJson, blob.activeStoryId)
+      useStoryStore.getState().loadStory(storyJson, blob.inkStateJson, blob.activeStoryId, {
+        mode: blob.storyMode,
+        npcId: blob.activeNpcId ?? undefined,
+      })
     } else {
       useStoryStore.getState().reset()
     }

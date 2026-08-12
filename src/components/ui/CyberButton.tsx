@@ -28,7 +28,7 @@ export function CyberButton({ tag, className = '', children, disabled, onMouseEn
       className={`group relative flex items-center justify-between gap-3 border px-6 py-3 font-display text-sm font-bold uppercase tracking-widest outline-none transition-all duration-300 ${
         disabled
           ? 'cursor-not-allowed border-white/20 bg-transparent text-white/20'
-          : 'cursor-pointer border-chrome-primary bg-chrome-primary/5 text-chrome-primary hover:border-chrome-secondary hover:bg-chrome-secondary/15 hover:text-white hover:shadow-[0_0_20px_var(--color-chrome-secondary)] focus:border-chrome-secondary focus:bg-chrome-secondary/15 focus:text-white focus:shadow-[0_0_20px_var(--color-chrome-secondary)]'
+          : 'hover-flicker cursor-pointer border-chrome-primary bg-chrome-primary/5 text-chrome-primary hover:scale-[1.03] hover:border-chrome-secondary hover:bg-chrome-secondary/15 hover:text-white hover:shadow-[0_0_20px_var(--color-chrome-secondary)] focus:border-chrome-secondary focus:bg-chrome-secondary/15 focus:text-white focus:shadow-[0_0_20px_var(--color-chrome-secondary)]'
       } ${className}`}
       style={{
         clipPath:

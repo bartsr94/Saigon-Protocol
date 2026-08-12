@@ -15,9 +15,13 @@ import { useStoryStore } from '../../stores/storyStore'
 import { useAudioStore } from '../../stores/audioStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { LOCATIONS } from '../../content/locations'
-import { CyberButton, NeonCheckbox, NeonSlider, Panel } from '../ui'
+import { CyberButton, NeonCheckbox, NeonSlider, PageControls, Panel, usePagination } from '../ui'
 
 const TEXT_SPEEDS: TextSpeed[] = ['slow', 'normal', 'fast']
+// Save slots are paginated instead of scrolling (UI_PASS_SPEC.md §2) — the
+// only genuinely unbounded list in this overlay (Audio/Visual sections are
+// fixed-size).
+const SAVE_SLOTS_PAGE_SIZE = 3
 
 function formatSavedAt(savedAt: number): string {
   return new Date(savedAt).toLocaleString(undefined, {
@@ -38,6 +42,7 @@ function SaveDataSection() {
   const loadSlot = useSaveStore((s) => s.loadSlot)
   const deleteSlot = useSaveStore((s) => s.deleteSlot)
   const [newSaveName, setNewSaveName] = useState('')
+  const slotsPage = usePagination(slots, SAVE_SLOTS_PAGE_SIZE)
 
   useEffect(() => {
     refreshSlots()
@@ -95,7 +100,7 @@ function SaveDataSection() {
 
       <div className="flex flex-col gap-2">
         {slots.length === 0 && <p className="font-body text-sm text-white/40">No saves yet.</p>}
-        {slots.map((slot) => (
+        {slotsPage.pageItems.map((slot) => (
           <div key={slot.id} className="flex items-center justify-between gap-3 border border-white/10 bg-black/30 px-3 py-2">
             <div className="min-w-0">
               <div className="font-display text-xs font-bold uppercase tracking-wide text-white">
@@ -122,6 +127,7 @@ function SaveDataSection() {
           </div>
         ))}
       </div>
+      <PageControls page={slotsPage.page} pageCount={slotsPage.pageCount} onChange={slotsPage.setPage} />
     </section>
   )
 }
@@ -131,10 +137,10 @@ export function SettingsOverlay() {
   const closeOverlay = useUiStore((s) => s.closeOverlay)
 
   return (
-    <Panel size="lg" className="flex max-h-[85vh] w-full max-w-3xl flex-col gap-6 p-8" onClick={(e) => e.stopPropagation()}>
+    <Panel size="lg" className="flex w-full max-w-3xl flex-col gap-6 p-8" onClick={(e) => e.stopPropagation()}>
       <h1 className="text-center font-display text-2xl font-bold uppercase tracking-widest text-chrome-primary">System Cfg</h1>
 
-      <div className="grid gap-8 overflow-y-auto md:grid-cols-2">
+      <div className="grid gap-8 md:grid-cols-2">
         <section className="flex flex-col gap-5 border border-white/10 bg-white/5 p-5">
           <h2 className="border-b border-chrome-secondary/30 pb-2 font-display text-sm uppercase tracking-widest text-chrome-secondary">
             Audio_Matrix

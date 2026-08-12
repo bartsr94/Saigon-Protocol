@@ -10,17 +10,12 @@ import type { LocationId } from './locations'
 import type { NpcId } from './npcs'
 
 export type HubId = LocationId
-interface AnchorPoint {
-  x: number
-  y: number
-}
 
 export interface HubCharacterPresence {
   npcId: NpcId
   label: string
   description: string
   storyLocationId: LocationId
-  anchor: AnchorPoint
   available: boolean
   lockedReason?: string
 }
@@ -69,6 +64,16 @@ export interface HubInteraction {
   storyLocationId: LocationId
   available: boolean
   lockedReason?: string
+  /**
+   * Talk-only, and optional even then (UI_PASS_SPEC.md §4). The ink path
+   * to this NPC's topic-loop knot inside `storyLocationId`'s compiled file
+   * — once `npcId` is met (Conversation View's conversationStore), Talk
+   * jumps here (fresh) or resumes their saved state (repeat visit) instead
+   * of replaying the first-encounter scene. Absent `topicsKnot` means this
+   * NPC has no Conversation View content yet — Talk always replays the
+   * scene, same as before this feature existed.
+   */
+  topicsKnot?: string
 }
 
 /** A walkable tile the player can stand on to see its interaction list. */
@@ -194,6 +199,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
               description: 'Lab operations lead. Tired, guarded, and already measuring how much truth this room can afford.',
               storyLocationId: 'checkpoint',
               available: true,
+              topicsKnot: 'mei_hong_topics',
             },
           ],
         },

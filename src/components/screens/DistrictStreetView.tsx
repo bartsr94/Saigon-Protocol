@@ -7,7 +7,7 @@
 // precedent as HubGridView/HubCardListView already coexisting as
 // independent siblings) since the bottom-bar content genuinely differs.
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { DistrictStreetDefinition } from '../../content/districtStreets'
 import type { GridPosition } from '../../content/locationHubs'
@@ -58,7 +58,9 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
   const casefileFlags = useCasefileStore((s) => s.flags)
   const mapEditEnabled = useDebugMapEditStore((s) => s.enabled)
-  const [editingMap, setEditingMap] = useState(false)
+  const editingMap = useDebugMapEditStore((s) => s.editingMap)
+  const openMapEditor = useDebugMapEditStore((s) => s.openMapEditor)
+  const closeMapEditor = useDebugMapEditStore((s) => s.closeMapEditor)
 
   // Same store-agnostic-engine/component-resolves-flags split as
   // HubGridView's `isDoorUnlocked`.
@@ -143,7 +145,7 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
                 Return to Map
               </CyberButton>
               {import.meta.env.DEV && mapEditEnabled && (
-                <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={() => setEditingMap(true)}>
+                <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={openMapEditor}>
                   Edit Map
                 </CyberButton>
               )}
@@ -265,11 +267,11 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
       </div>
     </div>
     {editingMap && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={() => setEditingMap(false)}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={closeMapEditor}>
         <Panel size="lg" className="flex h-[95vh] w-[95vw] max-w-[1600px] flex-col gap-4 p-6" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <h1 className="font-display text-lg font-bold uppercase tracking-widest text-chrome-primary">Edit_Map — {street.id}</h1>
-            <CyberButton onClick={() => setEditingMap(false)}>Close</CyberButton>
+            <CyberButton onClick={closeMapEditor}>Close</CyberButton>
           </div>
           <MapEditorPanel
             initialMode="street"

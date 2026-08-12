@@ -11,6 +11,7 @@ import { CharacterCreationScreen } from './components/screens/CharacterCreationS
 import { OverworldScreen } from './components/screens/OverworldScreen'
 import { DistrictStreetScreen } from './components/screens/DistrictStreetScreen'
 import { DialogueScreen } from './components/screens/DialogueScreen'
+import { ConversationScreen } from './components/screens/ConversationScreen'
 import { LocationHubScreen } from './components/screens/LocationHubScreen'
 import { OverlayHost } from './components/screens/OverlayHost'
 import { FailStateOverlay } from './components/screens/FailStateOverlay'
@@ -22,8 +23,13 @@ function App() {
   // with no location (docs/GAME_GUIDE.md), a case selectedLocationId
   // was never meant to distinguish on its own.
   const activeStory = useStoryStore((s) => s.story)
+  // Conversation View (UI_PASS_SPEC.md §4) reuses the same "story is
+  // active" signal but routes to a different screen — storyMode is what
+  // tells the two apart.
+  const storyMode = useStoryStore((s) => s.storyMode)
   const currentHubId = useGameplayStore((s) => s.currentHubId)
   const currentDistrictId = useGameplayStore((s) => s.currentDistrictId)
+  const editingMap = useDebugMapEditStore((s) => s.editingMap)
   const highContrast = useSettingsStore((s) => s.highContrast)
   const largeText = useSettingsStore((s) => s.largeText)
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
@@ -62,7 +68,11 @@ function App() {
       {screen === 'chargen' && <CharacterCreationScreen />}
       {screen === 'game' &&
         (activeStory ? (
-          <DialogueScreen />
+          storyMode === 'conversation' ? (
+            <ConversationScreen />
+          ) : (
+            <DialogueScreen />
+          )
         ) : currentHubId ? (
           <LocationHubScreen />
         ) : currentDistrictId ? (
@@ -72,9 +82,17 @@ function App() {
         ))}
       <OverlayHost />
       <FailStateOverlay />
-      {import.meta.env.DEV && <DebugButton />}
-      {import.meta.env.DEV && <TextEditToggle />}
-      {import.meta.env.DEV && <MapEditToggle />}
+      <div className="scanline-overlay" />
+      {/* Hidden (not just visually covered) while the Map Editor modal is open —
+          closes the keyboard-Tab reachability gap that pure z-index stacking
+          alone leaves open (UI_PASS_SPEC.md §3). */}
+      {import.meta.env.DEV && !editingMap && (
+        <div className="fixed bottom-3 right-3 z-40 flex items-center gap-2">
+          <MapEditToggle />
+          <TextEditToggle />
+          <DebugButton />
+        </div>
+      )}
     </main>
   )
 }
@@ -88,7 +106,7 @@ function DebugButton() {
     <button
       type="button"
       onClick={() => openOverlay('debug')}
-      className="fixed bottom-3 right-3 z-40 border border-white/30 bg-black/70 px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest text-white/50 outline-none hover:border-chrome-secondary hover:text-chrome-secondary"
+      className="border border-white/30 bg-black/70 px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest text-white/50 outline-none hover:border-chrome-secondary hover:text-chrome-secondary"
     >
       Debug
     </button>
@@ -105,7 +123,7 @@ function TextEditToggle() {
     <button
       type="button"
       onClick={toggle}
-      className={`fixed bottom-3 right-20 z-40 border px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest outline-none ${
+      className={`border px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest outline-none ${
         enabled
           ? 'border-chrome-secondary bg-chrome-secondary/15 text-chrome-secondary'
           : 'border-white/30 bg-black/70 text-white/50 hover:border-chrome-secondary hover:text-chrome-secondary'
@@ -127,7 +145,7 @@ function MapEditToggle() {
     <button
       type="button"
       onClick={toggle}
-      className={`fixed bottom-3 right-40 z-40 border px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest outline-none ${
+      className={`border px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest outline-none ${
         enabled
           ? 'border-chrome-secondary bg-chrome-secondary/15 text-chrome-secondary'
           : 'border-white/30 bg-black/70 text-white/50 hover:border-chrome-secondary hover:text-chrome-secondary'

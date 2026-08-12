@@ -43,8 +43,26 @@ body {
   margin: 0;
   min-height: 100svh;
   background-color: var(--color-bg);
+  background-image:
+    linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
+  background-size: 44px 44px;
   color: white;
   font-family: var(--font-body);
+}
+
+/* =========================================
+   Global scanline overlay (UI_PASS_SPEC.md §1) — same CRT atmosphere every
+   UI inspo mockup shares. Fixed, pointer-events-none, sits above all
+   screens/overlays (z-index above OverlayHost's z-50).
+   ========================================= */
+.scanline-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2));
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 999;
 }
 
 /* =========================================
@@ -123,6 +141,34 @@ body {
 @keyframes pip-flash {
   0% { filter: brightness(2.2); }
   100% { filter: brightness(1); }
+}
+
+/* =========================================
+   Button hover flicker (UI_PASS_SPEC.md §1) — applied alongside CyberButton's
+   existing Tailwind hover scale/translate; one-shot-per-hover in spirit
+   (loops only while the pointer stays, same "stops on mouse-out" rule as
+   every other looping effect, GAME_GUIDE.md §3.4).
+   ========================================= */
+@keyframes button-hover-flicker {
+  0% { opacity: 0.92; }
+  50% { opacity: 1; }
+  100% { opacity: 0.85; }
+}
+
+.hover-flicker:hover {
+  animation: button-hover-flicker 0.15s ease-in-out infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hover-flicker:hover {
+    animation: none;
+  }
+}
+
+:root[data-reduce-motion='true'] {
+  .hover-flicker:hover {
+    animation: none;
+  }
 }
 
 /* =========================================
