@@ -95,7 +95,16 @@ export function useTranscript(
   }, [latestEntry?.id])
 
   useEffect(() => {
-    if (!latestEntry || instantText || typedChars >= latestEntryText.length) return
+    if (!latestEntry || typedChars >= latestEntryText.length) return
+    // Instant Text (accessibility setting) reveals the whole entry in one
+    // step rather than ticking through it — bailing out here without doing
+    // that would leave typedChars stuck below latestEntryText.length, and
+    // isTypingDone (which gates showing choices/the scene-end control)
+    // permanently false.
+    if (instantText) {
+      setTypedChars(latestEntryText.length)
+      return
+    }
     const timeout = setTimeout(() => setTypedChars((c) => c + 1), TEXT_SPEED_MS[textSpeed])
     return () => clearTimeout(timeout)
   }, [typedChars, latestEntry, latestEntryText, instantText, textSpeed])

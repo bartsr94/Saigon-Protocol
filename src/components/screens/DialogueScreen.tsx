@@ -123,6 +123,14 @@ export function DialogueScreen() {
     const wasIntro = activeStoryId === 'intro'
     resetStory()
     if (wasIntro) {
+      // The intro's own dialogue already plays out Mei Hong's first
+      // encounter (she introduces herself at the lab door) without going
+      // through LocationHubScreen's enterHubInteraction — so the usual
+      // talkNpcId-driven markMet in finalizeEndedScene() never fires for
+      // her. Mark her met explicitly here, or the first Talk on her Hub
+      // POI would wrongly replay checkpoint.ink's unrelated queue scene
+      // instead of routing to Conversation View.
+      useConversationStore.getState().markMet('meiHong')
       // The intro's squad-car montage ends at Aveline Lab
       // (docs/CASE_1_LOCATION_MATRIX.md: "player arrives from the intro") —
       // spawn straight into the checkpoint Hub rather than the general
