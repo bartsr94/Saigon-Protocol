@@ -5,10 +5,9 @@
 // pure step/collision math); standing on a POI tile surfaces its
 // interaction list in the bottom action bar.
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
-import type { GridHubDefinition, GridPosition } from '../../content/locationHubs'
-import type { LocationId } from '../../content/locations'
+import type { GridHubDefinition, GridPosition, HubInteraction } from '../../content/locationHubs'
 import { doorAt, reachableTiles, tileKey, tileKindAt } from '../../engine/gridMovement'
 import { useCasefileStore } from '../../stores/casefileStore'
 import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
@@ -38,7 +37,7 @@ async function saveHubRecord(hubId: string, record: object): Promise<SaveResult>
 interface HubGridViewProps {
   hub: GridHubDefinition
   background: BackgroundDefinition | null
-  onEnterStory: (id: LocationId) => void
+  onEnterInteraction: (interaction: HubInteraction) => void
   onReturnToMap: () => void
   atEntry: boolean
 }
@@ -46,7 +45,7 @@ interface HubGridViewProps {
 const TILE_PX = 56
 const EMPTY_REVEALED: Set<string> = new Set()
 
-export function HubGridView({ hub, background, onEnterStory, onReturnToMap, atEntry }: HubGridViewProps) {
+export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap, atEntry }: HubGridViewProps) {
   const playerPosition = useGameplayStore((s) => s.playerPosition) ?? hub.grid.entryTile
   const revealedTiles = useGameplayStore((s) => s.revealedTiles[hub.id]) ?? EMPTY_REVEALED
   const moveTo = useGameplayStore((s) => s.moveTo)
@@ -54,7 +53,9 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap, atEn
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
   const casefileFlags = useCasefileStore((s) => s.flags)
   const mapEditEnabled = useDebugMapEditStore((s) => s.enabled)
-  const [editingMap, setEditingMap] = useState(false)
+  const editingMap = useDebugMapEditStore((s) => s.editingMap)
+  const openMapEditor = useDebugMapEditStore((s) => s.openMapEditor)
+  const closeMapEditor = useDebugMapEditStore((s) => s.closeMapEditor)
 
   // Resolves a door tile's lock state from casefileStore at the component
   // layer — gridMovement.ts stays store-agnostic (CLAUDE.md's simulation/UI
@@ -150,7 +151,7 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap, atEn
                 Return to Map
               </CyberButton>
               {import.meta.env.DEV && mapEditEnabled && (
-                <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={() => setEditingMap(true)}>
+                <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={openMapEditor}>
                   Edit Map
                 </CyberButton>
               )}
@@ -267,7 +268,7 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap, atEn
                   disabled={!interaction.available}
                   tag={interaction.type === 'talk' ? 'Talk' : 'Inspect'}
                   title={interaction.available ? interaction.description : (interaction.lockedReason ?? interaction.description)}
-                  onClick={() => interaction.available && onEnterStory(interaction.storyLocationId)}
+                  onClick={() => interaction.available && onEnterInteraction(interaction)}
                 >
                   {interaction.label}
                 </CyberButton>
@@ -278,11 +279,11 @@ export function HubGridView({ hub, background, onEnterStory, onReturnToMap, atEn
       </div>
     </div>
     {editingMap && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={() => setEditingMap(false)}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={closeMapEditor}>
         <Panel size="lg" className="flex h-[95vh] w-[95vw] max-w-[1600px] flex-col gap-4 p-6" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <h1 className="font-display text-lg font-bold uppercase tracking-widest text-chrome-primary">Edit_Map — {hub.id}</h1>
-            <CyberButton onClick={() => setEditingMap(false)}>Close</CyberButton>
+            <CyberButton onClick={closeMapEditor}>Close</CyberButton>
           </div>
           <MapEditorPanel
             initialMode="hub"

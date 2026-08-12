@@ -11,6 +11,7 @@ import { useSaveStore } from '../../stores/saveStore'
 import { useStoryStore } from '../../stores/storyStore'
 import { useAudioStore } from '../../stores/audioStore'
 import { useCasefileStore } from '../../stores/casefileStore'
+import { useConversationStore } from '../../stores/conversationStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useInsightStore } from '../../stores/insightStore'
 import { useNavigationStore } from '../../stores/navigationStore'
@@ -36,6 +37,7 @@ export function TitleScreen() {
     useNavigationStore.getState().reset()
     useGameplayStore.getState().reset()
     useCasefileStore.getState().reset()
+    useConversationStore.getState().reset()
     goToChargen()
   }
 
@@ -58,9 +60,13 @@ export function TitleScreen() {
 
   return (
     <div
-      className="flex min-h-svh flex-col items-center justify-center gap-16 p-8"
+      className="relative flex min-h-svh flex-col items-center justify-center gap-16 p-8"
       style={{ background: 'radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--color-chrome-primary) 8%, transparent), var(--color-bg) 70%)' }}
     >
+      {/* HUD corner-bracket accents (UI_PASS_SPEC.md §1) — decorative frame, pointer-events-none. */}
+      <div className="pointer-events-none absolute left-5 top-5 h-24 w-24 border-l-2 border-t-2 border-chrome-primary/40 sm:h-36 sm:w-36" />
+      <div className="pointer-events-none absolute bottom-5 right-5 h-24 w-24 border-b-2 border-r-2 border-chrome-primary/40 sm:h-36 sm:w-36" />
+
       <h1 className="font-display text-5xl font-black uppercase tracking-[0.5em] text-white [text-shadow:0_0_15px_var(--color-chrome-primary),0_0_30px_var(--color-chrome-primary)]">
         <GlitchText text="Saigon Protocol" loop />
       </h1>

@@ -3,162 +3,33 @@
 // left three-quarters, the scrolling dialogue log/choices/check-result
 // panel is the right quarter.
 //
-// storyStore only ever exposes "the lines since the last choice," not a
-// full transcript (Architecture §6) — the scrollback log below is this
-// screen's own bookkeeping, appending each new batch as it arrives. A
-// persistent transcript belongs in storyStore itself if another screen
-// ever needs it too; this is a presentational accumulation, not new
-// simulation state.
-//
-// Per-line speaker rendering and per-choice mechanical tags follow the ink
-// content-tagging convention (docs/GAME_GUIDE.md, Architecture
-// §6): storyStore.currentLines carries a parsed LineSpeaker per line, and
-// each choice's raw inkjs tags are parsed here via parseChoiceTags.
+// Transcript accumulation/typewriter-reveal/per-line rendering lives in
+// storyTranscript.tsx, shared with ConversationScreen (UI_PASS_SPEC.md
+// §4.4). Per-choice mechanical tags follow the ink content-tagging
+// convention (docs/GAME_GUIDE.md, Architecture §6) — each choice's raw
+// inkjs tags are parsed here via parseChoiceTags.
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useInsightStore } from '../../stores/insightStore'
 import { useStoryStore, type StoryLine } from '../../stores/storyStore'
+import { useConversationStore } from '../../stores/conversationStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useAudioStore } from '../../stores/audioStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
-import { useSettingsStore, TEXT_SPEED_MS } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
 import { LOCATIONS } from '../../content/locations'
 import { ARCHETYPES } from '../../content/archetypes'
-import { NPCS, type NpcId } from '../../content/npcs'
+import type { NpcId } from '../../content/npcs'
 import { BACKGROUNDS, type BackgroundId } from '../../content/backgrounds'
 import { INSIGHTS } from '../../content/insights'
 import { PORTRAITS } from '../../content/portraits'
 import { parseChoiceTags } from '../../engine/contentTags'
-import type { CheckResult } from '../../engine/checkResolution'
-import { CheckResultBlock, ChoiceRow, CyberButton, InsightChip, Panel, PipTrack, PortraitFrame } from '../ui'
+import { ChoiceRow, CyberButton, NpcStagePortrait, Panel, PipTrack, PortraitFrame } from '../ui'
 import { enterLocationHub } from './enterLocationHub'
 import { NavRail } from './NavRail'
-
-interface LogEntry {
-  id: number
-  lines: StoryLine[]
-  checkResult: CheckResult | null
-}
-
-/** Joiner between lines in one batch, matching how they'd read as separate paragraphs. */
-const LINE_JOINER = '\n\n'
-
-function fullBatchText(lines: StoryLine[]): string {
-  return lines.map((l) => l.text).join(LINE_JOINER)
-}
-
-/** Slices each line's text down to what `typedChars` has revealed so far, in reading order. */
-function revealLines(lines: StoryLine[], typedChars: number): { line: StoryLine; text: string }[] {
-  const revealed: { line: StoryLine; text: string }[] = []
-  let offset = 0
-  for (const line of lines) {
-    const remaining = typedChars - offset
-    if (remaining <= 0) break
-    revealed.push({ line, text: line.text.slice(0, Math.min(remaining, line.text.length)) })
-    offset += line.text.length + LINE_JOINER.length
-  }
-  return revealed
-}
-
-/** Splits raw ink text on "double-quoted" spans so spoken dialogue can render distinctly from the description around it — including narration mixed into the same tagged line as a speaker's dialogue (e.g. "she doesn't move from the doorway" alongside her actual quote). */
-function splitDialogueSegments(text: string): { text: string; isQuote: boolean }[] {
-  const segments: { text: string; isQuote: boolean }[] = []
-  const quotePattern = /"[^"]*"/g
-  let lastIndex = 0
-  let match: RegExpExecArray | null
-  while ((match = quotePattern.exec(text)) !== null) {
-    if (match.index > lastIndex) segments.push({ text: text.slice(lastIndex, match.index), isQuote: false })
-    segments.push({ text: match[0], isQuote: true })
-    lastIndex = match.index + match[0].length
-  }
-  if (lastIndex < text.length) segments.push({ text: text.slice(lastIndex), isQuote: false })
-  return segments
-}
-
-/** Renders quoted speech bright/bold and everything else (description) dimmer and italic, so dialogue reads as visibly someone speaking rather than blending into the surrounding prose. */
-function DialogueText({ text, className }: { text: string; className: string }) {
-  return (
-    <p className={className}>
-      {splitDialogueSegments(text).map((segment, i) =>
-        segment.isQuote ? (
-          <span key={i} className="font-semibold text-white">
-            {segment.text}
-          </span>
-        ) : (
-          <span key={i} className="italic text-white/55">
-            {segment.text}
-          </span>
-        ),
-      )}
-    </p>
-  )
-}
-
-/**
- * Audio glyph for a voiced line (docs/GAME_GUIDE.md §8): shows near the speaker's
- * name/portrait when the line carries a `# voice:` tag, doubles as a replay
- * control. Only ever rendered for the latest entry's tagged line.
- */
-function VoiceGlyph() {
-  const isVoicePlaying = useAudioStore((s) => s.isVoicePlaying)
-  const replayVoice = useAudioStore((s) => s.replayVoice)
-  return (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation()
-        replayVoice()
-      }}
-      title={isVoicePlaying ? 'Playing voice line' : 'Replay voice line'}
-      className={`ml-2 inline-flex items-center font-display text-[10px] uppercase tracking-widest ${
-        isVoicePlaying ? 'text-chrome-primary' : 'text-chrome-primary/50 hover:text-chrome-primary'
-      }`}
-    >
-      {isVoicePlaying ? '♪' : '⟳'}
-    </button>
-  )
-}
-
-function StoryLineEntry({ line, text, showVoiceGlyph }: { line: StoryLine; text: string; showVoiceGlyph: boolean }) {
-  if (text.length === 0) return null
-
-  if (line.speaker.type === 'insight') {
-    const insight = INSIGHTS[line.speaker.insightId]
-    return (
-      <div className="space-y-1">
-        <span className="inline-flex items-center">
-          <InsightChip name={insight.name} color={insight.color} glitchOnMount />
-          {showVoiceGlyph && <VoiceGlyph />}
-        </span>
-        <p className="whitespace-pre-wrap pl-6 font-body text-[19px]" style={{ color: insight.color }}>
-          {text}
-        </p>
-      </div>
-    )
-  }
-
-  if (line.speaker.type === 'npc') {
-    const npc = NPCS[line.speaker.npcId]
-    return (
-      <div className="space-y-1 border-l-2 border-chrome-primary/40 pl-3">
-        <span className="font-display text-xs font-bold uppercase tracking-widest text-chrome-primary">
-          {npc.name}
-          {showVoiceGlyph && <VoiceGlyph />}
-        </span>
-        <DialogueText text={text} className="whitespace-pre-wrap font-body text-[19px]" />
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-1">
-      {showVoiceGlyph && <VoiceGlyph />}
-      <DialogueText text={text} className="whitespace-pre-wrap font-body text-[19px]" />
-    </div>
-  )
-}
+import { TranscriptLog } from './storyTranscript'
+import { useTranscript } from './useTranscript'
 
 export function DialogueScreen() {
   const archetype = useInsightStore((s) => s.archetype)
@@ -168,6 +39,11 @@ export function DialogueScreen() {
 
   const storyInstance = useStoryStore((s) => s.story)
   const activeStoryId = useStoryStore((s) => s.activeStoryId)
+  // Which NPC this scene's Talk interaction was for (if any) — distinct
+  // from the `activeNpcId` local state below, which tracks whoever's
+  // *currently speaking* via ink `speaker:` tags. Read here only to mark
+  // them met once the scene ends (UI_PASS_SPEC.md §4.3).
+  const talkNpcId = useStoryStore((s) => s.activeNpcId)
   const currentLines = useStoryStore((s) => s.currentLines)
   const currentChoices = useStoryStore((s) => s.currentChoices)
   const ended = useStoryStore((s) => s.ended)
@@ -182,92 +58,54 @@ export function DialogueScreen() {
   const leaveHub = useGameplayStore((s) => s.leaveHub)
 
   const openOverlay = useUiStore((s) => s.openOverlay)
-  const textSpeed = useSettingsStore((s) => s.textSpeed)
-  const instantText = useSettingsStore((s) => s.instantText)
 
-  const [log, setLog] = useState<LogEntry[]>([])
-  const nextId = useRef(0)
-  const logRef = useRef<HTMLDivElement>(null)
+  const { log, latestEntry, typedChars, isTypingDone, logRef, isScrolling, handleLogScroll, handleSkip } = useTranscript(
+    storyInstance,
+    currentLines,
+    lastCheckResult,
+  )
+
   const [activeNpcId, setActiveNpcId] = useState<NpcId | null>(null)
   const [activeBackgroundId, setActiveBackgroundId] = useState<BackgroundId | null>(null)
   // Missing/not-yet-authored backdrop art degrades to no backdrop rather
   // than a broken-image icon (same tolerance PortraitFrame already has).
   const [backgroundLoadFailed, setBackgroundLoadFailed] = useState(false)
-  // Same tolerance for the center-stage NPC portrait — a failed/missing
-  // load degrades to just the name label rather than a raw broken-image icon.
-  const [npcPortraitLoadFailed, setNpcPortraitLoadFailed] = useState(false)
-  // The log's scrollbar stays invisible while pinned to the live edge, and
-  // only appears once the reader has actually scrolled up to see older
-  // lines (auto-scroll-to-bottom below keeps this false during normal play).
-  const [isScrolling, setIsScrolling] = useState(false)
 
-  // A new Story instance means a new scene — start the transcript and center stage over.
+  // A new Story instance means a new scene — reset the center stage (the
+  // transcript itself resets via useTranscript's own resetKey).
   useEffect(() => {
-    setLog([])
-    nextId.current = 0
     setActiveNpcId(null)
     setActiveBackgroundId(null)
   }, [storyInstance])
 
-  // Every advance() call replaces currentLines with a fresh batch; append it
-  // as one transcript entry, carrying whatever check fired during that pass,
-  // and follow the center-stage portrait/backdrop to the batch's last NPC
+  // Follow the center-stage portrait/backdrop to the latest batch's last NPC
   // speaker / background tag — either can be absent from a given batch, in
   // which case whatever was last shown stays put.
   useEffect(() => {
     if (currentLines.length === 0) return
-    const entry: LogEntry = { id: nextId.current++, lines: currentLines, checkResult: lastCheckResult }
-    setLog((prev) => [...prev, entry])
-    useAudioStore.getState().applyStoryLines(currentLines)
     const npcLines = currentLines.filter((l): l is StoryLine & { speaker: { type: 'npc'; npcId: NpcId } } => l.speaker.type === 'npc')
     if (npcLines.length > 0) {
       setActiveNpcId(npcLines[npcLines.length - 1].speaker.npcId)
-      setNpcPortraitLoadFailed(false)
     }
     const backgroundLines = currentLines.filter((l) => l.background !== null)
     if (backgroundLines.length > 0) {
       setActiveBackgroundId(backgroundLines[backgroundLines.length - 1].background)
       setBackgroundLoadFailed(false)
     }
-    // currentLines is the real per-turn trigger; lastCheckResult only ever
-    // changes in the same synchronous batch as currentLines (see storyStore).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLines])
-
-  const latestEntry = log[log.length - 1] ?? null
-  const latestEntryText = latestEntry ? fullBatchText(latestEntry.lines) : ''
-  const [typedChars, setTypedChars] = useState(0)
-
-  useEffect(() => {
-    setTypedChars(0)
-  }, [latestEntry?.id])
-
-  useEffect(() => {
-    if (!latestEntry || instantText || typedChars >= latestEntryText.length) return
-    const timeout = setTimeout(() => setTypedChars((c) => c + 1), TEXT_SPEED_MS[textSpeed])
-    return () => clearTimeout(timeout)
-  }, [typedChars, latestEntry, latestEntryText, instantText, textSpeed])
-
-  useEffect(() => {
-    logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
-  }, [log, typedChars])
-
-  function handleSkip() {
-    if (latestEntry && typedChars < latestEntryText.length) setTypedChars(latestEntryText.length)
-  }
-
-  function handleLogScroll() {
-    const el = logRef.current
-    if (!el) return
-    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 4
-    setIsScrolling(!atBottom)
-  }
 
   function finalizeEndedScene() {
     if (selectedLocationId && ended) {
       for (const unlockedId of LOCATIONS[selectedLocationId].unlocksOnComplete ?? []) {
         unlockLocation(unlockedId)
       }
+    }
+    // A "Talk" scene that names an NPC (LocationHubScreen threads this
+    // through via storyStore.loadStory's npcId option) marks them met once
+    // it ends — the next Talk click on them routes to Conversation View
+    // instead of replaying this scene (UI_PASS_SPEC.md §4.3).
+    if (talkNpcId && ended) {
+      useConversationStore.getState().markMet(talkNpcId)
     }
   }
 
@@ -358,29 +196,7 @@ export function DialogueScreen() {
           art shows until a scene actually names one, per §3's "location
           establishing art can render here when no character is present."
         */}
-        <div className="flex h-full flex-col items-center justify-end gap-3">
-          {activeNpcId && !npcPortraitLoadFailed && (
-            <div
-              className="relative h-[840px] w-[600px] max-h-[90%] translate-x-[100px] overflow-hidden bg-black/40"
-              style={{
-                clipPath: 'polygon(28px 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%, 0 28px)',
-                border: '2px solid color-mix(in srgb, var(--color-chrome-primary) 50%, transparent)',
-                boxShadow:
-                  '0 0 30px color-mix(in srgb, var(--color-chrome-primary) 20%, transparent), inset 0 0 40px color-mix(in srgb, var(--color-chrome-primary) 10%, transparent)',
-              }}
-            >
-              <img
-                src={NPCS[activeNpcId].portraitSrc}
-                alt={NPCS[activeNpcId].name}
-                className="h-full w-full object-cover"
-                onError={() => setNpcPortraitLoadFailed(true)}
-              />
-            </div>
-          )}
-          <span className="font-display text-xs uppercase tracking-widest text-white/40">
-            {activeNpcId ? NPCS[activeNpcId].name : locationName}
-          </span>
-        </div>
+        <NpcStagePortrait npcId={activeNpcId} fallbackLabel={locationName} />
       </div>
 
       {/* Right quarter: dialogue panel — floating box, inset from the screen edges */}
@@ -390,22 +206,10 @@ export function DialogueScreen() {
           onScroll={handleLogScroll}
           className={`auto-hide-scrollbar flex-1 space-y-3 overflow-y-auto pr-1 ${isScrolling ? 'is-scrolling' : ''}`}
         >
-          {log.map((entry, i) => {
-            const isLatest = i === log.length - 1
-            const revealed = isLatest ? revealLines(entry.lines, typedChars) : entry.lines.map((line) => ({ line, text: line.text }))
-            return (
-              <div key={entry.id} className="space-y-2">
-                {revealed.map((r, j) => (
-                  <StoryLineEntry key={j} line={r.line} text={r.text} showVoiceGlyph={isLatest && r.line.voice !== null} />
-                ))}
-                {entry.checkResult && <CheckResultBlock insightName="CHECK" result={entry.checkResult} />}
-              </div>
-            )
-          })}
-          {ended && <p className="font-body text-xs uppercase tracking-widest text-white/40">— scene ended —</p>}
+          <TranscriptLog log={log} latestEntry={latestEntry} typedChars={typedChars} endedLabel={ended ? '— scene ended —' : undefined} />
         </div>
 
-        {currentChoices.length > 0 && (!latestEntry || typedChars >= latestEntryText.length) && (
+        {currentChoices.length > 0 && isTypingDone && (
           <div className="flex flex-col divide-y divide-white/10 border-t border-white/10 pt-1" onClick={(e) => e.stopPropagation()}>
             {currentChoices.map((choice) => {
               const tagInfo = parseChoiceTags(choice.tags)
@@ -425,7 +229,7 @@ export function DialogueScreen() {
           </div>
         )}
 
-        {ended && (!latestEntry || typedChars >= latestEntryText.length) && (
+        {ended && isTypingDone && (
           <div className="border-t border-white/10 pt-3" onClick={(e) => e.stopPropagation()}>
             <CyberButton onClick={currentHubId ? handleReturnToHub : handleReturnToOverworld}>
               {currentHubId ? 'Continue Investigation' : 'Return to Map'}

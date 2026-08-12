@@ -7,14 +7,18 @@ import { ARCHETYPES, type ArchetypeId } from '../content/archetypes'
 import type { PortraitId } from '../content/portraits'
 import type { GridPosition, HubId } from '../content/locationHubs'
 import type { SerializedCasefileState } from './casefileEngine'
+import type { SerializedConversationState } from './conversationEngine'
 import type { InsightId } from '../content/insights'
+import type { NpcId } from '../content/npcs'
 import { LOCATIONS, type DistrictId, type LocationId } from '../content/locations'
 
-// Bumped to 7 when the player's chosen portrait (independent of archetype,
-// docs/GAME_GUIDE.md §2.2 step 1) was added to insight state.
+// Bumped to 8 when Conversation View (UI_PASS_SPEC.md §4) added met-NPC/
+// per-NPC topic-state tracking (`conversation`) and a `storyMode` +
+// `activeNpcId` pair distinguishing "mid-scene" saves from
+// "mid-conversation" saves.
 // There is still no migration path; older saves are treated as absent
 // rather than partially restored.
-export const SAVE_FORMAT_VERSION = 7
+export const SAVE_FORMAT_VERSION = 8
 export const AUTOSAVE_SLOT_ID = 'autosave'
 export const SAVE_KEY_PREFIX = 'saigon-protocol:save:'
 
@@ -63,10 +67,16 @@ export interface SaveBlob {
   navigation: SerializedNavigationState
   gameplay: SerializedGameplayState
   casefile: SerializedCasefileState
+  /** Conversation View's met-NPC/per-NPC topic-state tracking (UI_PASS_SPEC.md §4.3). */
+  conversation: SerializedConversationState
   /** null when saved with no active scene (e.g. standing on the Overworld). */
   inkStateJson: string | null
   /** Which compiled story inkStateJson belongs to ('intro' or a LocationId) — storyStore.activeStoryId at save time. Null alongside a null inkStateJson. */
   activeStoryId: string | null
+  /** 'conversation' when inkStateJson/activeStoryId belong to a Conversation View session rather than a normal scene — tells restore-on-load which screen to route back into. */
+  storyMode: 'scene' | 'conversation'
+  /** Mirrors storyStore.activeNpcId — the NPC the active scene/conversation is about, dual-purpose per its own doc comment. Null when neither applies. */
+  activeNpcId: NpcId | null
 }
 
 export interface SaveSlotMeta {

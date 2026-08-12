@@ -20,6 +20,7 @@ import type { BackgroundId } from '../content/backgrounds'
 import type { MusicId } from '../content/music'
 import type { VoiceClipId } from '../content/voiceClips'
 import type { CheckResult } from '../engine/checkResolution'
+import type { NpcId } from '../content/npcs'
 import { useInsightStore } from './insightStore'
 
 export interface StoryLine {
@@ -39,13 +40,38 @@ interface StoryState {
   story: Story | null
   /** Which compiled story is loaded ('intro', or a LocationId) — opaque to storyStore, but saveStore needs it to know which JSON to recompile a restored save against. Null when no story is active. */
   activeStoryId: string | null
+  /** 'conversation' for a Conversation View topic session (UI_PASS_SPEC.md §4) rather than a normal authored scene — App.tsx's screen switch reads this to pick ConversationScreen over DialogueScreen. */
+  storyMode: 'scene' | 'conversation'
+  /**
+   * Which NPC this active story session is specifically about — dual
+   * purpose. In 'conversation' mode, which NPC the topic session belongs
+   * to. In 'scene' mode, which NPC's first-encounter this scene is (if
+   * any) — DialogueScreen marks that NPC met when the scene ends, so a
+   * later "Talk" click routes to Conversation View instead of replaying it
+   * (UI_PASS_SPEC.md §4.3). Null when neither applies.
+   */
+  activeNpcId: NpcId | null
   currentLines: StoryLine[]
   currentChoices: Choice[]
   canContinue: boolean
   ended: boolean
   lastCheckResult: CheckResult | null
 
-  loadStory: (inkJson: string | Record<string, unknown>, savedStateJson?: string, storyId?: string | null) => void
+  /**
+   * `entryKnot`, when given and there's no `savedStateJson` to restore, jumps
+   * a freshly-constructed Story straight to that ink path before the first
+   * `advance()` — how a per-NPC conversation Story reaches its own
+   * `<npc>_topics` knot on first entry, since the compiled file it shares
+   * with other NPCs/the location's own scene has no single "default start"
+   * that means anything for it (UI_PASS_SPEC.md §4.3). Ignored once
+   * `savedStateJson` is supplied — a restored pointer already knows where it is.
+   */
+  loadStory: (
+    inkJson: string | Record<string, unknown>,
+    savedStateJson?: string,
+    storyId?: string | null,
+    options?: { entryKnot?: string; mode?: 'scene' | 'conversation'; npcId?: NpcId },
+  ) => void
   choose: (index: number) => void
   reset: () => void
 }
@@ -122,13 +148,15 @@ function hydrateFromRestoredState(story: Story, set: (partial: Partial<StoryStat
 export const useStoryStore = create<StoryState>((set, get) => ({
   story: null,
   activeStoryId: null,
+  storyMode: 'scene',
+  activeNpcId: null,
   currentLines: [],
   currentChoices: [],
   canContinue: false,
   ended: false,
   lastCheckResult: null,
 
-  loadStory: (inkJson, savedStateJson, storyId) => {
+  loadStory: (inkJson, savedStateJson, storyId, options) => {
     unsubscribeInsight?.()
 
     // Overload resolution doesn't distribute over a union argument, so narrow explicitly.
@@ -153,11 +181,18 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       syncInsightVariables(story, state.levels, state.archetype)
     })
 
-    set({ story, activeStoryId: storyId ?? null, lastCheckResult: null })
+    set({
+      story,
+      activeStoryId: storyId ?? null,
+      storyMode: options?.mode ?? 'scene',
+      activeNpcId: options?.npcId ?? null,
+      lastCheckResult: null,
+    })
     if (savedStateJson) {
       story.state.LoadJson(savedStateJson)
       hydrateFromRestoredState(story, set)
     } else {
+      if (options?.entryKnot) story.ChoosePathString(options.entryKnot)
       advance(story, set)
     }
   },
@@ -175,6 +210,8 @@ export const useStoryStore = create<StoryState>((set, get) => ({
     set({
       story: null,
       activeStoryId: null,
+      storyMode: 'scene',
+      activeNpcId: null,
       currentLines: [],
       currentChoices: [],
       canContinue: false,

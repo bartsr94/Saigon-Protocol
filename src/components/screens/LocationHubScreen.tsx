@@ -4,21 +4,24 @@
 // haven't earned one yet.
 
 import { BACKGROUNDS } from '../../content/backgrounds'
-import { LOCATION_HUBS } from '../../content/locationHubs'
+import { LOCATION_HUBS, type HubInteraction } from '../../content/locationHubs'
 import { LOCATIONS, type LocationId } from '../../content/locations'
 import { useAudioStore } from '../../stores/audioStore'
+import { useConversationStore } from '../../stores/conversationStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useStoryStore } from '../../stores/storyStore'
 import { useUiStore } from '../../stores/uiStore'
 import { LOCATION_STORY_JSON } from '../../content/locationStories'
+import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
 import { HubCardListView } from './HubCardListView'
 import { HubGridView } from './HubGridView'
 import { NavRail } from './NavRail'
 
 export function LocationHubScreen() {
   const currentHubId = useGameplayStore((s) => s.currentHubId)
+  const editingMap = useDebugMapEditStore((s) => s.editingMap)
   const currentDistrictId = useGameplayStore((s) => s.currentDistrictId)
   const playerPosition = useGameplayStore((s) => s.playerPosition)
   const leaveHub = useGameplayStore((s) => s.leaveHub)
@@ -40,6 +43,35 @@ export function LocationHubScreen() {
     selectLocation(id)
     loadStory(LOCATION_STORY_JSON[id], undefined, id)
     useAudioStore.getState().enterLocation(LOCATIONS[id])
+    useSaveStore.getState().autosave()
+  }
+
+  // Grid-hub POI interactions carry an npcId/topicsKnot that
+  // HubCardListView's characters/actions don't (UI_PASS_SPEC.md §4) — a met NPC with
+  // authored topics routes to Conversation View (resuming their saved
+  // state, or jumping to their topics knot fresh) instead of replaying the
+  // scene. Everything else (inspect actions, un-met or topic-less NPCs)
+  // behaves exactly like `enterStory` above, just also threading `npcId`
+  // through so DialogueScreen can mark a first-time NPC met when the scene ends.
+  function enterHubInteraction(interaction: HubInteraction) {
+    const { storyLocationId, npcId, topicsKnot } = interaction
+    selectLocation(storyLocationId)
+
+    if (npcId && topicsKnot && useConversationStore.getState().hasMet(npcId)) {
+      const savedState = useConversationStore.getState().getConversationState(npcId)
+      loadStory(LOCATION_STORY_JSON[storyLocationId], savedState, storyLocationId, {
+        mode: 'conversation',
+        npcId,
+        entryKnot: savedState ? undefined : topicsKnot,
+      })
+    } else {
+      loadStory(LOCATION_STORY_JSON[storyLocationId], undefined, storyLocationId, {
+        mode: 'scene',
+        npcId: topicsKnot ? npcId : undefined,
+      })
+    }
+
+    useAudioStore.getState().enterLocation(LOCATIONS[storyLocationId])
     useSaveStore.getState().autosave()
   }
 
@@ -68,10 +100,11 @@ export function LocationHubScreen() {
         onMenu={() => openOverlay('settings')}
         mapDisabled={!atEntry}
         mapTitle="Return to the entrance to leave."
+        disabled={editingMap}
       />
 
       {hub.layout === 'grid' ? (
-        <HubGridView hub={hub} background={background} onEnterStory={enterStory} onReturnToMap={handleReturnToMap} atEntry={atEntry} />
+        <HubGridView hub={hub} background={background} onEnterInteraction={enterHubInteraction} onReturnToMap={handleReturnToMap} atEntry={atEntry} />
       ) : (
         <HubCardListView hub={hub} background={background} onEnterStory={enterStory} onReturnToMap={handleReturnToMap} />
       )}

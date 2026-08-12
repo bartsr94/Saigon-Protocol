@@ -10,10 +10,15 @@ import { DISTRICT_IDS, DISTRICT_REGIONS, type DistrictRegionDefinition } from '.
 import { DISTRICT_STREETS } from '../../content/districtStreets'
 import { LOCATIONS, LOCATION_IDS, type DistrictId, type LocationId } from '../../content/locations'
 import { useGameplayStore } from '../../stores/gameplayStore'
-import { CyberButton, GlitchText, Icon, Panel } from '../ui'
+import { CyberButton, GlitchText, Icon, PageControls, Panel, usePagination } from '../ui'
 import { EditableText } from '../debug/EditableText'
 import { NavRail } from './NavRail'
 import { enterLocationHub } from './enterLocationHub'
+
+// Paginated instead of scrolling (UI_PASS_SPEC.md §2) — a district's
+// location list is the one part of this screen that grows unbounded as
+// more Case 1 locations land.
+const LOCATIONS_PAGE_SIZE = 3
 
 const saigonMapSrc = new URL('../../../saigon_map.jpg', import.meta.url).href
 
@@ -45,6 +50,7 @@ export function OverworldScreen() {
   const selectedDistrict = DISTRICT_REGIONS[selectedDistrictId]
   const selectedDistrictLocationIds = locationIdsByDistrict[selectedDistrictId]
   const selectedDistrictStreet = DISTRICT_STREETS[selectedDistrictId]
+  const locationsPage = usePagination(selectedDistrictLocationIds, LOCATIONS_PAGE_SIZE)
 
   return (
     <div className="flex h-svh w-full">
@@ -220,7 +226,7 @@ export function OverworldScreen() {
                       <p className="font-body text-sm text-white/45">No playable destinations are wired into this district yet. The map model is ready for future Case 1 locations here.</p>
                     )}
 
-                    {selectedDistrictLocationIds.map((id) => {
+                    {locationsPage.pageItems.map((id) => {
                       const def = LOCATIONS[id]
                       const unlocked = unlockedLocationIds.has(id)
 
@@ -247,6 +253,7 @@ export function OverworldScreen() {
                       )
                     })}
                   </div>
+                  <PageControls page={locationsPage.page} pageCount={locationsPage.pageCount} onChange={locationsPage.setPage} className="mt-3" />
                 </>
               )}
             </Panel>

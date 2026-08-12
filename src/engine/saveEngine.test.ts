@@ -35,8 +35,14 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       noteIds: ['note-01'],
       flags: ['saw-breach'],
     },
+    conversation: {
+      metNpcIds: ['meiHong'],
+      stateByNpc: { meiHong: '{"someConversationState":true}' },
+    },
     inkStateJson: '{"someInkState":true}',
     activeStoryId: 'checkpoint',
+    storyMode: 'scene',
+    activeNpcId: null,
     ...overrides,
   }
 }
