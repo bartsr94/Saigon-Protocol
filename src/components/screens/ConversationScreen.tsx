@@ -44,10 +44,15 @@ export function ConversationScreen() {
   const currentHubId = useGameplayStore((s) => s.currentHubId)
   const openOverlay = useUiStore((s) => s.openOverlay)
 
+  // Capped (PERFORMANCE_PASS_SPEC.md §1) — unlike DialogueScreen's one-scene
+  // sessions, the ink Story here stays parked on the same `storyInstance`
+  // for as long as the player keeps browsing topics, so an uncapped log
+  // would grow for the whole session.
   const { log, latestEntry, typedChars, isTypingDone, logRef, isScrolling, handleLogScroll, handleSkip } = useTranscript(
     storyInstance,
     currentLines,
     lastCheckResult,
+    40,
   )
 
   // Stashes wherever the ink Story is currently parked (always its topics

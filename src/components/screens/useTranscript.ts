@@ -42,8 +42,22 @@ export interface UseTranscriptResult {
   handleSkip: () => void
 }
 
-/** `resetKey` — e.g. a Story instance or NPC id — clears the transcript when it changes (a new scene/conversation started). */
-export function useTranscript(resetKey: unknown, currentLines: StoryLine[], lastCheckResult: CheckResult | null): UseTranscriptResult {
+/**
+ * `resetKey` — e.g. a Story instance or NPC id — clears the transcript when
+ * it changes (a new scene/conversation started). `maxEntries` (optional,
+ * unbounded by default) caps how many entries `log` retains, oldest first —
+ * needed by Conversation View, whose ink Story stays parked on the same
+ * `resetKey` for as long as the player keeps browsing topics, so `log`
+ * would otherwise grow for the entire session (PERFORMANCE_PASS_SPEC.md
+ * §1). A single scene in `DialogueScreen` never runs long enough to need
+ * this, so its call site omits the param.
+ */
+export function useTranscript(
+  resetKey: unknown,
+  currentLines: StoryLine[],
+  lastCheckResult: CheckResult | null,
+  maxEntries?: number,
+): UseTranscriptResult {
   const [log, setLog] = useState<LogEntry[]>([])
   const nextId = useRef(0)
   const logRef = useRef<HTMLDivElement>(null)
@@ -62,7 +76,10 @@ export function useTranscript(resetKey: unknown, currentLines: StoryLine[], last
   useEffect(() => {
     if (currentLines.length === 0) return
     const entry: LogEntry = { id: nextId.current++, lines: currentLines, checkResult: lastCheckResult }
-    setLog((prev) => [...prev, entry])
+    setLog((prev) => {
+      const next = [...prev, entry]
+      return maxEntries !== undefined ? next.slice(-maxEntries) : next
+    })
     useAudioStore.getState().applyStoryLines(currentLines)
     // currentLines is the real per-turn trigger; lastCheckResult only ever
     // changes in the same synchronous batch as currentLines (see storyStore).

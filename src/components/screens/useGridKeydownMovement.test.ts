@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { reachableTiles } from '../../engine/gridMovement'
 import { useGridKeydownMovement } from './useGridKeydownMovement'
 
 // This project doesn't enable Vitest's `globals` mode, so @testing-library/react's
@@ -13,6 +14,9 @@ const GRID = {
   layoutRows: ['...', '...', '...'],
   entryTile: { x: 1, y: 1 },
 }
+// Every tile is floor with no doors, so the whole grid is reachable — same
+// set `HubGridView`/`DistrictStreetView` would compute and pass in for real.
+const REACHABLE = reachableTiles(GRID)
 
 function pressKey(key: string) {
   window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }))
@@ -21,7 +25,7 @@ function pressKey(key: string) {
 describe('useGridKeydownMovement', () => {
   it('moves the player one tile per direction keypress when nothing blocks it', () => {
     const moveTo = vi.fn()
-    renderHook(() => useGridKeydownMovement(GRID, { x: 1, y: 1 }, moveTo, () => false, false))
+    renderHook(() => useGridKeydownMovement(GRID, { x: 1, y: 1 }, moveTo, REACHABLE, false))
 
     pressKey('w')
 
@@ -30,7 +34,7 @@ describe('useGridKeydownMovement', () => {
 
   it('ignores movement keys entirely while blocked — the live Map Editor / an open overlay case', () => {
     const moveTo = vi.fn()
-    renderHook(() => useGridKeydownMovement(GRID, { x: 1, y: 1 }, moveTo, () => false, true))
+    renderHook(() => useGridKeydownMovement(GRID, { x: 1, y: 1 }, moveTo, REACHABLE, true))
 
     pressKey('w')
     pressKey('a')
@@ -43,7 +47,7 @@ describe('useGridKeydownMovement', () => {
 
   it('ignores non-movement keys', () => {
     const moveTo = vi.fn()
-    renderHook(() => useGridKeydownMovement(GRID, { x: 1, y: 1 }, moveTo, () => false, false))
+    renderHook(() => useGridKeydownMovement(GRID, { x: 1, y: 1 }, moveTo, REACHABLE, false))
 
     pressKey('q')
 
@@ -52,7 +56,7 @@ describe('useGridKeydownMovement', () => {
 
   it('removes its keydown listener on unmount, so an unmounted screen never eats keystrokes for the next one', () => {
     const moveTo = vi.fn()
-    const { unmount } = renderHook(() => useGridKeydownMovement(GRID, { x: 1, y: 1 }, moveTo, () => false, false))
+    const { unmount } = renderHook(() => useGridKeydownMovement(GRID, { x: 1, y: 1 }, moveTo, REACHABLE, false))
 
     unmount()
     pressKey('w')

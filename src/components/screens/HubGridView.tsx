@@ -69,7 +69,15 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
     [hub.grid, casefileFlags],
   )
 
-  useGridKeydownMovement(hub.grid, playerPosition, moveTo, isDoorUnlocked, Boolean(activeOverlay) || editingMap)
+  // Tiles actually reachable right now (locked doors block whatever's past
+  // them) — gates the "Known Places" shortcut so clicking a POI glimpsed
+  // through a sealed door can't teleport past it; walking there the normal
+  // way is already gated the same way inside step(). Computed once per move
+  // and shared with useGridKeydownMovement below, rather than each
+  // recomputing its own flood-fill (PERFORMANCE_PASS_SPEC.md §2).
+  const reachable = useMemo(() => reachableTiles(hub.grid, isDoorUnlocked), [hub.grid, isDoorUnlocked])
+
+  useGridKeydownMovement(hub.grid, playerPosition, moveTo, reachable, Boolean(activeOverlay) || editingMap)
 
   const currentPoi = useMemo(
     () => hub.grid.pois.find((poi) => poi.position.x === playerPosition.x && poi.position.y === playerPosition.y) ?? null,
@@ -82,12 +90,6 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
     () => hub.grid.pois.filter((poi) => revealedTiles.has(tileKey(poi.position))),
     [hub.grid.pois, revealedTiles],
   )
-
-  // Tiles actually reachable right now (locked doors block whatever's past
-  // them) — gates the "Known Places" shortcut so clicking a POI glimpsed
-  // through a sealed door can't teleport past it; walking there the normal
-  // way is already gated the same way inside step().
-  const reachable = useMemo(() => reachableTiles(hub.grid, isDoorUnlocked), [hub.grid, isDoorUnlocked])
 
   // What the AR-scan panel says about the square the player is standing on
   // right now, in place of a single static hub-wide blurb — a POI's or

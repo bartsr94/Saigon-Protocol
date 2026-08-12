@@ -46,6 +46,16 @@ function makeAudio(src: string, loop: boolean): HTMLAudioElement | null {
 const FADE_STEP_MS = 50
 
 /**
+ * One in-flight fade interval per element (PERFORMANCE_PASS_SPEC.md §3) —
+ * `applyStoryLines` runs on every line batch, so advancing dialogue faster
+ * than CROSSFADE_MS is easy (instant text, a fast reader) and would
+ * otherwise leave two intervals writing to the same element's `.volume`
+ * concurrently. A WeakMap rather than a field on the element itself keeps
+ * this bookkeeping local to fadeTo without touching HTMLAudioElement.
+ */
+const activeFades = new WeakMap<HTMLAudioElement, ReturnType<typeof setInterval>>()
+
+/**
  * Ramps volume with setInterval, not requestAnimationFrame — rAF is tied to
  * the paint cycle and can be suspended indefinitely in a backgrounded/
  * unfocused tab (confirmed: it can simply never fire), which would silently
@@ -58,6 +68,9 @@ function fadeTo(el: HTMLAudioElement | null, target: number, durationMs: number,
     onDone?.()
     return
   }
+  const existingFade = activeFades.get(el)
+  if (existingFade !== undefined) clearInterval(existingFade)
+
   const start = el.volume
   const steps = Math.max(1, Math.round(durationMs / FADE_STEP_MS))
   let step = 0
@@ -67,9 +80,11 @@ function fadeTo(el: HTMLAudioElement | null, target: number, durationMs: number,
     el.volume = start + (target - start) * t
     if (t >= 1) {
       clearInterval(interval)
+      activeFades.delete(el)
       onDone?.()
     }
   }, FADE_STEP_MS)
+  activeFades.set(el, interval)
 }
 
 function getVolumes() {

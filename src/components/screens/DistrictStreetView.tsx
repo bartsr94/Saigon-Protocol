@@ -72,7 +72,13 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
     [street, casefileFlags],
   )
 
-  useGridKeydownMovement(street, playerPosition, moveInDistrict, isDoorUnlocked, Boolean(activeOverlay) || editingMap)
+  // Same reachability gate as HubGridView's — a locked door can be seen
+  // through but not shortcut past via the "Known Places" list. Computed
+  // once per move and shared with useGridKeydownMovement below, rather
+  // than each recomputing its own flood-fill (PERFORMANCE_PASS_SPEC.md §2).
+  const reachable = useMemo(() => reachableTiles(street, isDoorUnlocked), [street, isDoorUnlocked])
+
+  useGridKeydownMovement(street, playerPosition, moveInDistrict, reachable, Boolean(activeOverlay) || editingMap)
 
   const currentPoi = useMemo(
     () => street.pois.find((poi) => poi.position.x === playerPosition.x && poi.position.y === playerPosition.y) ?? null,
@@ -82,10 +88,6 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
   const currentDoor = useMemo(() => doorAt(street, playerPosition), [street, playerPosition])
 
   const discoveredPois = useMemo(() => street.pois.filter((poi) => revealedTiles.has(tileKey(poi.position))), [street.pois, revealedTiles])
-
-  // Same reachability gate as HubGridView's — a locked door can be seen
-  // through but not shortcut past via the "Known Places" list.
-  const reachable = useMemo(() => reachableTiles(street, isDoorUnlocked), [street, isDoorUnlocked])
 
   // What the AR-scan panel says about the square the player is standing on
   // right now, in place of a single static street-wide blurb. Also tracks
