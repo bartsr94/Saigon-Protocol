@@ -11,6 +11,7 @@
 // and never advances it, so the ink story stays parked at its topic menu
 // forever.
 
+import { useState } from 'react'
 import { useInsightStore } from '../../stores/insightStore'
 import { useStoryStore } from '../../stores/storyStore'
 import { useConversationStore } from '../../stores/conversationStore'
@@ -27,6 +28,7 @@ import { parseChoiceTags } from '../../engine/contentTags'
 import { CyberButton, NpcStagePortrait, Panel, PipTrack, PortraitFrame } from '../ui'
 import { NavRail } from './NavRail'
 import { TranscriptLog } from './storyTranscript'
+import { TopicEditorPanel } from './TopicEditorPanel'
 import { useTranscript } from './useTranscript'
 
 export function ConversationScreen() {
@@ -37,6 +39,8 @@ export function ConversationScreen() {
 
   const storyInstance = useStoryStore((s) => s.story)
   const npcId = useStoryStore((s) => s.activeNpcId)
+  const activeStoryId = useStoryStore((s) => s.activeStoryId)
+  const activeTopicsKnot = useStoryStore((s) => s.activeTopicsKnot)
   const currentLines = useStoryStore((s) => s.currentLines)
   const currentChoices = useStoryStore((s) => s.currentChoices)
   const lastCheckResult = useStoryStore((s) => s.lastCheckResult)
@@ -45,6 +49,8 @@ export function ConversationScreen() {
 
   const currentHubId = useGameplayStore((s) => s.currentHubId)
   const openOverlay = useUiStore((s) => s.openOverlay)
+
+  const [editingTopics, setEditingTopics] = useState(false)
 
   // Capped (PERFORMANCE_PASS_SPEC.md §1) — unlike DialogueScreen's one-scene
   // sessions, the ink Story here stays parked on the same `storyInstance`
@@ -142,12 +148,26 @@ export function ConversationScreen() {
                   </CyberButton>
                 )
               })}
+            {import.meta.env.DEV && activeTopicsKnot && (
+              <CyberButton className="!border-white/30 !text-white/50" onClick={() => setEditingTopics(true)}>
+                Edit Topics
+              </CyberButton>
+            )}
             <CyberButton className="!border-chrome-secondary !text-chrome-secondary" onClick={handleLeaveConversation}>
               Leave Conversation
             </CyberButton>
           </Panel>
         </div>
       </div>
+
+      {editingTopics && activeStoryId && activeTopicsKnot && (
+        <TopicEditorPanel
+          storyLocationId={activeStoryId}
+          knotName={activeTopicsKnot}
+          npcId={npcId}
+          onClose={() => setEditingTopics(false)}
+        />
+      )}
     </div>
   )
 }

@@ -38,6 +38,7 @@ export const NPCS: Record<NpcId, NpcDefinition> = {
   lakshmiAvani: {
     id: 'lakshmiAvani',
     name: 'Lakshmi Avani',
+    portraitSrc: '/portraits/npcs/lakshmi-avani.png',
   },
 }
 
