@@ -292,7 +292,32 @@ Insight sync silently skips undeclared variables, and a scene with no
 checks/wellbeing calls (like `intro.ink`) needs zero `EXTERNAL`
 declarations at all.
 
-### 5.4 Worked example (the intro scene's pattern)
+### 5.4 Archetype-gated content
+
+`archetype` is synced into ink globals the same way Insight levels are
+(`storyEngine.ts`'s `syncInsightVariables`) — declare `VAR archetype = ""` in
+any scene that wants to read it, and gate lines/choices on it with the exact
+same conditional pattern already used for Insight levels, just with a string
+equality check instead of a numeric threshold:
+
+```ink
+VAR archetype = ""
+
+{ archetype == "hustler":
+    Flavor only a Hustler protagonist gets to read.
+}
+```
+
+Valid values are the six `ArchetypeId`s from `content/archetypes.ts`
+(`enforcer`, `companyMan`, `oldSaigon`, `wire`, `hustler`, `boringCop`).
+Unlike Insight interjections, there's no visible tag/pill for this in the
+UI (deliberate — see the running log) — an archetype-gated line or choice
+just silently is or isn't there, the same way an Insight-gated *choice*
+(not interjection) appears/disappears without an explicit `- else:` branch.
+`workerCanteen.ink`'s Hustler-only beat on the counter's "two ways of being
+Xóm Chàm" paragraph is the first real example.
+
+### 5.5 Worked example (the intro scene's pattern)
 
 `content/ink/intro.ink` is a good template for a no-stakes narrative scene:
 a linear sequence of pacing choices (`* [Keep driving.]`), each stage

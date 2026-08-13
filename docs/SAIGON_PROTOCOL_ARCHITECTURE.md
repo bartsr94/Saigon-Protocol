@@ -739,3 +739,20 @@ persisted state, no save-format changes.
 - The Inner Containment Wing itself (§7's locked-door example) is a
   placeholder room with one generic inspect POI — `CASE_1_LOCATION_MATRIX.md`'s
   actual forensic-reveal scene for that location isn't authored yet.
+- **Archetype-gated content convention established (2026):** `archetype` was
+  already synced into ink globals by `storyEngine.ts`'s `syncInsightVariables`,
+  but no content read it. `workerCanteen.ink` now gates a narrator beat on
+  `{ archetype == "hustler": ... }` — the same native ink-conditional pattern
+  Insight-level gating already used (e.g. `deltaSquat.ink`'s `{ root >= 3 }`),
+  so no engine change was needed, only the `VAR archetype = ""` declaration
+  and the convention itself (`GAME_GUIDE.md` §5.4). Deliberately has no
+  visible UI tag/pill (unlike `insight:`/`check:` choice tags) — an
+  archetype-gated line or choice silently appears or doesn't, by design
+  decision, not an oversight.
+- **The Hustler's backstory was rewritten (2026)** to be a European-born
+  emigre raised in New Saigon since early childhood — fluent in the local
+  tongue but still read as an outsider by native-born Saigonese, an
+  intentional "outsider without being a full outsider" framing. Strength
+  (Hustle) and weakness (Muscle Memory) are unchanged; only `backstory` in
+  `content/archetypes.ts` and the mirrored line in `SEA_CYBERPUNK_GDD.md`
+  §4 changed.

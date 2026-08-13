@@ -8,6 +8,7 @@ VAR graft = 0
 VAR hustle = 0
 VAR root = 0
 VAR ledger = 0
+VAR archetype = ""
 
 The counter's run by an older woman everyone just calls Bà Châu, ladling out the same ration-bar stew to a room that's been eating here since before the current flood wall went up. No pork on the menu, no sign explaining why — nobody at these tables was ever going to ask.
 "Sit if you're eating, stand if you're not. Either way, don't block the door." She doesn't look up from the pot. # speaker: npc:baChau
@@ -20,6 +21,9 @@ Her forearm clicks faintly when she reaches for a ladle — an old joint, well k
 }
 
 Two tables run two different rhythms — one crowd breaking to face a corner at the same private moment, another that doesn't quite, older regulars sitting easy next to a younger crowd that keeps its own line drawn a little more carefully. Nobody at either table treats it as a thing worth explaining to a stranger. Two ways of being Xóm Chàm, sharing one counter.
+{ archetype == "hustler":
+    You know the shape of that unexplained line better than you'd say out loud — grew up three streets from a counter just like this one without ever quite being let all the way in. Vietnamese enough for the tongue, foreign enough for a room to still clock it before you open your mouth. Nobody here owes you the explanation either, and you stopped waiting for one a long time ago.
+}
 
 The stew tastes like the ration allotment it is, until it doesn't — something in the seasoning that isn't on any Baekho ingredient list.
 { root >= 3:
