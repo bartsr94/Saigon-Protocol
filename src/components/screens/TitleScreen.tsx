@@ -15,6 +15,7 @@ import { useConversationStore } from '../../stores/conversationStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useInsightStore } from '../../stores/insightStore'
 import { useNavigationStore } from '../../stores/navigationStore'
+import { useThoughtStore } from '../../stores/thoughtStore'
 import { LOCATIONS } from '../../content/locations'
 
 export function TitleScreen() {
@@ -38,6 +39,7 @@ export function TitleScreen() {
     useGameplayStore.getState().reset()
     useCasefileStore.getState().reset()
     useConversationStore.getState().reset()
+    useThoughtStore.getState().reset()
     goToChargen()
   }
 

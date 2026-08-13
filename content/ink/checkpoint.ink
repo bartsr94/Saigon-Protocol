@@ -6,6 +6,8 @@ EXTERNAL is_red_check_consumed(checkId)
 EXTERNAL roll_check(insight, targetNumber, checkId, risk)
 EXTERNAL gain_evidence(id)
 EXTERNAL unlock_note(id)
+EXTERNAL unlock_thought(id)
+EXTERNAL has_thought(id)
 
 VAR hustle = 0
 VAR static = 0
@@ -50,6 +52,7 @@ Above the queue, a recruitment screen loops Terra Nova's pitch on a three-second
             The guard shrugs and waves you past the line. Small win — and close enough to the post terminal now to see the drone's patrol log still open on the screen, timestamps that don't match its route.
             ~ gain_evidence("drone-log")
             ~ unlock_note("note-01")
+            ~ unlock_thought("checkpoint-improviser")
         - else:
             He doesn't even look up. "Back of the line."
         }
@@ -87,6 +90,9 @@ Mei Hong gives you her attention again — patient, watchful, still deciding how
 * { is_red_check_consumed("checkpoint-jump-queue") } [Ask about the guard at the gate. # insight: static]
     "Him? He's not paid enough to care who's late." She glances toward the checkpoint. "Neither am I, most days."
     -> mei_hong_topics
+* { has_thought("company-man-doubt") } [Ask her what "handled" usually means, around here. # insight: ledger]
+    Mei Hong's expression doesn't change, but she takes a second longer to answer than she has for anything else. "It means someone decided it wasn't worth a second memo. That's all it ever means." # speaker: npc:meiHong
+    -> mei_hong_topics
 * [Ask where the rest of the staff are. # insight: ledger]
     "The lounge, mostly." She nods toward it without quite looking. "Everyone off the floor is parked in there until your people finish. Some of them will talk to you. Most of them don't know enough to be careful about it yet." # speaker: npc:meiHong
     -> mei_hong_topics
@@ -121,6 +127,7 @@ Lakshmi looks up from whatever she's pretending to read. "Back already?" # speak
     { surprisedResult:
         Her hands go still on the roster. "I flagged an adaptation-stress reading a few weeks back. Filed it, followed up, was told it was handled." A beat. "I didn't ask what 'handled' meant. I should have." # speaker: npc:lakshmiAvani
         ~ unlock_note("note-03")
+        ~ unlock_thought("company-man-doubt")
     - else:
         "Surprised isn't the word." She goes back to the roster before she says more than that. # speaker: npc:lakshmiAvani
     }

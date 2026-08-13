@@ -74,3 +74,8 @@ export const INSIGHTS: Record<InsightId, InsightDefinition> = {
 // PLACEHOLDER (GDD §3 tuning-pass item): starting range and level cap per Insight.
 export const INSIGHT_MIN = 1
 export const INSIGHT_MAX = 6
+
+// PLACEHOLDER (tuning pass): flat XP cost per level, same for every level, earned
+// once per unique checkId regardless of pass/fail (insightStore.rollCheck).
+export const INSIGHT_XP_PER_CHECK = 1
+export const INSIGHT_XP_TO_LEVEL = 3

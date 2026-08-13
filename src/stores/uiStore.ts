@@ -7,7 +7,7 @@
 import { create } from 'zustand'
 
 export type Screen = 'title' | 'chargen' | 'game'
-export type OverlayId = 'settings' | 'casefile' | 'character' | 'debug' | null
+export type OverlayId = 'settings' | 'casefile' | 'character' | 'thoughtCabinet' | 'debug' | null
 
 interface UiState {
   screen: Screen

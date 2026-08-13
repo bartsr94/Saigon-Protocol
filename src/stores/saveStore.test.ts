@@ -5,6 +5,7 @@ import { useNavigationStore } from './navigationStore'
 import { useStoryStore } from './storyStore'
 import { useCasefileStore } from './casefileStore'
 import { useGameplayStore } from './gameplayStore'
+import { useThoughtStore } from './thoughtStore'
 import { AUTOSAVE_SLOT_ID } from '../engine/saveEngine'
 import noodleStallJson from '../../content/ink/noodleStall.json'
 import introStoryJson from '../../content/ink/intro.json'
@@ -39,6 +40,7 @@ describe('saveStore', () => {
     useStoryStore.getState().reset()
     useCasefileStore.setState(useCasefileStore.getInitialState(), true)
     useGameplayStore.setState(useGameplayStore.getInitialState(), true)
+    useThoughtStore.setState(useThoughtStore.getInitialState(), true)
     useSaveStore.setState(useSaveStore.getInitialState(), true)
   })
 
@@ -78,13 +80,16 @@ describe('saveStore', () => {
     expect(slots.find((s) => s.id === slotId)?.name).toBe('First Save (renamed)')
   })
 
-  it('loadSlot rehydrates insight and navigation state, and returns false for a missing id', () => {
+  it('loadSlot rehydrates insight, navigation, and thought-cabinet state, and returns false for a missing id', () => {
     useInsightStore.getState().selectArchetype('hustler')
     useInsightStore.getState().setPlayerName('Kade')
+    useInsightStore.getState().rollCheck('hustle', 6, 'snapshot-check', 'white') // partial XP progress
     useNavigationStore.getState().unlockLocation('noodleStall')
     useGameplayStore.getState().enterHub('checkpoint')
     useCasefileStore.getState().addEvidence('drone-log')
     useCasefileStore.getState().unlockNote('note-01')
+    useThoughtStore.getState().unlockThought('checkpoint-improviser')
+    useThoughtStore.getState().enableThought('checkpoint-improviser')
     useSaveStore.getState().saveToSlot('Snapshot')
     const slotId = useSaveStore.getState().slots[0].id
 
@@ -94,9 +99,13 @@ describe('saveStore', () => {
     useGameplayStore.getState().enterHub('deltaSquat')
     useCasefileStore.getState().addEvidence('water-sample')
     useCasefileStore.getState().unlockNote('note-02')
+    useThoughtStore.getState().unlockThought('company-man-doubt')
+    useThoughtStore.getState().enableThought('company-man-doubt')
+    useThoughtStore.getState().disableThought('checkpoint-improviser')
 
     expect(useSaveStore.getState().loadSlot(slotId)).toBe(true)
     expect(useInsightStore.getState().playerName).toBe('Kade')
+    expect(useInsightStore.getState().xp.hustle).toBe(1)
     expect(useNavigationStore.getState().unlockedLocationIds.has('noodleStall')).toBe(true)
     expect(useNavigationStore.getState().unlockedLocationIds.has('deltaSquat')).toBe(false)
     expect(useGameplayStore.getState().currentHubId).toBe('checkpoint')
@@ -104,6 +113,8 @@ describe('saveStore', () => {
     expect(useCasefileStore.getState().evidenceIds.has('water-sample')).toBe(false)
     expect(useCasefileStore.getState().noteIds.has('note-01')).toBe(true)
     expect(useCasefileStore.getState().noteIds.has('note-02')).toBe(false)
+    expect(useThoughtStore.getState().isEnabled('checkpoint-improviser')).toBe(true)
+    expect(useThoughtStore.getState().isUnlocked('company-man-doubt')).toBe(false)
 
     expect(useSaveStore.getState().loadSlot('does-not-exist')).toBe(false)
   })

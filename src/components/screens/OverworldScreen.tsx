@@ -58,6 +58,7 @@ export function OverworldScreen() {
         className="shrink-0 p-4"
         onChar={() => openOverlay('character')}
         onCase={() => openOverlay('casefile')}
+        onThoughts={() => openOverlay('thoughtCabinet')}
         onMenu={() => openOverlay('settings')}
       />
 

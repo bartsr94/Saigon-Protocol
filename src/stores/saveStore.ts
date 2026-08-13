@@ -27,12 +27,14 @@ import {
 import { SAVE_FORMAT_VERSION } from '../engine/saveEngine'
 import { serializeCasefileState } from '../engine/casefileEngine'
 import { serializeConversationState } from '../engine/conversationEngine'
+import { serializeThoughtState } from '../engine/thoughtEngine'
 import { useCasefileStore } from './casefileStore'
 import { useConversationStore } from './conversationStore'
 import { useGameplayStore } from './gameplayStore'
 import { useInsightStore } from './insightStore'
 import { useNavigationStore } from './navigationStore'
 import { useStoryStore } from './storyStore'
+import { useThoughtStore } from './thoughtStore'
 
 interface SaveState {
   slots: SaveSlotMeta[]
@@ -79,6 +81,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
 
   const navigation = useNavigationStore.getState()
   const casefile = useCasefileStore.getState()
+  const thought = useThoughtStore.getState()
   const conversation = useConversationStore.getState()
   const gameplay = useGameplayStore.getState()
   const storyState = useStoryStore.getState()
@@ -98,6 +101,8 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
       vitality: insight.vitality,
       composure: insight.composure,
       consumedRedChecks: [...insight.consumedRedChecks],
+      xp: insight.xp,
+      xpAwardedCheckIds: [...insight.xpAwardedCheckIds],
       failState: insight.failState,
     },
     navigation: {
@@ -117,6 +122,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
       ),
     },
     casefile: serializeCasefileState(casefile),
+    thought: serializeThoughtState(thought),
     conversation: serializeConversationState(conversation),
     inkStateJson: story ? story.state.ToJson() : null,
     activeStoryId: story ? storyState.activeStoryId : null,
@@ -171,6 +177,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
     useNavigationStore.getState().hydrate(blob.navigation)
     useGameplayStore.getState().hydrate(blob.gameplay)
     useCasefileStore.getState().hydrate(blob.casefile)
+    useThoughtStore.getState().hydrate(blob.thought)
     useConversationStore.getState().hydrate(blob.conversation)
     const storyJson = blob.activeStoryId ? resolveStoryJson(blob.activeStoryId) : null
     if (blob.inkStateJson && storyJson) {

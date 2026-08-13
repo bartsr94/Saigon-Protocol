@@ -99,6 +99,7 @@ export function LocationHubScreen() {
         onChar={() => openOverlay('character')}
         onMap={handleReturnToMap}
         onCase={() => openOverlay('casefile')}
+        onThoughts={() => openOverlay('thoughtCabinet')}
         onMenu={() => openOverlay('settings')}
         mapDisabled={!atEntry}
         mapTitle="Return to the entrance to leave."
