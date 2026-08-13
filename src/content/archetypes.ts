@@ -75,7 +75,7 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     id: 'hustler',
     name: 'The Hustler',
     backstory:
-      'Came up through the gray-capital economy. Reads desperation and improvises well; avoids violence and it shows when it can’t be avoided.',
+      "Brought over as a small kid from somewhere in Europe nobody here can place by the accent, raised since in New Saigon's gray-capital economy — fluent in the tongue, still read as an outsider on sight. Reads desperation and improvises well; avoids violence and it shows when it can’t be avoided.",
     strength: 'hustle',
     weakness: 'muscleMemory',
     baseline: baselineFor('hustle', 'muscleMemory'),

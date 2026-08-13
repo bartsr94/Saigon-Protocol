@@ -127,7 +127,7 @@ A short, flavor-forward creation step (Disco Elysium's archetype-plus-points mod
 - **The Company Man** — high Ledger, low Root. Transferred from corporate internal security. Reads leverage instinctively, numb to the human cost of what the SEZ runs on.
 - **Old Saigon** — high Root, low Ledger. Local-born, maybe from a family that refused to leave. Deep cultural fluency and empathy; easy to outmaneuver in a boardroom.
 - **The Wire** — high Graft, low Mask. Heavily modified by choice or necessity. Visceral insight into mods and cybernetics; can't blend in — the body gives them away.
-- **The Hustler** — high Hustle, low Muscle Memory. Came up through the gray-capital economy. Reads desperation and improvises well; avoids violence and it shows when it can't be avoided.
+- **The Hustler** — high Hustle, low Muscle Memory. Brought over as a small kid from somewhere in Europe nobody here can place by the accent, raised since in New Saigon's gray-capital economy — fluent in the tongue, still read as an outsider on sight. Reads desperation and improvises well; avoids violence and it shows when it can't be avoided.
 - **Boring Cop** — flat, unremarkable spread with more free points to distribute. For players who want to build fully custom from a blank slate.
 
 **Consequence design (the point of the low stats):** a weak Insight shouldn't only mean more failed checks — it should open *different* branches. A low-Ledger Enforcer finds the smooth negotiation option locked but a blunt-force option unlocked (intimidate instead of persuade), typically resolving the immediate problem while creating a new one downstream (a burned informant, a lieutenant who trusts you less). Weakness is a fork toward a rougher path, never a dead wall.

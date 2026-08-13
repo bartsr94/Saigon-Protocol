@@ -1,13 +1,15 @@
 // Conversation View (UI_PASS_SPEC.md §4) — the repeat-visit alternative to
 // replaying an NPC's first-encounter scene. Structurally a sibling of
 // DialogueScreen: same NavRail + player-status + center-stage-portrait +
-// dialogue-panel layout (reusing storyTranscript.tsx for the log), but the
-// bottom of the panel is a topic bar (borrowing HubGridView's POI
-// bottom-action-bar pattern) instead of a vertical ChoiceRow list — the
-// topics themselves are just ink's own gated `currentChoices`, no separate
-// topic data model. "Leave Conversation" is the one button that isn't an
-// ink choice at all: it stashes the Story's state for next visit and never
-// advances it, so the ink story stays parked at its topic menu forever.
+// dialogue-panel layout (reusing storyTranscript.tsx for the log), but below
+// the stage+panel row sits a dedicated full-width topic bar — the same
+// bottom-action-bar `Panel` HubGridView uses for its current-tile POI
+// interactions — instead of a vertical ChoiceRow list or an in-panel choice
+// row. The topics themselves are just ink's own gated `currentChoices`, no
+// separate topic data model. "Leave Conversation" is the one button that
+// isn't an ink choice at all: it stashes the Story's state for next visit
+// and never advances it, so the ink story stays parked at its topic menu
+// forever.
 
 import { useInsightStore } from '../../stores/insightStore'
 import { useStoryStore } from '../../stores/storyStore'
@@ -85,62 +87,67 @@ export function ConversationScreen() {
         mapTitle="Leave the conversation"
       />
 
-      {/* Left three-quarters: player status + center stage */}
-      <div className="relative flex-1 overflow-hidden">
-        <div className="absolute left-4 top-4 z-10 flex items-start gap-3">
-          <PortraitFrame
-            src={portraitId ? PORTRAITS[portraitId].src : undefined}
-            alt={ARCHETYPES[archetype].name}
-            fallbackText={ARCHETYPES[archetype].name.replace('The ', '').slice(0, 2).toUpperCase()}
-            size="sm"
-          />
-          <div className="flex flex-col gap-1.5 pt-1">
-            <span className="font-display text-sm font-bold uppercase tracking-widest text-white">{ARCHETYPES[archetype].name}</span>
-            <PipTrack current={vitality.current} max={vitality.max} color="var(--color-vitality)" />
-            <PipTrack current={composure.current} max={composure.max} color="var(--color-composure)" />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left three-quarters: player status + center stage */}
+          <div className="relative flex-1 overflow-hidden">
+            <div className="absolute left-4 top-4 z-10 flex items-start gap-3">
+              <PortraitFrame
+                src={portraitId ? PORTRAITS[portraitId].src : undefined}
+                alt={ARCHETYPES[archetype].name}
+                fallbackText={ARCHETYPES[archetype].name.replace('The ', '').slice(0, 2).toUpperCase()}
+                size="sm"
+              />
+              <div className="flex flex-col gap-1.5 pt-1">
+                <span className="font-display text-sm font-bold uppercase tracking-widest text-white">{ARCHETYPES[archetype].name}</span>
+                <PipTrack current={vitality.current} max={vitality.max} color="var(--color-vitality)" />
+                <PipTrack current={composure.current} max={composure.max} color="var(--color-composure)" />
+              </div>
+            </div>
+
+            <NpcStagePortrait npcId={npcId} fallbackLabel={npc.name} />
           </div>
+
+          {/* Right quarter: same dialogue panel treatment as DialogueScreen, minus the choice row — that's now the dedicated bottom bar below. */}
+          <Panel size="lg" className="mt-[10px] mr-[10px] flex w-[28%] min-w-[380px] shrink-0 flex-col p-4" onClick={handleSkip}>
+            <div
+              ref={logRef}
+              onScroll={handleLogScroll}
+              className={`auto-hide-scrollbar flex-1 space-y-3 overflow-y-auto pr-1 ${isScrolling ? 'is-scrolling' : ''}`}
+            >
+              <TranscriptLog log={log} latestEntry={latestEntry} typedChars={typedChars} />
+            </div>
+          </Panel>
         </div>
 
-        <NpcStagePortrait npcId={npcId} fallbackLabel={npc.name} />
+        {/* Dedicated topic bar — the same bottom-action-bar Panel HubGridView
+            uses for a POI's Talk/Inspect interactions, reused here for ink's
+            gated currentChoices instead of a hub interaction list. */}
+        <div className="min-h-[6rem] shrink-0 px-[10px] pb-4">
+          <Panel size="md" className="flex flex-wrap gap-3 p-4">
+            {isTypingDone &&
+              currentChoices.map((choice) => {
+                const tagInfo = parseChoiceTags(choice.tags)
+                const insight = tagInfo.insightId ? INSIGHTS[tagInfo.insightId] : null
+                const locked = tagInfo.variant === 'locked'
+                return (
+                  <CyberButton
+                    key={choice.index}
+                    disabled={locked}
+                    title={locked ? tagInfo.lockedReason : undefined}
+                    tag={locked ? 'Locked' : (insight?.name ?? (tagInfo.variant === 'white-check' || tagInfo.variant === 'red-check' ? 'Check' : 'Topic'))}
+                    onClick={() => !locked && choose(choice.index)}
+                  >
+                    {choice.text}
+                  </CyberButton>
+                )
+              })}
+            <CyberButton className="!border-chrome-secondary !text-chrome-secondary" onClick={handleLeaveConversation}>
+              Leave Conversation
+            </CyberButton>
+          </Panel>
+        </div>
       </div>
-
-      {/* Right quarter: same dialogue panel treatment as DialogueScreen — topic bar replaces the choice list at the bottom. */}
-      <Panel size="lg" className="mt-[10px] mr-[10px] mb-[50px] flex w-[28%] min-w-[380px] shrink-0 flex-col gap-3 p-4" onClick={handleSkip}>
-        <div
-          ref={logRef}
-          onScroll={handleLogScroll}
-          className={`auto-hide-scrollbar flex-1 space-y-3 overflow-y-auto pr-1 ${isScrolling ? 'is-scrolling' : ''}`}
-        >
-          <TranscriptLog log={log} latestEntry={latestEntry} typedChars={typedChars} />
-        </div>
-
-        <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3" onClick={(e) => e.stopPropagation()}>
-          {isTypingDone &&
-            currentChoices.map((choice) => {
-              const tagInfo = parseChoiceTags(choice.tags)
-              const insight = tagInfo.insightId ? INSIGHTS[tagInfo.insightId] : null
-              const locked = tagInfo.variant === 'locked'
-              return (
-                <CyberButton
-                  key={choice.index}
-                  disabled={locked}
-                  title={locked ? tagInfo.lockedReason : undefined}
-                  tag={locked ? 'Locked' : (insight?.name ?? (tagInfo.variant === 'white-check' || tagInfo.variant === 'red-check' ? 'Check' : 'Topic'))}
-                  className="!px-3 !py-2 !text-xs"
-                  onClick={() => !locked && choose(choice.index)}
-                >
-                  {choice.text}
-                </CyberButton>
-              )
-            })}
-          <CyberButton
-            className="!border-chrome-secondary !text-chrome-secondary !px-3 !py-2 !text-xs"
-            onClick={handleLeaveConversation}
-          >
-            Leave Conversation
-          </CyberButton>
-        </div>
-      </Panel>
     </div>
   )
 }
