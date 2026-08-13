@@ -146,6 +146,7 @@ export type HubDefinition = CardListHubDefinition | GridHubDefinition
 export const HUB_IDS: HubId[] = [
   'checkpoint',
   'noodleStall',
+  'yDuocInstitute',
   'deltaSquat',
   'publicIncidentScene',
   'workerCanteen',
@@ -327,6 +328,26 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
         label: 'Work the room',
         description: 'Ease into the stall and see what the city is willing to say when corporate ears are absent.',
         storyLocationId: 'noodleStall',
+        available: true,
+      },
+    ],
+  },
+  yDuocInstitute: {
+    id: 'yDuocInstitute',
+    name: 'Y Duoc - Cholon Medical Institute',
+    blurb:
+      'A public-facing teaching hospital with enough legitimate traffic to hide a quieter current underneath: unofficial follow-up care, referral slips without signatures, and patients trying not to say where they came from.',
+    backgroundId: 'cholonClinic',
+    layout: 'cardList',
+    characters: [],
+    actions: [
+      {
+        id: 'y-duoc-scene',
+        type: 'inspect',
+        label: 'Follow the referral trail',
+        description:
+          'Work the intake floor and see what kind of treatment gets routed through Cholon once official care would leave too clear a paper trail.',
+        storyLocationId: 'yDuocInstitute',
         available: true,
       },
     ],

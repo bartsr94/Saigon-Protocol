@@ -262,6 +262,42 @@ The cast here is intentionally modest in size. Each character should matter, rec
 - **Public presentation:** composed, precise, warm but professionally careful — treats the first interview like she's defending a peer review, not giving a statement
 - **Core truth:** she still believes the adaptation research could save lives, and has never let herself connect that belief to what it actually cost HN-12
 
+#### Personality & relationship arc
+
+Young, not naive — junior enough that nobody at Aveline thinks she actually
+knows anything worth managing, which is precisely why she's the easiest
+internal witness to talk to. She's not withholding out of loyalty or fear
+the way the rest of the internal cast is; she's just never been asked
+before. That's also the emotional engine of her "soft crack": she overshares
+not because she's been broken down, but because being asked real questions
+by someone competent is validating in a way her actual job rarely is.
+
+Toward the detective specifically: a little intimidated at first — CID,
+authority, the general weight of the situation — reading as mild
+over-explaining and nervous energy rather than guardedness, warming across
+repeat visits into real ease and, if the player pursues it, something more.
+Her warmth is written as an **uncomplicated bright spot**, not another
+thing weighing on the player the way her institutional complicity is — the
+game has room for more than one register at once, and hers should stay the
+gentle one. Mechanically this is the first real content meant to be built against the
+Relationship System's per-NPC affinity score
+(`SAIGON_PROTOCOL_ARCHITECTURE.md` §14, `GAME_GUIDE.md` §10): curious/patient
+choices in her topics loop should nudge it up (small, gradual — see
+§10's "Suggested tiers"/nudge-magnitude guidance), indifference just
+shouldn't grow it rather than actively punishing her. A full romantic thread is future scope, not a
+Case 1 deliverable — Case 1's job is to plant it (the intimidated-then-easy
+dynamic, a few small vulnerable beats) without needing to resolve into
+anything more than warmth by the case's end.
+
+**Info-gating, not just topic-gating.** Her repeat-visit loop currently
+offers the same three topics regardless of case progress (`checkpoint.ink`'s
+`lakshmi_avani_topics`). That should become staged: what she's actually
+willing/able to say should unlock as the player's casefile advances (an
+evidence item found, a note unlocked, another witness's testimony landing),
+not just be sitting there from the first visit. This is also what makes her
+worth revisiting rather than a one-and-done conversation — see "Story use"
+below, which already called for this and hasn't been built yet.
+
 #### What Lakshmi knows
 
 - the physiological logic of the HN line — what "adaptation" was actually supposed to buy the subjects, in tolerance/survival terms
@@ -393,6 +429,7 @@ Optional later:
 - Does Sora Baek report primarily into Aveline, Baekho-linked security channels, or a mixed chain?
 - What is Tomas Varga's employment status after the breach: active, suspended, disappeared, or on the run?
 - Does Lakshmi Avani's dismissed anomaly flag ever surface as a written record (something Elian Morrow's paper trail would show), or does it only ever exist as something she said out loud once and was told to drop?
+- How far does Lakshmi's romantic thread go past Case 1? Planted-but-unresolved is the Case 1 target (see "Personality & relationship arc" above); whether it ever pays off — and what that even looks like in a game with no combat/relationship UI — is undesigned and shouldn't block Case 1 content from shipping.
 
 ## Recommendation
 

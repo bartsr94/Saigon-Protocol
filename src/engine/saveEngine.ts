@@ -9,16 +9,16 @@ import type { GridPosition, HubId } from '../content/locationHubs'
 import type { SerializedCasefileState } from './casefileEngine'
 import type { SerializedConversationState } from './conversationEngine'
 import type { SerializedThoughtState } from './thoughtEngine'
+import type { SerializedRelationshipState } from './relationshipEngine'
 import type { InsightId } from '../content/insights'
 import type { NpcId } from '../content/npcs'
 import { LOCATIONS, type DistrictId, type LocationId } from '../content/locations'
 
-// Bumped to 9 when the Progression System (Insight XP + Thought Cabinet) added
-// `xp`/`xpAwardedCheckIds` to `SerializedInsightState` and a new top-level
-// `thought` field.
+// Bumped to 10 when the Relationship System (SAIGON_PROTOCOL_ARCHITECTURE.md §14)
+// added a top-level `relationship` field (per-NPC affinity score).
 // There is still no migration path; older saves are treated as absent
 // rather than partially restored.
-export const SAVE_FORMAT_VERSION = 9
+export const SAVE_FORMAT_VERSION = 10
 export const AUTOSAVE_SLOT_ID = 'autosave'
 export const SAVE_KEY_PREFIX = 'saigon-protocol:save:'
 
@@ -71,6 +71,8 @@ export interface SaveBlob {
   casefile: SerializedCasefileState
   /** Progression System's unlocked/enabled thought-cabinet state. */
   thought: SerializedThoughtState
+  /** Relationship System's per-NPC affinity scores (SAIGON_PROTOCOL_ARCHITECTURE.md §14). */
+  relationship: SerializedRelationshipState
   /** Conversation View's met-NPC/per-NPC topic-state tracking (UI_PASS_SPEC.md §4.3). */
   conversation: SerializedConversationState
   /** null when saved with no active scene (e.g. standing on the Overworld). */

@@ -508,10 +508,51 @@ of one-off tools rather than a real console, since there's only ever a
 couple of these at once. Today: **Map Builder**
 (`components/screens/MapBuilderTool.tsx`), a grid-authoring UI that paints
 `layoutRows`/`pois`/`doors` and exports JSON matching `HubGridDefinition`/
-`DistrictStreetDefinition` for hand-integration into content files; and
+`DistrictStreetDefinition` for hand-integration into content files;
 **Flags** (`DebugFlagsTool.tsx`), the `casefileStore.setFlag`/`clearFlag`
-toggle above. Both are plain component state / direct store calls — no new
-persisted state, no save-format changes.
+toggle above; and **Relationship** (`DebugRelationshipTool.tsx`, §14), a
+per-NPC affinity adjuster. All three are plain component state / direct
+store calls — no new persisted state, no save-format changes of their own.
+
+## 14. Relationship System
+
+`engine/relationshipEngine.ts` defines the data shape and a pure
+`clampAffinity` — a per-`NpcId` **affinity score**, `-10` (sworn rival) to
+`+10` (love of your life), defaulting to `0` (stranger/neutral).
+`stores/relationshipStore.ts` holds it as a full `Record<NpcId, number>`
+(every NPC always has an entry — unlike Casefile's Set-based
+unlocked/not-unlocked shape, affinity isn't something an NPC "has," it's
+always at least defined) with an idempotent `adjustAffinity(npcId, delta)`
+that clamps the result. The score is never rendered anywhere in the UI —
+it's TS-owned simulation state, expressed only through what ink content
+does with it (narration, Thought Cabinet unlocks), not a visible meter.
+
+**Ink↔TS binding — one-way mutation, two-way read.** Unlike Casefile
+(mutation-only) or Insight sync (read-only from ink's perspective), this
+system combines both directions for the same value.
+`storyEngine.ts`'s `bindRelationshipFunctions` binds one `EXTERNAL`,
+`adjust_affinity(npcId, amount)` — ink declares a delta, the same
+wellbeing-EXTERNAL shape `damage_vitality` uses, validated against
+`content/npcs.ts`'s `NPC_IDS` (unknown id throws, same as an unknown
+insight name in `roll_check`). Separately, `syncRelationshipVariables`
+pushes each NPC's live score into a synced ink global —
+`npcIdToAffinityVar` auto-derives the name (`lakshmiAvani` →
+`affinity_lakshmi_avani`) rather than hand-mapping it the way
+`INSIGHT_ID_TO_INK_VAR` does, since the NPC roster is open-ended and will
+keep growing, unlike the fixed 7 Insights. `storyStore.ts`'s `loadStory`
+binds the EXTERNAL, syncs once at load, and subscribes to
+`relationshipStore` for the life of the loaded story (mirroring the
+existing Insight-sync subscription) so a delta applied by one topic is
+immediately visible to a conditional in a later topic of the same visit —
+e.g. `{ affinity_lakshmi_avani >= 3: ... }`.
+
+Relationship state is captured/restored as part of the `SaveBlob`
+(`SerializedRelationshipState` — plain `Record<NpcId, number>`, no
+serialize/hydrate transform needed beyond identity), which bumped
+`SAVE_FORMAT_VERSION` to 10. No ink content calls `adjust_affinity` yet —
+the Debug Console's Relationship tool (§13's Debug Console paragraph) is
+currently the only way to move a score, ahead of real content being
+authored against it.
 
 ---
 
@@ -808,3 +849,20 @@ persisted state, no save-format changes.
   inspect interaction its own text instead of the generic top-of-file
   scene, which `checkpoint`'s older placeholder inspect POIs (access
   scanner, inner-wing chamber) still fall back to.
+- **Relationship System added (2026):** a new per-NPC affinity score (§14),
+  `-10` to `+10`, built to back Lakshmi Avani's warmth arc
+  (`CASE_1_CAST_SPEC.md`) and, going forward, every other NPC's standing
+  with the detective. Combines the wellbeing EXTERNALs' one-way-mutation
+  pattern (`adjust_affinity(npcId, amount)`) with the Insight sync
+  mechanism's two-way read (a live `affinity_<npc>` global per NPC), the
+  first system in the codebase to need both halves for the same value.
+  Ink var names are auto-derived from the `NpcId` rather than hand-mapped
+  like `INSIGHT_ID_TO_INK_VAR` — a deliberate deviation, since the NPC
+  roster is open-ended and will keep growing, unlike the fixed 7 Insights.
+  Deliberately hidden from all UI — no meter, no dossier score — the
+  design intent is that a relationship is only ever learned narratively,
+  the same way `company-man-doubt` names a shift in how the player reads
+  Lakshmi rather than showing it as a number. `SAVE_FORMAT_VERSION` bumped
+  to 10. No ink content calls `adjust_affinity` yet; the Debug Console's
+  new Relationship tool is the only way to move a score today, ahead of
+  Lakshmi's staged topics being authored against it.

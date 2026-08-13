@@ -41,6 +41,14 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       unlockedThoughtIds: ['checkpoint-improviser'],
       enabledThoughtIds: [],
     },
+    relationship: {
+      meiHong: 0,
+      soraBaek: 0,
+      respondingOfficer: 0,
+      baChau: 0,
+      pakRahman: 0,
+      lakshmiAvani: 3,
+    },
     conversation: {
       metNpcIds: ['meiHong'],
       stateByNpc: { meiHong: '{"someConversationState":true}' },

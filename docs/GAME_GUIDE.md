@@ -568,3 +568,58 @@ design question, not something this wiring answers. `flags` also gates
 Location Hub locked doors (§6.2) — the Debug Console's Flags tool
 (`casefileStore.setFlag`/`clearFlag`) remains available for testing, but
 ink content can set them directly now too.
+
+## 10. Relationship / Affinity
+
+Every NPC has a hidden **affinity score**, `-10` (sworn rival) to `+10`
+(love of your life), defaulting to `0` (stranger/neutral) —
+`stores/relationshipStore.ts`, save-integrated (Architecture §14). It's
+never shown anywhere in the UI; players only ever learn where they stand
+through what an NPC says or does, or a Thought that names it (§4/§9-style
+unlock), never a visible number.
+
+Ink content nudges it with one `EXTERNAL`, declared and called the same
+way as the wellbeing/casefile calls above:
+
+```ink
+~ adjust_affinity("lakshmiAvani", 1)
+```
+
+`npcId` is any `content/npcs.ts` `NpcId` string — an unknown one throws,
+same as an unknown insight name in `roll_check`. To read the current score
+back for a conditional, declare the NPC's synced global —
+`affinity_<snake_case npc id>` (`lakshmiAvani` → `affinity_lakshmi_avani`,
+`meiHong` → `affinity_mei_hong`) — and it stays live for the rest of the
+session, same as `VAR ledger`/`VAR archetype`:
+
+```ink
+VAR affinity_lakshmi_avani = 0
+{ affinity_lakshmi_avani >= 3:
+    She actually smiles at you this time.
+- else:
+    Still a little guarded.
+}
+```
+
+Declare only the ones a scene actually uses (§5.3's convention).
+
+**Suggested tiers** for writing against — convention only, nothing in code
+enforces these names:
+
+| Range | Reading |
+|---|---|
+| -10 to -6 | sworn enemy, actively hostile |
+| -5 to -2 | distrustful, cold |
+| -1 to +1 | stranger / neutral (default) |
+| +2 to +4 | warm, friendly |
+| +5 to +7 | close, trusts you |
+| +8 to +10 | deeply attached / love interest |
+
+Keep nudges small so an arc reads as gradual rather than swingy: routine
+curiosity/kindness ≈ **+1**, a genuinely vulnerable or caring choice ≈
+**+2**, dismissiveness/coldness ≈ **-1**, a real betrayal-coded choice ≈
+**-3 or more**, reserved for rare, clearly-telegraphed moments.
+
+No ink content calls `adjust_affinity` yet — the Debug Console's
+Relationship tool (`DebugRelationshipTool.tsx`) is the only way to move a
+score today, for testing ahead of real content.

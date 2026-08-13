@@ -9,6 +9,7 @@ export type DistrictId = 'district1' | 'district2' | 'district4' | 'district5'
 export type LocationId =
   | 'checkpoint'
   | 'noodleStall'
+  | 'yDuocInstitute'
   | 'deltaSquat'
   | 'publicIncidentScene'
   | 'workerCanteen'
@@ -21,6 +22,7 @@ export type LocationId =
 export const LOCATION_IDS: LocationId[] = [
   'checkpoint',
   'noodleStall',
+  'yDuocInstitute',
   'deltaSquat',
   'publicIncidentScene',
   'workerCanteen',
@@ -113,8 +115,17 @@ export const LOCATIONS: Record<LocationId, LocationDefinition> = {
     name: 'Back-Alley Noodle Stall',
     blurb: 'Off the books, off the grid — real garlic, real fish sauce, nothing here came through a licensed import lane. Good place to hear what the corpo-govs don’t.',
     unlockedByDefault: false,
-    unlocksOnComplete: ['deltaSquat'],
+    unlocksOnComplete: ['yDuocInstitute', 'deltaSquat'],
     ambienceIds: ['marketChatter'],
+  },
+  yDuocInstitute: {
+    id: 'yDuocInstitute',
+    districtId: 'district5',
+    name: 'Y Duoc - Cholon Medical Institute',
+    blurb:
+      'A teaching hospital whose public face still looks legitimate enough to trust. Behind intake, the referrals get quieter: tolerance graft follow-up, adaptation drugs, and the kind of aftercare nobody wants tied back to a payroll system.',
+    unlockedByDefault: false,
+    ambienceIds: ['marketChatter', 'filterStatic'],
   },
   deltaSquat: {
     id: 'deltaSquat',
