@@ -254,6 +254,44 @@ The cast here is intentionally modest in size. Each character should matter, rec
 
 - new portrait
 
+## Lakshmi Avani
+
+- **Role:** bio-engineer, adaptive physiology / metabolic-tolerance specialist
+- **District tie:** District 4
+- **Function in story:** rank-and-file witness, first crack in "everyone here is rehearsed" — easiest of the internal cast to actually talk to
+- **Public presentation:** composed, precise, warm but professionally careful — treats the first interview like she's defending a peer review, not giving a statement
+- **Core truth:** she still believes the adaptation research could save lives, and has never let herself connect that belief to what it actually cost HN-12
+
+#### What Lakshmi knows
+
+- the physiological logic of the HN line — what "adaptation" was actually supposed to buy the subjects, in tolerance/survival terms
+- which of her own findings were cited to justify continuing the trials past where she was personally comfortable
+- lab rotation and morale detail, since the faculty lounge is where she actually spends her days
+- secondhand read on who else at Aveline was starting to get scared before the breach
+
+#### What Lakshmi is hiding
+
+- she flagged an anomalous adaptation-stress result on HN-12 before the breach and was told it was "handled"
+- she doesn't want to have known enough to have stopped it
+- she suspects a colleague understood the danger better than they've told official channels, but won't name who without more trust or leverage
+
+#### Story use
+
+- available early, in the faculty lounge, while forensics is still working the main floor — the low-stakes counterpart to Mei Hong's and Sora Baek's gatekept interviews
+- rewards a careful or sympathetic approach: she's the character most likely to say something true because nobody's told her not to, not because she's been broken down
+- can recur in the lounge as more of the case lands, testing whether she keeps insisting the work was worth it
+
+#### Clue ownership
+
+- technical grounding for HN-12's physiology — gives Tomas Varga's engineering testimony (breakout, not break-in) a second, independent angle
+- first evidence that internal safety flags were raised and dismissed before the breach
+- informal lab-morale intelligence: who's frightened, who's already looking for an exit
+
+#### Asset needs
+
+- new portrait
+- faculty lounge background support (see `CASE_1_LOCATION_MATRIX.md`'s Aveline Faculty Lounge)
+
 ## Narrative relationship triangle
 
 The emotional center of the Aveline side of the case should sit between:
@@ -278,6 +316,7 @@ Each internal Aveline character should represent a different mode of institution
 - **Elian Morrow:** administrative laundering
 - **Nhi Quyen:** conscience under pressure
 - **Tomas Varga:** technical complicity
+- **Lakshmi Avani:** compartmentalized complicity — the specialist who told herself she only worked on the tolerance side, not the outcomes
 
 This is important. The player should feel they are uncovering a structure, not just six bad personalities.
 
@@ -289,6 +328,7 @@ This is important. The player should feel they are uncovering a structure, not j
 - Lucien Vale
 - Sora Baek
 - Tomas Varga
+- Lakshmi Avani
 - Nhi Quyen's traces
 
 ### District 1
@@ -307,12 +347,13 @@ This is important. The player should feel they are uncovering a structure, not j
 This cast should support a gradual reveal sequence:
 
 1. **Mei Hong** introduces the controlled lie.
-2. **Sora Baek** enforces the sealed perimeter and makes the player feel managed.
-3. **Former witnesses and city contacts** expose missing context and missing people.
-4. **Tomas Varga** destabilizes the burglary fiction with engineering truth.
-5. **Elian Morrow** reveals how the paperwork protected the project.
-6. **Lucien Vale** reveals why the project existed and why the deaths were tolerated.
-7. **Nhi Quyen** or her trace material restores HN-12's humanity.
+2. **Lakshmi Avani**, easiest of the internal cast to actually talk to, offers the first soft crack — not everyone here is rehearsed, and something was flagged and dismissed before the breach.
+3. **Sora Baek** enforces the sealed perimeter and makes the player feel managed.
+4. **Former witnesses and city contacts** expose missing context and missing people.
+5. **Tomas Varga** destabilizes the burglary fiction with engineering truth.
+6. **Elian Morrow** reveals how the paperwork protected the project.
+7. **Lucien Vale** reveals why the project existed and why the deaths were tolerated.
+8. **Nhi Quyen** or her trace material restores HN-12's humanity.
 
 This order can flex, but the overall flow should move from suspicion to system to personhood.
 
@@ -329,6 +370,7 @@ New portraits required:
 - Elian Morrow
 - Nhi Quyen
 - Tomas Varga
+- Lakshmi Avani
 
 Optional later:
 
@@ -350,6 +392,7 @@ Optional later:
 - How public-facing is Lucien Vale inside Aveline's District 4 footprint?
 - Does Sora Baek report primarily into Aveline, Baekho-linked security channels, or a mixed chain?
 - What is Tomas Varga's employment status after the breach: active, suspended, disappeared, or on the run?
+- Does Lakshmi Avani's dismissed anomaly flag ever surface as a written record (something Elian Morrow's paper trail would show), or does it only ever exist as something she said out loud once and was told to drop?
 
 ## Recommendation
 

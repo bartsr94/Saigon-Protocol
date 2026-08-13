@@ -54,7 +54,7 @@ export function LocationHubScreen() {
   // behaves exactly like `enterStory` above, just also threading `npcId`
   // through so DialogueScreen can mark a first-time NPC met when the scene ends.
   function enterHubInteraction(interaction: HubInteraction) {
-    const { storyLocationId, npcId, topicsKnot } = interaction
+    const { storyLocationId, npcId, topicsKnot, sceneKnot } = interaction
     selectLocation(storyLocationId)
 
     if (npcId && topicsKnot && useConversationStore.getState().hasMet(npcId)) {
@@ -68,6 +68,7 @@ export function LocationHubScreen() {
       loadStory(LOCATION_STORY_JSON[storyLocationId], undefined, storyLocationId, {
         mode: 'scene',
         npcId: topicsKnot ? npcId : undefined,
+        entryKnot: sceneKnot,
       })
     }
 

@@ -252,7 +252,15 @@ interaction data keyed by `position`; the `'o'`/`'d'` markers in
 `layoutRows` must line up 1:1 with `pois[].position`/`doors[].position`. A
 `HubPoi` holds an ordered list of `HubInteraction`s (`type: 'talk' |
 'inspect'`) — one tile can be several things to do, not just one NPC or one
-action. Movement/collision/fog math is pure and store-agnostic
+action. A talk interaction's optional `topicsKnot` names the ink path to an
+already-met NPC's Conversation View topic loop (`UI_PASS_SPEC.md` §4 — not
+yet folded into this doc); a separate optional `sceneKnot` names where this
+interaction's own scene should start when it's *not* going to Conversation
+View — a not-yet-met NPC's first-encounter content, or any inspect
+interaction's own text — instead of always replaying `storyLocationId`'s
+compiled file from the top. `LocationHubScreen.enterHubInteraction` resolves
+which of the two knots (if either) to pass as `storyStore.loadStory`'s
+`entryKnot`. Movement/collision/fog math is pure and store-agnostic
 (`engine/gridMovement.ts`'s `step`/`isWalkable`/`reachableTiles`/
 `tileKindAt`/`tilesWithinRadius`/`poiAt`/`doorAt`, typed against the
 minimal structural shape each needs — `{ layoutRows }`, `{ pois }`,
@@ -741,12 +749,14 @@ persisted state, no save-format changes.
 - Combat/tactical exploration — explicitly out of scope, distant future.
 - Casefile *content* (§13) — the store/save layer and the ink↔TS grant
   hooks (`gain_evidence`/`unlock_note`/`set_case_flag`) are both built now,
-  but `content/casefile.ts`'s five evidence items and two notes are still
-  placeholder, not Case 1-canonical. `checkpoint`'s locked inner-wing door
-  (§7) still has no real in-fiction unlock trigger — that needs an actual
-  leverage/investigation-progress mechanic designed first, not just the
-  `set_case_flag` call, which already exists — so only the Debug Console's
-  Flags tool can open it today.
+  but `content/casefile.ts`'s five evidence items are still placeholder, not
+  Case 1-canonical; two of its three notes are too. The third
+  (`note-03`, unlocked from Lakshmi Avani's Faculty Lounge topics loop) is
+  real Case 1 cast content, per `CASE_1_CAST_SPEC.md`. `checkpoint`'s locked
+  inner-wing door (§7) still has no real in-fiction unlock trigger — that
+  needs an actual leverage/investigation-progress mechanic designed first,
+  not just the `set_case_flag` call, which already exists — so only the
+  Debug Console's Flags tool can open it today.
 - The Inner Containment Wing itself (§7's locked-door example) is a
   placeholder room with one generic inspect POI — `CASE_1_LOCATION_MATRIX.md`'s
   actual forensic-reveal scene for that location isn't authored yet.
@@ -777,3 +787,24 @@ persisted state, no save-format changes.
   Case 1 content. `content/casefile.ts`'s evidence/notes and `checkpoint`'s
   locked inner-wing door remain placeholder/undesigned — see "Open / not
   yet built".
+- **Aveline Faculty Lounge + Lakshmi Avani added to `checkpoint` (2026):**
+  first real (non-placeholder) sub-location and NPC content built against
+  `CASE_1_LOCATION_MATRIX.md`/`CASE_1_CAST_SPEC.md`. The lounge is a small
+  room hanging off the east side of `checkpoint`'s existing grid ring
+  (`layoutRows` widened from 9 to 13 columns, one wall tile opened to
+  connect it) — freely walkable, no `HubDoor`/flag gate, unlike the Inner
+  Containment Wing. This is also where `HubInteraction` gained `sceneKnot`
+  (§7): previously an interaction with no `topicsKnot`, or one not yet met,
+  always replayed `storyLocationId`'s compiled file from the top on Talk;
+  now it can name a dedicated ink knot instead —
+  `LocationHubScreen.enterHubInteraction` passes it as `loadStory`'s
+  `entryKnot` whenever the interaction isn't routing to Conversation View.
+  Lakshmi's Hub POI uses both: `sceneKnot: 'lakshmi_avani_intro'` for her
+  first meeting (ends at `-> END` so `DialogueScreen` actually marks her
+  met), `topicsKnot: 'lakshmi_avani_topics'` for repeat visits. Her topics
+  loop unlocks `note-03` (real content, not placeholder) on a passed White
+  check. The lounge's second POI (an inspect-only shift-roster wall) uses
+  `sceneKnot` alone, with no `topicsKnot` — the same field now gives any
+  inspect interaction its own text instead of the generic top-of-file
+  scene, which `checkpoint`'s older placeholder inspect POIs (access
+  scanner, inner-wing chamber) still fall back to.

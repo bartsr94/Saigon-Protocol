@@ -37,7 +37,7 @@ export function CharacterCreationScreen() {
   }
 
   return (
-    <div className="mx-auto flex min-h-svh max-w-5xl flex-col gap-6 p-8">
+    <div className="mx-auto flex min-h-svh max-w-[90rem] flex-col gap-4 p-7">
       <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-chrome-primary">
         <GlitchText text="Character Creation" />
       </h1>

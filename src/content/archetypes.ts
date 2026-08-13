@@ -35,7 +35,7 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     id: 'enforcer',
     name: 'The Enforcer',
     backstory:
-      'Ex-PMC contractor turned SEZ police. Bulldozes situations a smarter cop would talk through; bad at negotiation and fine print.',
+      "Rotated out of a PMC contract into SEZ blue once the checks stopped clearing on the corporate side — the uniform changed, the instincts didn't. Bulldozes a scene a smarter cop would still be talking through, and it works often enough to keep doing it that way; paperwork, negotiation, anything that isn't a straight line gets handed off whenever there's someone else to hand it to.",
     strength: 'muscleMemory',
     weakness: 'ledger',
     baseline: baselineFor('muscleMemory', 'ledger'),
@@ -45,7 +45,7 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     id: 'companyMan',
     name: 'The Company Man',
     backstory:
-      'Transferred from corporate internal security. Reads leverage instinctively, numb to the human cost of what the SEZ runs on.',
+      "Transferred in once SEZAC decided its own investigators needed a badge to go with the clearance, not just corporate internal security credentials. Reads leverage and org charts on instinct — who reports to whom, who's expendable, what a favor is actually worth — and went numb to the human cost of what keeps the SEZ running well before this posting, back when numbing to it was the job description.",
     strength: 'ledger',
     weakness: 'root',
     baseline: baselineFor('ledger', 'root'),
@@ -55,7 +55,7 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     id: 'oldSaigon',
     name: 'Old Saigon',
     backstory:
-      'Local-born, maybe from a family that refused to leave. Deep cultural fluency and empathy; easy to outmaneuver in a boardroom.',
+      "Local-born, from one of the families that stayed when half the district emptied out for the platforms and the corporate towers going up over the old streets. Reads a room the way only someone raised in it can — the unspoken debts, the silences that mean something, who actually runs a block versus who's listed as running it — and gets outmaneuvered by anyone who can turn that same room into a spreadsheet.",
     strength: 'root',
     weakness: 'ledger',
     baseline: baselineFor('root', 'ledger'),
@@ -65,7 +65,7 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
     id: 'wire',
     name: 'The Wire',
     backstory:
-      "Heavily modified by choice or necessity. Visceral insight into mods and cybernetics; can't blend in — the body gives them away.",
+      "Modified past the point of easy passing, by choice or by necessity or by whatever mix of the two it takes to stop being able to tell which was which. Reads mod work and cybernetics with a visceral fluency no manual teaches — feels the make and the mileage on a graft the way someone else reads a face — but the same body doing the reading gives the game away in one glance, every time.",
     strength: 'graft',
     weakness: 'mask',
     baseline: baselineFor('graft', 'mask'),
@@ -84,7 +84,8 @@ export const ARCHETYPES: Record<ArchetypeId, ArchetypeDefinition> = {
   boringCop: {
     id: 'boringCop',
     name: 'Boring Cop',
-    backstory: 'Flat, unremarkable spread. For players who want to build fully custom from a blank slate.',
+    backstory:
+      "No standout skill, no standout flaw, and no interesting story attached to how they ended up wearing the badge — transferred in, tested average straight down the line, and nobody's ever had reason to ask for more detail than that. For players who'd rather build the whole spread themselves than inherit somebody else's idea of a strength.",
     strength: null,
     weakness: null,
     baseline: baselineFor(null, null),

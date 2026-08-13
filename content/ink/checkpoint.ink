@@ -87,3 +87,48 @@ Mei Hong gives you her attention again — patient, watchful, still deciding how
 * { is_red_check_consumed("checkpoint-jump-queue") } [Ask about the guard at the gate. # insight: static]
     "Him? He's not paid enough to care who's late." She glances toward the checkpoint. "Neither am I, most days."
     -> mei_hong_topics
+* [Ask where the rest of the staff are. # insight: ledger]
+    "The lounge, mostly." She nods toward it without quite looking. "Everyone off the floor is parked in there until your people finish. Some of them will talk to you. Most of them don't know enough to be careful about it yet." # speaker: npc:meiHong
+    -> mei_hong_topics
+
+// Aveline Faculty Lounge sub-location (CASE_1_LOCATION_MATRIX.md's "Aveline
+// Faculty Lounge") — reached via its own Hub POIs' `sceneKnot`/`topicsKnot`
+// rather than this file's default top-level flow (LocationHubScreen.tsx's
+// enterHubInteraction).
+
+// Lakshmi Avani's first encounter. Falls through to -> END (not into her
+// topics loop) so DialogueScreen's finalizeEndedScene() actually marks her
+// met — see storyStore.ts's `activeNpcId` / LocationHubScreen's `sceneKnot`.
+=== lakshmi_avani_intro ===
+The lounge smells like cold coffee and an overworked vending machine. A woman in a lab coat looks up from a shift roster taped crooked to the wall — visibly relieved to have someone to talk to who isn't wearing a CID uniform.
+{ ledger >= 3:
+    The Ledger clocks the coat, the badge, the roster she's still holding — junior enough to still be doing her own paperwork, senior enough that Aveline trusts her near a subject file. # speaker: insight:ledger
+- else:
+    Just a lab coat and a roster, as far as you can tell.
+}
+
+"Lakshmi Avani. Bio-engineering." She offers a hand, then seems to remember she's not sure that's allowed right now, and just nods instead. "Everyone's parked in here until your people finish with the floor. Ask me anything — I don't think I know enough to get in trouble for it." # speaker: npc:lakshmiAvani
+-> END
+
+// Repeat-visit topic loop (same pattern as mei_hong_topics above).
+=== lakshmi_avani_topics ===
+Lakshmi looks up from whatever she's pretending to read. "Back already?" # speaker: npc:lakshmiAvani
+* [Ask what she actually works on. # insight: graft]
+    "Adaptive physiology — how far a body can be pushed to tolerate the outside before it stops being survivable. That's the polite version, anyway." She doesn't offer the impolite one. # speaker: npc:lakshmiAvani
+    -> lakshmi_avani_topics
+* [Ask if anything about the case has surprised her. # check: white]
+    ~ temp surprisedResult = roll_check("ledger", 6, "checkpoint-lakshmi-surprised", "white")
+    { surprisedResult:
+        Her hands go still on the roster. "I flagged an adaptation-stress reading a few weeks back. Filed it, followed up, was told it was handled." A beat. "I didn't ask what 'handled' meant. I should have." # speaker: npc:lakshmiAvani
+        ~ unlock_note("note-03")
+    - else:
+        "Surprised isn't the word." She goes back to the roster before she says more than that. # speaker: npc:lakshmiAvani
+    }
+    -> lakshmi_avani_topics
+* [Ask how morale is holding up. # insight: hustle]
+    "About how you'd expect. Half this room is deciding whether to update their resume tonight or wait for the weekend." A tired almost-smile. "I haven't decided either." # speaker: npc:lakshmiAvani
+    -> lakshmi_avani_topics
+
+=== checkpoint_lounge_roster_wall ===
+A shift roster taped to the wall, corners curling in the lounge's stale air — names, rotations, a scrawled note in the margin about a supply order nobody's approved yet. Half the names already have a line through them, today's date scratched in beside the strikethrough.
+-> END
