@@ -102,6 +102,26 @@ describe('storyStore', () => {
     expect(state.ended).toBe(false)
   })
 
+  it('records activeTopicsKnot for a conversation-mode session, and clears it in scene mode or on reset', () => {
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK), undefined, 'checkpoint', {
+      mode: 'conversation',
+      topicsKnot: 'done',
+      entryKnot: 'done',
+    })
+    expect(useStoryStore.getState().activeTopicsKnot).toBe('done')
+
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK), undefined, 'checkpoint', { mode: 'scene' })
+    expect(useStoryStore.getState().activeTopicsKnot).toBeNull()
+
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK), undefined, 'checkpoint', {
+      mode: 'conversation',
+      topicsKnot: 'done',
+      entryKnot: 'done',
+    })
+    useStoryStore.getState().reset()
+    expect(useStoryStore.getState().activeTopicsKnot).toBeNull()
+  })
+
   it('a successful check advances past the branch with no composure damage, and consumes the Red check in insightStore', () => {
     useInsightStore.getState().selectArchetype('hustler') // hustle is the strength insight, baseline 4
     // non-double dice roll (3, 4) so the doubles rule can't override a comfortable success

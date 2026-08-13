@@ -63,6 +63,7 @@ export function LocationHubScreen() {
         mode: 'conversation',
         npcId,
         entryKnot: savedState ? undefined : topicsKnot,
+        topicsKnot,
       })
     } else {
       loadStory(LOCATION_STORY_JSON[storyLocationId], undefined, storyLocationId, {

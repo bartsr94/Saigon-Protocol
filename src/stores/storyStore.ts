@@ -52,6 +52,15 @@ interface StoryState {
    * (UI_PASS_SPEC.md §4.3). Null when neither applies.
    */
   activeNpcId: NpcId | null
+  /**
+   * The `topicsKnot` this 'conversation'-mode session is parked on — set
+   * from `loadStory`'s `topicsKnot` option regardless of whether it was
+   * also used as `entryKnot` this call (a resumed conversation is still
+   * parked on the same knot). Null in 'scene' mode. Lets the live topic
+   * editor (`docs/LIVE_TOPIC_EDITOR_SPEC.md`) know which knot in
+   * `activeStoryId`'s `.ink` file it's editing.
+   */
+  activeTopicsKnot: string | null
   currentLines: StoryLine[]
   currentChoices: Choice[]
   canContinue: boolean
@@ -71,7 +80,7 @@ interface StoryState {
     inkJson: string | Record<string, unknown>,
     savedStateJson?: string,
     storyId?: string | null,
-    options?: { entryKnot?: string; mode?: 'scene' | 'conversation'; npcId?: NpcId },
+    options?: { entryKnot?: string; mode?: 'scene' | 'conversation'; npcId?: NpcId; topicsKnot?: string },
   ) => void
   choose: (index: number) => void
   reset: () => void
@@ -151,6 +160,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   activeStoryId: null,
   storyMode: 'scene',
   activeNpcId: null,
+  activeTopicsKnot: null,
   currentLines: [],
   currentChoices: [],
   canContinue: false,
@@ -192,6 +202,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       activeStoryId: storyId ?? null,
       storyMode: options?.mode ?? 'scene',
       activeNpcId: options?.npcId ?? null,
+      activeTopicsKnot: options?.mode === 'conversation' ? (options?.topicsKnot ?? null) : null,
       lastCheckResult: null,
     })
     if (savedStateJson) {
@@ -218,6 +229,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       activeStoryId: null,
       storyMode: 'scene',
       activeNpcId: null,
+      activeTopicsKnot: null,
       currentLines: [],
       currentChoices: [],
       canContinue: false,
