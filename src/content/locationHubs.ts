@@ -74,6 +74,16 @@ export interface HubInteraction {
    * scene, same as before this feature existed.
    */
   topicsKnot?: string
+  /**
+   * The ink path this interaction's scene should start at, when it's *not*
+   * routing to Conversation View — covers an inspect interaction's own
+   * content, and (talk-only) a not-yet-met NPC's first-encounter scene
+   * before `topicsKnot` takes over on repeat visits. Absent means this
+   * interaction just runs `storyLocationId`'s compiled file from the top,
+   * same as before this field existed (LocationHubScreen.tsx's
+   * `enterHubInteraction`).
+   */
+  sceneKnot?: string
 }
 
 /** A walkable tile the player can stand on to see its interaction list. */
@@ -154,7 +164,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
     backgroundId: 'avelineLabExterior',
     layout: 'grid',
     grid: {
-      width: 9,
+      width: 13,
       height: 9,
       entryTile: { x: 4, y: 1 },
       // A loop around a blank core rather than a filled rectangle: the four
@@ -166,16 +176,22 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
       // into. Only a placeholder room (one generic inspect POI) until that
       // scene gets real content — proving the door mechanism works, not
       // authoring the reveal itself.
+      //
+      // Columns 9-12 are the Aveline Faculty Lounge (CASE_1_LOCATION_MATRIX.md),
+      // a small room hanging off the ring's east side — freely walkable, no
+      // door/flag gate, unlike the inner wing. Row 2's east wall is opened
+      // (was '#', now '.') to connect it; the lounge's own walls (rows 0/4,
+      // cols 9-12) cap it off from the rest of the void.
       layoutRows: [
-        ' ####### ',
-        '#.o...o.#',
-        '#o     o#',
-        '#.     .#',
-        '#.......#',
-        ' ###d### ',
-        '  #...#  ',
-        '  #.o.#  ',
-        '  #####  ',
+        ' ####### ####',
+        '#.o...o.#.o..',
+        '#o     o.....',
+        '#.     .#..o.',
+        '#.......#####',
+        ' ###d### '.padEnd(13, ' '),
+        '  #...#  '.padEnd(13, ' '),
+        '  #.o.#  '.padEnd(13, ' '),
+        '  #####  '.padEnd(13, ' '),
       ],
       doors: [
         {
@@ -245,6 +261,38 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
               storyLocationId: 'checkpoint',
               available: false,
               lockedReason: 'Security keeps her off the floor until the case starts pressing in the wrong direction.',
+            },
+          ],
+        },
+        {
+          id: 'checkpoint-lakshmi-avani',
+          position: { x: 10, y: 1 },
+          interactions: [
+            {
+              id: 'checkpoint-talk-lakshmi-avani',
+              type: 'talk',
+              npcId: 'lakshmiAvani',
+              label: 'Lakshmi Avani',
+              description: "A bio-engineer waiting out CID's forensics pass with the rest of the on-duty staff. Easier to talk to than anyone on the main floor.",
+              storyLocationId: 'checkpoint',
+              available: true,
+              sceneKnot: 'lakshmi_avani_intro',
+              topicsKnot: 'lakshmi_avani_topics',
+            },
+          ],
+        },
+        {
+          id: 'checkpoint-lounge-roster-wall',
+          position: { x: 11, y: 3 },
+          interactions: [
+            {
+              id: 'checkpoint-inspect-lounge-roster-wall',
+              type: 'inspect',
+              label: 'Shift roster',
+              description: "A curling shift roster taped to the wall — worth a look at who was actually on the clock.",
+              storyLocationId: 'checkpoint',
+              available: true,
+              sceneKnot: 'checkpoint_lounge_roster_wall',
             },
           ],
         },

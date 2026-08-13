@@ -89,6 +89,35 @@ The investigation should move across all four, but not necessarily in one rigid 
 - generic lab interior or front-lab background
 - controlled medical-industrial ambience
 
+### 2a. Aveline Faculty Lounge
+
+- **Type:** optional early sub-location, accessible from the start
+- **District:** 4
+- **Story role:** low-stakes staff-interview room off the front lab floor — where the detective can work the case sideways while CID's forensics pass on the main floor is still ongoing
+- **Primary characters:** Lakshmi Avani, other unnamed on-duty Aveline staff (rotation-dependent, background texture)
+- **Core function:** gives the player somewhere to go besides the two gatekept mandatory interviews (Mei Hong, Sora Baek) — rank-and-file staff who are less rehearsed, less powerful, and more willing to talk
+
+#### Blurb
+
+> The lounge is the one room in the lab that still smells like a workplace instead of a crime scene — cold coffee, a cracked vending machine, a wall of curling shift rosters. Half of Aveline's on-duty staff are parked in here waiting for CID to finish with the floor, trading nervous small talk and rehearsed non-answers in equal measure.
+
+#### What happens here
+
+- Mei Hong can point the player here directly in the first interview — most on-duty staff have been told to wait out the forensics pass in the lounge rather than loiter near the scene, which doubles as the in-fiction reason the detective has easy access to several witnesses at once
+- informal, off-the-record-feeling conversations, in contrast to the controlled first interview
+- first opportunity to interview Lakshmi Avani and (later, as more staff rotate through) other rank-and-file Aveline employees without going through Sora Baek's access gate
+
+#### Clue value
+
+- technical/scientific texture on the HN line from someone who isn't a primary suspect
+- softer, less-rehearsed contradictions than Mei Hong's or Sora Baek's — the first sense that not everyone at Aveline is fully bought into the cover story
+- lab-morale read: who's frightened, who's not, who's already talking about quitting
+
+#### Asset needs
+
+- lounge interior background (breakroom furniture, vending machine, shift-roster wall)
+- low chatter / vending-machine hum ambience
+
 ### 3. Flood-Wall Service Road
 
 - **Type:** early investigation location, mandatory or strongly recommended
@@ -460,6 +489,7 @@ Some locations should recur with changed meaning:
 
 - Aveline lab exterior
 - Aveline front lab floor
+- Aveline faculty lounge
 - CID office
 - Cholon informant space
 - Gray clinic

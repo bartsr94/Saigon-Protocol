@@ -33,14 +33,16 @@ export function ChargenArchetypeStep({ onNext }: ChargenArchetypeStepProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-6">
+    <div className="flex flex-col gap-3">
+      <div className="grid gap-6" style={{ gridTemplateColumns: 'calc(60% + 10px) calc(40% - 10px)' }}>
         <div className="flex flex-col gap-3">
           <h2 className="font-display text-xs font-bold uppercase tracking-widest text-white/60">Archetype</h2>
           {/* Two columns instead of one stacked column (UI_PASS_SPEC.md §2) —
               six full-height cards in a single column risked exceeding a
-              laptop viewport with no scroll fallback on this page. */}
-          <div className="grid grid-cols-2 gap-3">
+              laptop viewport with no scroll fallback on this page. Cards stay
+              compact (small portrait icon, tight text) for the same reason —
+              full (not clamped) backstory text needs the room, not bigger chrome. */}
+          <div className="grid grid-cols-2 gap-2">
             {ARCHETYPE_IDS.map((id) => {
               const def = ARCHETYPES[id]
               const selected = archetype === id
@@ -49,13 +51,13 @@ export function ChargenArchetypeStep({ onNext }: ChargenArchetypeStepProps) {
                   <Panel
                     size="sm"
                     accent={selected ? 'var(--color-chrome-secondary)' : 'var(--color-chrome-primary)'}
-                    className="flex h-full flex-col gap-2 p-3 transition-colors hover:!border-chrome-secondary"
+                    className="flex h-full flex-col gap-1.5 p-[0.78rem] transition-colors hover:!border-chrome-secondary"
                   >
                     <div className="flex items-start gap-3">
                       <PortraitFrame alt={def.name} fallbackText={initials(def.name)} size="sm" />
                       <div className="min-w-0 font-display text-sm font-bold uppercase tracking-wide text-white">{def.name}</div>
                     </div>
-                    <div className="line-clamp-2 font-body text-xs text-white/60">{def.backstory}</div>
+                    <div className="font-body text-[16px] leading-snug text-white/85">{def.backstory}</div>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 font-display text-[0.6rem] font-bold uppercase tracking-widest">
                       {def.strength && <span style={{ color: INSIGHTS[def.strength].color }}>+ {INSIGHTS[def.strength].name}</span>}
                       {def.weakness && <span className="text-vitality">− {INSIGHTS[def.weakness].name}</span>}

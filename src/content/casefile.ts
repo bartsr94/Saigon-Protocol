@@ -63,8 +63,8 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
   },
 }
 
-export type CaseNoteId = 'note-01' | 'note-02'
-export const CASE_NOTE_IDS: CaseNoteId[] = ['note-01', 'note-02']
+export type CaseNoteId = 'note-01' | 'note-02' | 'note-03'
+export const CASE_NOTE_IDS: CaseNoteId[] = ['note-01', 'note-02', 'note-03']
 
 export interface CaseNoteDefinition {
   id: CaseNoteId
@@ -88,5 +88,12 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
     body: "Whatever's upstream of the Drowned Delta isn't natural runoff. Worth a second look.",
     districtId: 'district2',
     tags: ['environment', 'placeholder'],
+  },
+  'note-03': {
+    id: 'note-03',
+    heading: 'A Flagged Result',
+    body: "Lakshmi Avani flagged an adaptation-stress anomaly on HN-12 weeks before the breach. Filed it, followed up, was told it was handled. Never asked what 'handled' meant.",
+    districtId: 'district4',
+    tags: ['investigation', 'staff-testimony'],
   },
 }
