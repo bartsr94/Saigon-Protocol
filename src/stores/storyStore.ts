@@ -6,7 +6,7 @@
 import { create } from 'zustand'
 import { Story } from 'inkjs'
 import type { Choice } from 'inkjs/engine/Choice'
-import { bindCheckFunctions, bindWellbeingFunctions, syncInsightVariables } from '../engine/storyEngine'
+import { bindCasefileFunctions, bindCheckFunctions, bindWellbeingFunctions, syncInsightVariables } from '../engine/storyEngine'
 import {
   parseLineAmbience,
   parseLineBackground,
@@ -22,6 +22,7 @@ import type { VoiceClipId } from '../content/voiceClips'
 import type { CheckResult } from '../engine/checkResolution'
 import type { NpcId } from '../content/npcs'
 import { useInsightStore } from './insightStore'
+import { useCasefileStore } from './casefileStore'
 
 export interface StoryLine {
   text: string
@@ -173,6 +174,11 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       healVitality: (amount) => useInsightStore.getState().healVitality(amount),
       damageComposure: (amount) => useInsightStore.getState().damageComposure(amount),
       healComposure: (amount) => useInsightStore.getState().healComposure(amount),
+    })
+    bindCasefileFunctions(story, {
+      gainEvidence: (id) => useCasefileStore.getState().addEvidence(id),
+      unlockNote: (id) => useCasefileStore.getState().unlockNote(id),
+      setCaseFlag: (flag) => useCasefileStore.getState().setFlag(flag),
     })
 
     const insightState = useInsightStore.getState()

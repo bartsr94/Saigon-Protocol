@@ -421,10 +421,13 @@ the flag is set (walking back out the way you came always works). A POI
 glimpsed through a locked door via fog-of-war is listed in "Known Places"
 but disabled, not clickable-through. Unlike a wall, a locked door still
 gets revealed by fog-of-war (rendered with a red tint + tooltip) since it's
-meant to be seen, not hidden. Nothing in ink can set a flag yet (§9), so
-until that's wired up, the Debug Console's Flags tool is the only way to
-open one for testing. `checkpoint`'s Inner Containment Wing (behind
-`checkpoint-inner-wing-unlocked`) is the only door authored so far.
+meant to be seen, not hidden. Ink can set a flag itself now via
+`set_case_flag` (§9), but `checkpoint`'s Inner Containment Wing (behind
+`checkpoint-inner-wing-unlocked`) — still the only door authored so far —
+doesn't call it yet: its `lockedReason` ("enough leverage to force the
+issue") describes a real Case 1 investigation-progress gate that hasn't
+been designed, so the Debug Console's Flags tool remains the only way to
+open it for now.
 
 Whichever layout, launching an interaction (`talk`/`inspect`) is the same
 `selectLocation` → `loadStory` → `enterLocation` (audio) → `autosave`
@@ -548,11 +551,20 @@ Ownership/unlock state is tracked separately, in `stores/casefileStore.ts`
 (`evidenceIds`/`noteIds`/`flags`, save-integrated — Architecture §13);
 `CasefileOverlay` renders only what's owned, never the full list.
 
-Both content records are still static, flavor-light placeholders — nothing
-in the ink↔TS boundary grants evidence, notes, or flags yet, and how much
-of Case Notes should auto-populate from play vs. be hand-authored per scene
-is still an open design question, not something this doc's fixture
-answers. `flags` also gates Location Hub locked doors now (§6.2) — until
-ink can set one itself, the Debug Console's Flags tool
-(`casefileStore.setFlag`/`clearFlag`) is the only way to flip one for
-testing.
+Both content records are still static, flavor-light placeholders — real
+Case 1-canonical evidence/notes haven't been authored yet — but the
+ink↔TS boundary can now grant them. Three EXTERNALs, bound in
+`storyEngine.ts`'s `bindCasefileFunctions` the same way `bindCheckFunctions`
+binds check calls: `gain_evidence(id)` and `unlock_note(id)`, each validated
+against `content/casefile.ts`'s `EVIDENCE_IDS`/`CASE_NOTE_IDS` (an unknown
+id throws, same as an unknown insight name in `roll_check`), and
+`set_case_flag(flag)`, which takes any non-empty string — flags aren't a
+closed content set, so there's nothing to validate against. Declare only
+the ones a scene actually calls, same convention as check/wellbeing
+EXTERNALs (§5.3). `checkpoint.ink` calls all three today (`gain_evidence`/
+`unlock_note` on its Red-check success path); how much of Case Notes should
+auto-populate from play vs. be hand-authored per scene is still an open
+design question, not something this wiring answers. `flags` also gates
+Location Hub locked doors (§6.2) — the Debug Console's Flags tool
+(`casefileStore.setFlag`/`clearFlag`) remains available for testing, but
+ink content can set them directly now too.
