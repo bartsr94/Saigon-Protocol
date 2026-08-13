@@ -8,6 +8,7 @@ import { INSIGHT_IDS, type InsightId } from '../content/insights'
 import type { ArchetypeId } from '../content/archetypes'
 import { CASE_NOTE_IDS, EVIDENCE_IDS, type CaseNoteId, type EvidenceId } from '../content/casefile'
 import { THOUGHT_IDS, type ThoughtId } from '../content/thoughts'
+import { NPC_IDS, type NpcId } from '../content/npcs'
 import type { CheckResult } from './checkResolution'
 import type { CheckRisk } from '../stores/insightStore'
 
@@ -59,6 +60,13 @@ function assertThoughtId(value: unknown): ThoughtId {
     return value as ThoughtId
   }
   throw new Error(`thought function called with unknown thought id "${String(value)}"`)
+}
+
+function assertNpcId(value: unknown): NpcId {
+  if (typeof value === 'string' && (NPC_IDS as string[]).includes(value)) {
+    return value as NpcId
+  }
+  throw new Error(`adjust_affinity called with unknown npc id "${String(value)}"`)
 }
 
 function assertFlagName(value: unknown): string {
@@ -128,6 +136,45 @@ export interface ThoughtHandlers {
 export function bindThoughtFunctions(story: Story, handlers: ThoughtHandlers): void {
   story.BindExternalFunction('unlock_thought', (id: string) => handlers.unlockThought(assertThoughtId(id)))
   story.BindExternalFunction('has_thought', (id: string) => handlers.isThoughtEnabled(assertThoughtId(id)))
+}
+
+/** Relationship System (SAIGON_PROTOCOL_ARCHITECTURE.md §14) — per-NPC affinity EXTERNAL. */
+export interface RelationshipHandlers {
+  adjustAffinity: (npcId: NpcId, amount: number) => void
+}
+
+/** Binds `adjust_affinity(npcId, amount)` — ink declares a delta, TS owns the actual score and clamping (wellbeing-EXTERNAL style, e.g. `damage_vitality`). */
+export function bindRelationshipFunctions(story: Story, handlers: RelationshipHandlers): void {
+  story.BindExternalFunction('adjust_affinity', (npcId: string, amount: number) =>
+    handlers.adjustAffinity(assertNpcId(npcId), amount),
+  )
+}
+
+/**
+ * npcId ('lakshmiAvani') -> its synced ink global name ('affinity_lakshmi_avani').
+ * Auto-derived rather than an explicit map like INSIGHT_ID_TO_INK_VAR below —
+ * the NPC roster is open-ended and will keep growing, unlike the fixed 7
+ * Insights, so hand-maintaining a parallel map here is pure toil for a fully
+ * mechanical transform (SAIGON_PROTOCOL_ARCHITECTURE.md §14).
+ */
+export function npcIdToAffinityVar(id: NpcId): string {
+  return `affinity_${id.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)}`
+}
+
+/**
+ * Pushes each NPC's live affinity score into its synced ink global, same
+ * skip-if-undeclared behavior as syncInsightVariables below. This is the
+ * "ink can read the current score" half of the system; bindRelationshipFunctions
+ * above is the "ink can nudge it" half.
+ */
+export function syncRelationshipVariables(story: Story, affinity: Record<NpcId, number>): void {
+  const vs = story.variablesState
+  for (const id of NPC_IDS) {
+    const varName = npcIdToAffinityVar(id)
+    if (vs.GlobalVariableExistsWithName(varName)) {
+      vs.$(varName, affinity[id])
+    }
+  }
 }
 
 /** ink identifiers are snake_case; InsightIds are camelCase. Explicit map, not a generic transform. */

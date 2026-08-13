@@ -35,6 +35,7 @@ import { useInsightStore } from './insightStore'
 import { useNavigationStore } from './navigationStore'
 import { useStoryStore } from './storyStore'
 import { useThoughtStore } from './thoughtStore'
+import { useRelationshipStore } from './relationshipStore'
 
 interface SaveState {
   slots: SaveSlotMeta[]
@@ -82,6 +83,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
   const navigation = useNavigationStore.getState()
   const casefile = useCasefileStore.getState()
   const thought = useThoughtStore.getState()
+  const relationship = useRelationshipStore.getState()
   const conversation = useConversationStore.getState()
   const gameplay = useGameplayStore.getState()
   const storyState = useStoryStore.getState()
@@ -123,6 +125,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
     },
     casefile: serializeCasefileState(casefile),
     thought: serializeThoughtState(thought),
+    relationship: { ...relationship.affinity },
     conversation: serializeConversationState(conversation),
     inkStateJson: story ? story.state.ToJson() : null,
     activeStoryId: story ? storyState.activeStoryId : null,
@@ -178,6 +181,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
     useGameplayStore.getState().hydrate(blob.gameplay)
     useCasefileStore.getState().hydrate(blob.casefile)
     useThoughtStore.getState().hydrate(blob.thought)
+    useRelationshipStore.getState().hydrate(blob.relationship)
     useConversationStore.getState().hydrate(blob.conversation)
     const storyJson = blob.activeStoryId ? resolveStoryJson(blob.activeStoryId) : null
     if (blob.inkStateJson && storyJson) {

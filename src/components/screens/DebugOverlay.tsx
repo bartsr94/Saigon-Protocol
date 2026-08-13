@@ -8,9 +8,10 @@ import { useState } from 'react'
 import { useUiStore } from '../../stores/uiStore'
 import { CyberButton, Panel } from '../ui'
 import { DebugFlagsTool } from './DebugFlagsTool'
+import { DebugRelationshipTool } from './DebugRelationshipTool'
 import { MapBuilderTool } from './MapBuilderTool'
 
-type DebugView = 'menu' | 'mapBuilder' | 'flags'
+type DebugView = 'menu' | 'mapBuilder' | 'flags' | 'relationship'
 
 export function DebugOverlay() {
   const closeOverlay = useUiStore((s) => s.closeOverlay)
@@ -40,12 +41,16 @@ export function DebugOverlay() {
           <CyberButton className="w-fit" onClick={() => setView('flags')}>
             Flags
           </CyberButton>
+          <CyberButton className="w-fit" onClick={() => setView('relationship')}>
+            Relationship
+          </CyberButton>
           <p className="font-body text-sm text-white/35">More commands land here as they're needed.</p>
         </div>
       )}
 
       {view === 'mapBuilder' && <MapBuilderTool />}
       {view === 'flags' && <DebugFlagsTool />}
+      {view === 'relationship' && <DebugRelationshipTool />}
     </Panel>
   )
 }

@@ -1,9 +1,19 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Compiler } from 'inkjs/full'
 import type { Story } from 'inkjs'
-import { bindCasefileFunctions, bindCheckFunctions, bindThoughtFunctions, bindWellbeingFunctions, syncInsightVariables } from './storyEngine'
+import {
+  bindCasefileFunctions,
+  bindCheckFunctions,
+  bindRelationshipFunctions,
+  bindThoughtFunctions,
+  bindWellbeingFunctions,
+  npcIdToAffinityVar,
+  syncInsightVariables,
+  syncRelationshipVariables,
+} from './storyEngine'
 import type { CheckResult } from './checkResolution'
 import { INSIGHT_IDS, type InsightId } from '../content/insights'
+import { NPC_IDS, type NpcId } from '../content/npcs'
 
 function compile(inkSource: string): Story {
   return new Compiler(inkSource).Compile()
@@ -213,6 +223,66 @@ EXTERNAL unlock_thought(id)
     bindThoughtFunctions(story, { unlockThought: vi.fn(), isThoughtEnabled: vi.fn() })
 
     expect(() => runToEnd(story)).toThrow(/unknown thought id/)
+  })
+})
+
+describe('bindRelationshipFunctions', () => {
+  it('wires adjust_affinity to the given handler', () => {
+    const story = compile(`
+EXTERNAL adjust_affinity(npcId, amount)
+~ adjust_affinity("lakshmiAvani", 2)
+Done.
+-> END
+`)
+    const adjustAffinity = vi.fn()
+    bindRelationshipFunctions(story, { adjustAffinity })
+
+    runToEnd(story)
+
+    expect(adjustAffinity).toHaveBeenCalledWith('lakshmiAvani', 2)
+  })
+
+  it('throws when ink passes an unknown npc id', () => {
+    const story = compile(`
+EXTERNAL adjust_affinity(npcId, amount)
+~ adjust_affinity("not-a-real-npc", 1)
+-> END
+`)
+    bindRelationshipFunctions(story, { adjustAffinity: vi.fn() })
+
+    expect(() => runToEnd(story)).toThrow(/unknown npc id/)
+  })
+})
+
+describe('npcIdToAffinityVar', () => {
+  it('derives a snake_case affinity_ var name from a camelCase npc id', () => {
+    expect(npcIdToAffinityVar('lakshmiAvani')).toBe('affinity_lakshmi_avani')
+    expect(npcIdToAffinityVar('meiHong')).toBe('affinity_mei_hong')
+    expect(npcIdToAffinityVar('soraBaek')).toBe('affinity_sora_baek')
+  })
+})
+
+describe('syncRelationshipVariables', () => {
+  const affinity = Object.fromEntries(NPC_IDS.map((id) => [id, 0])) as Record<NpcId, number>
+
+  it('does not throw against a story with no declared variables', () => {
+    const story = compile(`Hello.\n-> END`)
+    expect(() => syncRelationshipVariables(story, affinity)).not.toThrow()
+  })
+
+  it('pushes a declared affinity variable so ink conditionals can read it', () => {
+    const story = compile(`
+VAR affinity_lakshmi_avani = 0
+{affinity_lakshmi_avani >= 3: Warm.|Cold.}
+-> END
+`)
+    syncRelationshipVariables(story, { ...affinity, lakshmiAvani: 5 })
+    expect(runToEnd(story)).toContain('Warm.')
+  })
+
+  it('skips undeclared affinity variables for stories that never reference that NPC', () => {
+    const story = compile(`Hello.\n-> END`)
+    expect(() => syncRelationshipVariables(story, { ...affinity, lakshmiAvani: 8 })).not.toThrow()
   })
 })
 

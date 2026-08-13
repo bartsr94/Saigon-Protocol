@@ -6,7 +6,15 @@
 import { create } from 'zustand'
 import { Story } from 'inkjs'
 import type { Choice } from 'inkjs/engine/Choice'
-import { bindCasefileFunctions, bindCheckFunctions, bindThoughtFunctions, bindWellbeingFunctions, syncInsightVariables } from '../engine/storyEngine'
+import {
+  bindCasefileFunctions,
+  bindCheckFunctions,
+  bindRelationshipFunctions,
+  bindThoughtFunctions,
+  bindWellbeingFunctions,
+  syncInsightVariables,
+  syncRelationshipVariables,
+} from '../engine/storyEngine'
 import {
   parseLineAmbience,
   parseLineBackground,
@@ -24,6 +32,7 @@ import type { NpcId } from '../content/npcs'
 import { useInsightStore } from './insightStore'
 import { useCasefileStore } from './casefileStore'
 import { useThoughtStore } from './thoughtStore'
+import { useRelationshipStore } from './relationshipStore'
 
 export interface StoryLine {
   text: string
@@ -89,6 +98,7 @@ interface StoryState {
 
 /** Not part of the reactive store state — there's only ever one active story, mirroring insightStore's singleton shape. */
 let unsubscribeInsight: (() => void) | null = null
+let unsubscribeRelationship: (() => void) | null = null
 
 function advance(story: Story, set: (partial: Partial<StoryState>) => void): void {
   // Cleared before the pass so a turn with no check doesn't keep showing a
@@ -170,6 +180,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
 
   loadStory: (inkJson, savedStateJson, storyId, options) => {
     unsubscribeInsight?.()
+    unsubscribeRelationship?.()
 
     // Overload resolution doesn't distribute over a union argument, so narrow explicitly.
     const story = typeof inkJson === 'string' ? new Story(inkJson) : new Story(inkJson)
@@ -195,11 +206,19 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       unlockThought: (id) => useThoughtStore.getState().unlockThought(id),
       isThoughtEnabled: (id) => useThoughtStore.getState().isEnabled(id),
     })
+    bindRelationshipFunctions(story, {
+      adjustAffinity: (npcId, amount) => useRelationshipStore.getState().adjustAffinity(npcId, amount),
+    })
 
     const insightState = useInsightStore.getState()
     syncInsightVariables(story, insightState.levels, insightState.archetype)
     unsubscribeInsight = useInsightStore.subscribe((state) => {
       syncInsightVariables(story, state.levels, state.archetype)
+    })
+
+    syncRelationshipVariables(story, useRelationshipStore.getState().affinity)
+    unsubscribeRelationship = useRelationshipStore.subscribe((state) => {
+      syncRelationshipVariables(story, state.affinity)
     })
 
     set({
@@ -229,6 +248,8 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   reset: () => {
     unsubscribeInsight?.()
     unsubscribeInsight = null
+    unsubscribeRelationship?.()
+    unsubscribeRelationship = null
     set({
       story: null,
       activeStoryId: null,

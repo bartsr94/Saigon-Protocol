@@ -8,11 +8,13 @@ EXTERNAL gain_evidence(id)
 EXTERNAL unlock_note(id)
 EXTERNAL unlock_thought(id)
 EXTERNAL has_thought(id)
+EXTERNAL adjust_affinity(npcId, amount)
 
 VAR hustle = 0
 VAR static = 0
 VAR graft = 0
 VAR ledger = 0
+VAR affinity_lakshmi_avani = 0
 
 The checkpoint queue barely moves. A bored guard waves cars through two at a time, more interested in his handheld than your badge.
 { hustle >= 3:
@@ -114,13 +116,24 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
 }
 
 "Lakshmi Avani. Bio-engineering." She offers a hand, then seems to remember she's not sure that's allowed right now, and just nods instead. "Everyone's parked in here until your people finish with the floor. Ask me anything — I don't think I know enough to get in trouble for it." # speaker: npc:lakshmiAvani
+~ adjust_affinity("lakshmiAvani", 1)
 -> END
 
-// Repeat-visit topic loop (same pattern as mei_hong_topics above).
+// Repeat-visit topic loop (same pattern as mei_hong_topics above). Staged
+// by casefile/relationship progress rather than flat from the first visit
+// (CASE_1_CAST_SPEC.md's Lakshmi entry) — the base three topics are always
+// available and nudge affinity_lakshmi_avani a little on pick
+// (Architecture §14, GAME_GUIDE.md §10); the last three only appear once
+// she's said enough, or warmed up enough, to say them.
 === lakshmi_avani_topics ===
-Lakshmi looks up from whatever she's pretending to read. "Back already?" # speaker: npc:lakshmiAvani
+{ affinity_lakshmi_avani >= 3:
+    Lakshmi looks up before you've even finished crossing the room — something almost like ease in it now. "Back already?" # speaker: npc:lakshmiAvani
+- else:
+    Lakshmi looks up from whatever she's pretending to read. "Back already?" # speaker: npc:lakshmiAvani
+}
 * [Ask what she actually works on. # insight: graft]
     "Adaptive physiology — how far a body can be pushed to tolerate the outside before it stops being survivable. That's the polite version, anyway." She doesn't offer the impolite one. # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
 * [Ask if anything about the case has surprised her. # check: white]
     ~ temp surprisedResult = roll_check("ledger", 6, "checkpoint-lakshmi-surprised", "white")
@@ -128,12 +141,32 @@ Lakshmi looks up from whatever she's pretending to read. "Back already?" # speak
         Her hands go still on the roster. "I flagged an adaptation-stress reading a few weeks back. Filed it, followed up, was told it was handled." A beat. "I didn't ask what 'handled' meant. I should have." # speaker: npc:lakshmiAvani
         ~ unlock_note("note-03")
         ~ unlock_thought("company-man-doubt")
+        ~ adjust_affinity("lakshmiAvani", 2)
     - else:
         "Surprised isn't the word." She goes back to the roster before she says more than that. # speaker: npc:lakshmiAvani
     }
     -> lakshmi_avani_topics
 * [Ask how morale is holding up. # insight: hustle]
     "About how you'd expect. Half this room is deciding whether to update their resume tonight or wait for the weekend." A tired almost-smile. "I haven't decided either." # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 1)
+    -> lakshmi_avani_topics
+* { has_thought("company-man-doubt") and not is_red_check_consumed("checkpoint-lakshmi-colleague") } [Push her on who else saw this coming. # insight: root # check: red]
+    ~ temp colleagueResult = roll_check("root", 7, "checkpoint-lakshmi-colleague", "red")
+    { colleagueResult:
+        She doesn't answer right away — long enough that the silence is the answer. "There's someone who flagged worse than I did, earlier than I did, and said so out loud instead of just filing it." Her jaw tightens. "I'm not giving you a name. Not like this. You'd need more than asking nicely." # speaker: npc:lakshmiAvani
+        ~ adjust_affinity("lakshmiAvani", 1)
+    - else:
+        Something in her closes off. "I've already said more than I should have." She doesn't pick the thread back up, and doesn't quite look at you for the rest of the visit. # speaker: npc:lakshmiAvani
+        ~ adjust_affinity("lakshmiAvani", -1)
+    }
+    -> lakshmi_avani_topics
+* { affinity_lakshmi_avani >= 3 } [Ask what she does when she's not down here. # insight: root]
+    "Same as everyone in a hab block, probably. I've got a window box that's somehow still growing something green, and a downstairs neighbor who thinks I don't know she borrows my hotplate." A real laugh, the first unguarded one you've heard from her. "It's not much. It's mine, though." # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 1)
+    -> lakshmi_avani_topics
+* { affinity_lakshmi_avani >= 6 } [Tell her you're glad the lounge has her in it. # insight: root]
+    That actually gets a blush out of her — fast, and she covers it by pretending to fix the roster's crooked tape. "That's — " A beat. "You're allowed to say things like that to a witness?" She's smiling when she says it, though. # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
 
 === checkpoint_lounge_roster_wall ===

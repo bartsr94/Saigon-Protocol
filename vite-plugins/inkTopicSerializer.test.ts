@@ -47,11 +47,12 @@ describe('parseTopicsKnot', () => {
 
   it('parses the second real topics knot (lakshmi_avani_topics) the same way', () => {
     const parsed = parseTopicsKnot(checkpointInk, 'lakshmi_avani_topics')
-    expect(parsed.topics.length).toBe(3)
-    const first = parsed.topics[0] as SimpleTopic
-    expect(first.kind).toBe('simple')
-    expect(first.choiceText).toBe('Ask what she actually works on.')
-    expect(first.insightTag).toBe('graft')
+    expect(parsed.topics.length).toBe(6)
+    expect(parsed.topics[0]!.kind).toBe('complex')
+    const simple = parsed.topics.find((t): t is SimpleTopic => t.kind === 'simple')
+    expect(simple).toBeUndefined()
+    const checkTopic = parsed.topics.find((t) => t.kind === 'complex' && t.raw.includes('checkpoint-lakshmi-surprised'))
+    expect(checkTopic).toBeDefined()
   })
 
   it('throws on an unknown knot name', () => {
@@ -92,38 +93,40 @@ describe('serializeTopicsKnot / replaceTopicsInKnot round-trip', () => {
   })
 
   it('edits a simple topic in place', () => {
-    const parsed = parseTopicsKnot(checkpointInk, 'lakshmi_avani_topics')
+    const parsed = parseTopicsKnot(checkpointInk, 'mei_hong_topics')
+    const firstSimpleIndex = parsed.topics.findIndex((t) => t.kind === 'simple' && t.choiceText === 'Ask about her role here.')
     const edited = parsed.topics.map((t, i) =>
-      i === 0 && t.kind === 'simple' ? { ...t, choiceText: 'Ask about her lab equipment.', responseText: 'New response text.' } : t,
+      i === firstSimpleIndex && t.kind === 'simple'
+        ? { ...t, choiceText: 'Ask about her lab equipment.', responseText: 'New response text.' }
+        : t,
     )
-    const updated = replaceTopicsInKnot(checkpointInk, 'lakshmi_avani_topics', edited)
-    expect(updated).toContain('* [Ask about her lab equipment. # insight: graft]')
+    const updated = replaceTopicsInKnot(checkpointInk, 'mei_hong_topics', edited)
+    expect(updated).toContain('* [Ask about her lab equipment. # insight: ledger]')
     expect(updated).toContain('    New response text.')
-    expect(updated).not.toContain('Adaptive physiology')
+    expect(updated).not.toContain('Operations. I keep the lights on and the paperwork honest')
   })
 
   it('adds a new simple topic at the end of the list', () => {
-    const parsed = parseTopicsKnot(checkpointInk, 'lakshmi_avani_topics')
+    const parsed = parseTopicsKnot(checkpointInk, 'mei_hong_topics')
     const withNewTopic: SimpleTopic = {
       kind: 'simple',
       choiceText: 'Ask if she has family back home.',
       insightTag: 'root',
       responseText: "\"Not the kind you'd call.\" She goes quiet for a second.",
-      speakerNpcId: 'lakshmiAvani',
+      speakerNpcId: 'meiHong',
     }
-    const updated = replaceTopicsInKnot(checkpointInk, 'lakshmi_avani_topics', [...parsed.topics, withNewTopic])
+    const updated = replaceTopicsInKnot(checkpointInk, 'mei_hong_topics', [...parsed.topics, withNewTopic])
     expect(updated).toContain('* [Ask if she has family back home. # insight: root]')
-    expect(updated).toContain("    \"Not the kind you'd call.\" She goes quiet for a second. # speaker: npc:lakshmiAvani")
-    expect(updated).toContain('    -> lakshmi_avani_topics')
-    // The rest of the file (e.g. the roster-wall knot after it) is preserved.
-    expect(updated).toContain('=== checkpoint_lounge_roster_wall ===')
+    expect(updated).toContain("    \"Not the kind you'd call.\" She goes quiet for a second. # speaker: npc:meiHong")
+    expect(updated).toContain('    -> mei_hong_topics')
+    expect(updated).toContain('=== lakshmi_avani_intro ===')
   })
 
   it('removes a topic', () => {
-    const parsed = parseTopicsKnot(checkpointInk, 'lakshmi_avani_topics')
+    const parsed = parseTopicsKnot(checkpointInk, 'mei_hong_topics')
     const withoutFirst = parsed.topics.slice(1)
-    const updated = replaceTopicsInKnot(checkpointInk, 'lakshmi_avani_topics', withoutFirst)
-    expect(updated).not.toContain('Adaptive physiology')
-    expect(updated).toContain('Ask if anything about the case has surprised her')
+    const updated = replaceTopicsInKnot(checkpointInk, 'mei_hong_topics', withoutFirst)
+    expect(updated).not.toContain('Ask about her role here.')
+    expect(updated).toContain('Ask if she\'s worried about the investigation')
   })
 })

@@ -5,6 +5,7 @@
 
 import checkpointJson from '../../content/ink/checkpoint.json'
 import noodleStallJson from '../../content/ink/noodleStall.json'
+import yDuocInstituteJson from '../../content/ink/yDuocInstitute.json'
 import deltaSquatJson from '../../content/ink/deltaSquat.json'
 import publicIncidentSceneJson from '../../content/ink/publicIncidentScene.json'
 import workerCanteenJson from '../../content/ink/workerCanteen.json'
@@ -18,6 +19,7 @@ import type { LocationId } from './locations'
 export const LOCATION_STORY_JSON: Record<LocationId, Record<string, unknown>> = {
   checkpoint: checkpointJson,
   noodleStall: noodleStallJson,
+  yDuocInstitute: yDuocInstituteJson,
   deltaSquat: deltaSquatJson,
   publicIncidentScene: publicIncidentSceneJson,
   workerCanteen: workerCanteenJson,

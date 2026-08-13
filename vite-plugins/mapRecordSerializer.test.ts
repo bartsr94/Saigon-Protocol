@@ -137,16 +137,21 @@ describe('replaceRecordById against real content files', () => {
     expect(result).not.toContain('A loop around a blank core')
     expect(result).toContain("id: 'checkpoint-mei-hong'")
     expect(result.slice(0, source.indexOf('checkpoint: {'))).toBe(source.slice(0, source.indexOf('checkpoint: {')))
-    expect(result).toContain("\r\n  noodleStall: {\r\n    id: 'noodleStall',")
+    expect(result.replace(/\r\n/g, '\n')).toContain("\n  noodleStall: {\n    id: 'noodleStall',")
   })
 
-  it('matches the source file\'s CRLF line endings rather than mixing them in', () => {
+  it('matches the source file\'s line endings rather than mixing them in', () => {
     const filePath = path.resolve(here, '../src/content/locationHubs.ts')
     const source = readFileSync(filePath, 'utf-8')
     const result = replaceRecordById(source, 'checkpoint', LOCATION_HUBS.checkpoint)
     const checkpointSpan = result.slice(result.indexOf('checkpoint: {'), result.indexOf('noodleStall: {'))
-    expect(/(?<!\r)\n/.test(checkpointSpan)).toBe(false)
-    expect(checkpointSpan.split('\r\n').length).toBeGreaterThan(5)
+    const newline = source.includes('\r\n') ? '\r\n' : '\n'
+    if (newline === '\r\n') {
+      expect(/(?<!\r)\n/.test(checkpointSpan)).toBe(false)
+    } else {
+      expect(checkpointSpan.includes('\r\n')).toBe(false)
+    }
+    expect(checkpointSpan.split(newline).length).toBeGreaterThan(5)
   })
 
   it('replaces the district1 street, preserving the rest of districtStreets.ts and dropping its internal comment', () => {

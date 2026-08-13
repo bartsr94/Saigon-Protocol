@@ -6,8 +6,8 @@ import type { DistrictId, LocationId } from './locations'
 
 export type EvidenceTier = 'flavor' | 'clue' | 'key'
 
-export type EvidenceId = 'drone-log' | 'torn-receipt' | 'water-sample' | 'burner-phone' | 'union-pin'
-export const EVIDENCE_IDS: EvidenceId[] = ['drone-log', 'torn-receipt', 'water-sample', 'burner-phone', 'union-pin']
+export type EvidenceId = 'drone-log' | 'torn-receipt' | 'aftercare-ledger-slip' | 'water-sample' | 'burner-phone' | 'union-pin'
+export const EVIDENCE_IDS: EvidenceId[] = ['drone-log', 'torn-receipt', 'aftercare-ledger-slip', 'water-sample', 'burner-phone', 'union-pin']
 
 export interface EvidenceDefinition {
   id: EvidenceId
@@ -38,6 +38,16 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
     sourceLocationId: 'noodleStall',
     tags: ['paper', 'placeholder'],
   },
+  'aftercare-ledger-slip': {
+    id: 'aftercare-ledger-slip',
+    name: 'Aftercare Ledger Slip',
+    tier: 'clue',
+    description:
+      'A carbon-copy intake slip from Y Duoc, logged under a false patient code but still carrying dosage shorthand for tolerance suppressants and adaptation-stress follow-up.',
+    districtId: 'district5',
+    sourceLocationId: 'yDuocInstitute',
+    tags: ['medical', 'paper', 'case1'],
+  },
   'water-sample': {
     id: 'water-sample',
     name: 'Water Sample',
@@ -63,8 +73,8 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
   },
 }
 
-export type CaseNoteId = 'note-01' | 'note-02' | 'note-03'
-export const CASE_NOTE_IDS: CaseNoteId[] = ['note-01', 'note-02', 'note-03']
+export type CaseNoteId = 'note-01' | 'note-02' | 'note-03' | 'note-04'
+export const CASE_NOTE_IDS: CaseNoteId[] = ['note-01', 'note-02', 'note-03', 'note-04']
 
 export interface CaseNoteDefinition {
   id: CaseNoteId
@@ -95,5 +105,13 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
     body: "Lakshmi Avani flagged an adaptation-stress anomaly on HN-12 weeks before the breach. Filed it, followed up, was told it was handled. Never asked what 'handled' meant.",
     districtId: 'district4',
     tags: ['investigation', 'staff-testimony'],
+  },
+  'note-04': {
+    id: 'note-04',
+    heading: 'Off-Book Aftercare',
+    body:
+      "Y Duoc's public intake is real enough. So is the quieter stream behind it: unofficial follow-up care for bodies that look less like ordinary patients and more like something Aveline or its contractors wanted stabilized without leaving the cleanest possible trail.",
+    districtId: 'district5',
+    tags: ['investigation', 'medical', 'case1'],
   },
 }
