@@ -2,12 +2,13 @@
 // Insight levels, wellbeing tracks, chosen archetype, and White/Red check bookkeeping.
 
 import { create } from 'zustand'
-import { INSIGHT_IDS, INSIGHT_MAX, type InsightId } from '../content/insights'
+import { INSIGHT_IDS, INSIGHT_MAX, INSIGHT_XP_PER_CHECK, INSIGHT_XP_TO_LEVEL, type InsightId } from '../content/insights'
 import { ARCHETYPES, type ArchetypeId } from '../content/archetypes'
 import type { PortraitId } from '../content/portraits'
 import { computeMaxComposure, computeMaxVitality } from '../content/wellbeing'
 import { resolveCheck, type CheckResult } from '../engine/checkResolution'
 import type { SerializedInsightState } from '../engine/saveEngine'
+import { useThoughtStore } from './thoughtStore'
 
 export type CheckRisk = 'white' | 'red'
 export type FailStateCause = 'vitality' | 'composure' | null
@@ -20,6 +21,30 @@ interface WellbeingTrack {
 interface RecomputedWellbeing {
   vitality: WellbeingTrack
   composure: WellbeingTrack
+}
+
+interface LeveledUpInsight {
+  levels: Record<InsightId, number>
+  xp: Record<InsightId, number>
+}
+
+/** Applies earned XP to one Insight, leveling it up (capped at INSIGHT_MAX) whenever it crosses INSIGHT_XP_TO_LEVEL. */
+function gainInsightXp(
+  levels: Record<InsightId, number>,
+  xp: Record<InsightId, number>,
+  insightId: InsightId,
+  amount: number,
+): LeveledUpInsight {
+  let nextLevel = levels[insightId]
+  let nextXp = xp[insightId] + amount
+  while (nextXp >= INSIGHT_XP_TO_LEVEL && nextLevel < INSIGHT_MAX) {
+    nextXp -= INSIGHT_XP_TO_LEVEL
+    nextLevel += 1
+  }
+  return {
+    levels: { ...levels, [insightId]: nextLevel },
+    xp: { ...xp, [insightId]: nextLevel >= INSIGHT_MAX ? 0 : nextXp },
+  }
 }
 
 function clampToNewMax(
@@ -46,6 +71,10 @@ interface InsightState {
   vitality: WellbeingTrack
   composure: WellbeingTrack
   consumedRedChecks: Set<string>
+  /** Progress toward each Insight's next level (rollCheck), earned once per unique checkId. */
+  xp: Record<InsightId, number>
+  /** Every checkId that has ever paid out XP — separate from consumedRedChecks, which only gates re-attempting a Red check. */
+  xpAwardedCheckIds: Set<string>
   /** First fail-state reached wins; the run is over once this is set (GDD §3). */
   failState: FailStateCause
 
@@ -73,6 +102,10 @@ const UNINITIALIZED_LEVELS: Record<InsightId, number> = Object.fromEntries(
   INSIGHT_IDS.map((id) => [id, 0]),
 ) as Record<InsightId, number>
 
+function zeroedXp(): Record<InsightId, number> {
+  return Object.fromEntries(INSIGHT_IDS.map((id) => [id, 0])) as Record<InsightId, number>
+}
+
 const INITIAL_INSIGHT_STATE = {
   archetype: null,
   portraitId: null as PortraitId | null,
@@ -82,6 +115,8 @@ const INITIAL_INSIGHT_STATE = {
   vitality: { current: 0, max: 0 },
   composure: { current: 0, max: 0 },
   consumedRedChecks: new Set<string>(),
+  xp: zeroedXp(),
+  xpAwardedCheckIds: new Set<string>(),
   failState: null as FailStateCause,
 }
 
@@ -100,6 +135,8 @@ export const useInsightStore = create<InsightState>((set, get) => ({
       vitality: { current: maxVitality, max: maxVitality },
       composure: { current: maxComposure, max: maxComposure },
       consumedRedChecks: new Set(),
+      xp: zeroedXp(),
+      xpAwardedCheckIds: new Set(),
       failState: null,
     })
   },
@@ -139,14 +176,28 @@ export const useInsightStore = create<InsightState>((set, get) => ({
   isRedCheckConsumed: (checkId) => get().consumedRedChecks.has(checkId),
 
   rollCheck: (insightId, targetNumber, checkId, risk) => {
-    const { levels, consumedRedChecks } = get()
+    const { levels, xp, consumedRedChecks, xpAwardedCheckIds } = get()
     if (risk === 'red' && consumedRedChecks.has(checkId)) {
       return null
     }
-    const result = resolveCheck(levels[insightId], targetNumber)
+    const bonus = useThoughtStore.getState().insightBonusFor(insightId)
+    const result = resolveCheck(levels[insightId] + bonus, targetNumber)
+
+    const updates: { consumedRedChecks?: Set<string>; xpAwardedCheckIds?: Set<string>; levels?: Record<InsightId, number>; xp?: Record<InsightId, number>; vitality?: WellbeingTrack; composure?: WellbeingTrack } = {}
     if (risk === 'red') {
-      set({ consumedRedChecks: new Set(consumedRedChecks).add(checkId) })
+      updates.consumedRedChecks = new Set(consumedRedChecks).add(checkId)
     }
+    if (!xpAwardedCheckIds.has(checkId)) {
+      updates.xpAwardedCheckIds = new Set(xpAwardedCheckIds).add(checkId)
+      const leveledUp = gainInsightXp(levels, xp, insightId, INSIGHT_XP_PER_CHECK)
+      updates.levels = leveledUp.levels
+      updates.xp = leveledUp.xp
+      const { vitality, composure } = get()
+      const next = clampToNewMax(leveledUp.levels, vitality.current, composure.current)
+      updates.vitality = next.vitality
+      updates.composure = next.composure
+    }
+    if (Object.keys(updates).length > 0) set(updates)
     return result
   },
 
@@ -182,6 +233,8 @@ export const useInsightStore = create<InsightState>((set, get) => ({
       vitality: state.vitality,
       composure: state.composure,
       consumedRedChecks: new Set(state.consumedRedChecks),
+      xp: state.xp,
+      xpAwardedCheckIds: new Set(state.xpAwardedCheckIds),
       failState: state.failState,
     })
   },
@@ -190,6 +243,8 @@ export const useInsightStore = create<InsightState>((set, get) => ({
     set({
       ...INITIAL_INSIGHT_STATE,
       consumedRedChecks: new Set(),
+      xp: zeroedXp(),
+      xpAwardedCheckIds: new Set(),
     })
   },
 }))

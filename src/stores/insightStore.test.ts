@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { useInsightStore } from './insightStore'
-import { INSIGHT_MAX } from '../content/insights'
+import { useThoughtStore } from './thoughtStore'
+import { INSIGHT_MAX, INSIGHT_XP_TO_LEVEL } from '../content/insights'
 
 describe('insightStore', () => {
   beforeEach(() => {
     useInsightStore.setState(useInsightStore.getInitialState(), true)
+    useThoughtStore.setState(useThoughtStore.getInitialState(), true)
   })
 
   it('selectArchetype applies the baseline distribution and fills wellbeing to max', () => {
@@ -96,7 +98,7 @@ describe('insightStore', () => {
     expect(useInsightStore.getState().vitality.current).toBe(vitality.max)
   })
 
-  it('hydrate bulk-restores state from a save blob, including rebuilding consumedRedChecks as a Set', () => {
+  it('hydrate bulk-restores state from a save blob, including rebuilding consumedRedChecks/xpAwardedCheckIds as Sets', () => {
     useInsightStore.getState().hydrate({
       archetype: 'wire',
       portraitId: 'p5',
@@ -106,6 +108,8 @@ describe('insightStore', () => {
       vitality: { current: 5, max: 12 },
       composure: { current: 3, max: 10 },
       consumedRedChecks: ['checkA', 'checkB'],
+      xp: { ledger: 1, graft: 0, muscleMemory: 2, root: 0, static: 0, hustle: 0, mask: 0 },
+      xpAwardedCheckIds: ['checkA', 'checkC'],
       failState: 'composure',
     })
 
@@ -120,6 +124,50 @@ describe('insightStore', () => {
     expect(state.isRedCheckConsumed('checkA')).toBe(true)
     expect(state.isRedCheckConsumed('checkB')).toBe(true)
     expect(state.isRedCheckConsumed('checkC')).toBe(false)
+    expect(state.xp.muscleMemory).toBe(2)
+    expect(state.xpAwardedCheckIds.has('checkA')).toBe(true)
+    expect(state.xpAwardedCheckIds.has('checkC')).toBe(true)
+    expect(state.xpAwardedCheckIds.has('checkB')).toBe(false)
     expect(state.failState).toBe('composure')
+  })
+
+  it('rollCheck awards Insight XP once per unique checkId regardless of retries or pass/fail', () => {
+    useInsightStore.getState().selectArchetype('enforcer')
+    useInsightStore.getState().rollCheck('ledger', 6, 'topic-loop-question', 'white')
+    useInsightStore.getState().rollCheck('ledger', 6, 'topic-loop-question', 'white')
+    useInsightStore.getState().rollCheck('ledger', 6, 'topic-loop-question', 'white')
+    expect(useInsightStore.getState().xp.ledger).toBe(1)
+
+    useInsightStore.getState().rollCheck('ledger', 6, 'a-different-question', 'white')
+    expect(useInsightStore.getState().xp.ledger).toBe(2)
+  })
+
+  it('rollCheck levels an Insight up once its XP crosses INSIGHT_XP_TO_LEVEL, capped at INSIGHT_MAX', () => {
+    useInsightStore.getState().selectArchetype('enforcer')
+    const startingLevel = useInsightStore.getState().levels.ledger
+
+    for (let i = 0; i < INSIGHT_XP_TO_LEVEL; i++) {
+      useInsightStore.getState().rollCheck('ledger', 6, `xp-check-${i}`, 'white')
+    }
+
+    const state = useInsightStore.getState()
+    expect(state.levels.ledger).toBe(startingLevel + 1)
+    expect(state.xp.ledger).toBe(0)
+
+    for (let i = 0; i < INSIGHT_XP_TO_LEVEL * INSIGHT_MAX; i++) {
+      useInsightStore.getState().rollCheck('ledger', 6, `xp-overflow-check-${i}`, 'white')
+    }
+    expect(useInsightStore.getState().levels.ledger).toBeLessThanOrEqual(INSIGHT_MAX)
+  })
+
+  it("rollCheck's modifier includes any enabled thought's Insight bonus", () => {
+    useInsightStore.getState().selectArchetype('enforcer')
+    const baseLevel = useInsightStore.getState().levels.hustle
+
+    useThoughtStore.getState().unlockThought('checkpoint-improviser')
+    useThoughtStore.getState().enableThought('checkpoint-improviser')
+
+    const result = useInsightStore.getState().rollCheck('hustle', 6, 'thought-bonus-check', 'white')
+    expect(result?.modifier).toBe(baseLevel + 1)
   })
 })

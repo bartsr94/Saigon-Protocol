@@ -89,6 +89,7 @@ export function ConversationScreen() {
         onChar={() => openOverlay('character')}
         onMap={handleLeaveConversation}
         onCase={() => openOverlay('casefile')}
+        onThoughts={() => openOverlay('thoughtCabinet')}
         onMenu={() => openOverlay('settings')}
         mapTitle="Leave the conversation"
       />

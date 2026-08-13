@@ -8,17 +8,17 @@ import type { PortraitId } from '../content/portraits'
 import type { GridPosition, HubId } from '../content/locationHubs'
 import type { SerializedCasefileState } from './casefileEngine'
 import type { SerializedConversationState } from './conversationEngine'
+import type { SerializedThoughtState } from './thoughtEngine'
 import type { InsightId } from '../content/insights'
 import type { NpcId } from '../content/npcs'
 import { LOCATIONS, type DistrictId, type LocationId } from '../content/locations'
 
-// Bumped to 8 when Conversation View (UI_PASS_SPEC.md §4) added met-NPC/
-// per-NPC topic-state tracking (`conversation`) and a `storyMode` +
-// `activeNpcId` pair distinguishing "mid-scene" saves from
-// "mid-conversation" saves.
+// Bumped to 9 when the Progression System (Insight XP + Thought Cabinet) added
+// `xp`/`xpAwardedCheckIds` to `SerializedInsightState` and a new top-level
+// `thought` field.
 // There is still no migration path; older saves are treated as absent
 // rather than partially restored.
-export const SAVE_FORMAT_VERSION = 8
+export const SAVE_FORMAT_VERSION = 9
 export const AUTOSAVE_SLOT_ID = 'autosave'
 export const SAVE_KEY_PREFIX = 'saigon-protocol:save:'
 
@@ -33,6 +33,8 @@ export interface SerializedInsightState {
   vitality: { current: number; max: number }
   composure: { current: number; max: number }
   consumedRedChecks: string[]
+  xp: Record<InsightId, number>
+  xpAwardedCheckIds: string[]
   failState: 'vitality' | 'composure' | null
 }
 
@@ -67,6 +69,8 @@ export interface SaveBlob {
   navigation: SerializedNavigationState
   gameplay: SerializedGameplayState
   casefile: SerializedCasefileState
+  /** Progression System's unlocked/enabled thought-cabinet state. */
+  thought: SerializedThoughtState
   /** Conversation View's met-NPC/per-NPC topic-state tracking (UI_PASS_SPEC.md §4.3). */
   conversation: SerializedConversationState
   /** null when saved with no active scene (e.g. standing on the Overworld). */

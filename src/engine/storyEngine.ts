@@ -7,6 +7,7 @@ import type { Story } from 'inkjs'
 import { INSIGHT_IDS, type InsightId } from '../content/insights'
 import type { ArchetypeId } from '../content/archetypes'
 import { CASE_NOTE_IDS, EVIDENCE_IDS, type CaseNoteId, type EvidenceId } from '../content/casefile'
+import { THOUGHT_IDS, type ThoughtId } from '../content/thoughts'
 import type { CheckResult } from './checkResolution'
 import type { CheckRisk } from '../stores/insightStore'
 
@@ -51,6 +52,13 @@ function assertCaseNoteId(value: unknown): CaseNoteId {
     return value as CaseNoteId
   }
   throw new Error(`unlock_note called with unknown note id "${String(value)}"`)
+}
+
+function assertThoughtId(value: unknown): ThoughtId {
+  if (typeof value === 'string' && (THOUGHT_IDS as string[]).includes(value)) {
+    return value as ThoughtId
+  }
+  throw new Error(`thought function called with unknown thought id "${String(value)}"`)
 }
 
 function assertFlagName(value: unknown): string {
@@ -103,6 +111,23 @@ export function bindCasefileFunctions(story: Story, handlers: CasefileHandlers):
   story.BindExternalFunction('gain_evidence', (id: string) => handlers.gainEvidence(assertEvidenceId(id)))
   story.BindExternalFunction('unlock_note', (id: string) => handlers.unlockNote(assertCaseNoteId(id)))
   story.BindExternalFunction('set_case_flag', (flag: string) => handlers.setCaseFlag(assertFlagName(flag)))
+}
+
+/** Progression System plan — thought cabinet EXTERNALs. */
+export interface ThoughtHandlers {
+  unlockThought: (id: ThoughtId) => void
+  isThoughtEnabled: (id: ThoughtId) => boolean
+}
+
+/**
+ * Binds the two thought-cabinet EXTERNALs: `unlock_thought(thoughtId)` lets ink grant a
+ * thought (same shape as `unlock_note`), `has_thought(thoughtId)` lets ink query whether
+ * it's currently enabled for perception-gated content — the same "call an EXTERNAL inside
+ * an ink conditional" pattern `is_red_check_consumed` already exercises.
+ */
+export function bindThoughtFunctions(story: Story, handlers: ThoughtHandlers): void {
+  story.BindExternalFunction('unlock_thought', (id: string) => handlers.unlockThought(assertThoughtId(id)))
+  story.BindExternalFunction('has_thought', (id: string) => handlers.isThoughtEnabled(assertThoughtId(id)))
 }
 
 /** ink identifiers are snake_case; InsightIds are camelCase. Explicit map, not a generic transform. */

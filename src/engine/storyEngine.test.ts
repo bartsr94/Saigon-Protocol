@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Compiler } from 'inkjs/full'
 import type { Story } from 'inkjs'
-import { bindCasefileFunctions, bindCheckFunctions, bindWellbeingFunctions, syncInsightVariables } from './storyEngine'
+import { bindCasefileFunctions, bindCheckFunctions, bindThoughtFunctions, bindWellbeingFunctions, syncInsightVariables } from './storyEngine'
 import type { CheckResult } from './checkResolution'
 import { INSIGHT_IDS, type InsightId } from '../content/insights'
 
@@ -174,6 +174,45 @@ EXTERNAL set_case_flag(flag)
     runToEnd(story)
 
     expect(setCaseFlag).toHaveBeenCalledWith('some-brand-new-flag')
+  })
+})
+
+describe('bindThoughtFunctions', () => {
+  it('wires unlock_thought to the given handler', () => {
+    const story = compile(`
+EXTERNAL unlock_thought(id)
+~ unlock_thought("checkpoint-improviser")
+Done.
+-> END
+`)
+    const unlockThought = vi.fn()
+    bindThoughtFunctions(story, { unlockThought, isThoughtEnabled: vi.fn() })
+
+    runToEnd(story)
+
+    expect(unlockThought).toHaveBeenCalledWith('checkpoint-improviser')
+  })
+
+  it('lets ink query has_thought directly inside a conditional, same pattern as is_red_check_consumed', () => {
+    const story = compile(`
+EXTERNAL has_thought(id)
+{has_thought("company-man-doubt"): Enabled.|Not enabled.}
+-> END
+`)
+    bindThoughtFunctions(story, { unlockThought: vi.fn(), isThoughtEnabled: vi.fn().mockReturnValue(true) })
+
+    expect(runToEnd(story)).toContain('Enabled.')
+  })
+
+  it('throws when ink passes an unknown thought id', () => {
+    const story = compile(`
+EXTERNAL unlock_thought(id)
+~ unlock_thought("not-a-real-thought")
+-> END
+`)
+    bindThoughtFunctions(story, { unlockThought: vi.fn(), isThoughtEnabled: vi.fn() })
+
+    expect(() => runToEnd(story)).toThrow(/unknown thought id/)
   })
 })
 

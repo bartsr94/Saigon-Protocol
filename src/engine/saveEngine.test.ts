@@ -16,6 +16,8 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       vitality: { current: 8, max: 10 },
       composure: { current: 9, max: 10 },
       consumedRedChecks: ['checkpoint-talk'],
+      xp: { ledger: 1, graft: 0, muscleMemory: 0, root: 0, static: 0, hustle: 2, mask: 0 },
+      xpAwardedCheckIds: ['checkpoint-talk'],
       failState: null,
     },
     navigation: {
@@ -34,6 +36,10 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       evidenceIds: ['drone-log'],
       noteIds: ['note-01'],
       flags: ['saw-breach'],
+    },
+    thought: {
+      unlockedThoughtIds: ['checkpoint-improviser'],
+      enabledThoughtIds: [],
     },
     conversation: {
       metNpcIds: ['meiHong'],

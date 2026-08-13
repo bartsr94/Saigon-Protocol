@@ -161,6 +161,7 @@ export function DialogueScreen() {
         onChar={() => openOverlay('character')}
         onMap={currentHubId ? handleReturnToHub : handleReturnToOverworld}
         onCase={() => openOverlay('casefile')}
+        onThoughts={() => openOverlay('thoughtCabinet')}
         onMenu={() => openOverlay('settings')}
       />
 

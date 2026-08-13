@@ -3,7 +3,7 @@
 // with current level, color, and tagline.
 
 import { ARCHETYPES } from '../../content/archetypes'
-import { INSIGHT_IDS, INSIGHT_MAX, INSIGHTS } from '../../content/insights'
+import { INSIGHT_IDS, INSIGHT_MAX, INSIGHT_XP_TO_LEVEL, INSIGHTS } from '../../content/insights'
 import { PORTRAITS } from '../../content/portraits'
 import { useInsightStore } from '../../stores/insightStore'
 import { useUiStore } from '../../stores/uiStore'
@@ -19,6 +19,7 @@ export function CharacterOverlay() {
   const portraitId = useInsightStore((s) => s.portraitId)
   const playerName = useInsightStore((s) => s.playerName)
   const levels = useInsightStore((s) => s.levels)
+  const xp = useInsightStore((s) => s.xp)
 
   if (!archetype) return null
   const def = ARCHETYPES[archetype]
@@ -58,6 +59,9 @@ export function CharacterOverlay() {
                 {isWeakness && <span className="font-display text-[0.6rem] uppercase tracking-widest text-white/50">Weakness</span>}
               </div>
               <p className="pl-[9.75rem] font-body text-xs text-white/50">{insight.tagline}</p>
+              <p className="pl-[9.75rem] font-display text-[0.6rem] uppercase tracking-widest text-white/35">
+                {levels[id] >= INSIGHT_MAX ? 'MAX' : `XP ${xp[id]}/${INSIGHT_XP_TO_LEVEL}`}
+              </p>
             </div>
           )
         })}

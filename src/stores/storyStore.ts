@@ -6,7 +6,7 @@
 import { create } from 'zustand'
 import { Story } from 'inkjs'
 import type { Choice } from 'inkjs/engine/Choice'
-import { bindCasefileFunctions, bindCheckFunctions, bindWellbeingFunctions, syncInsightVariables } from '../engine/storyEngine'
+import { bindCasefileFunctions, bindCheckFunctions, bindThoughtFunctions, bindWellbeingFunctions, syncInsightVariables } from '../engine/storyEngine'
 import {
   parseLineAmbience,
   parseLineBackground,
@@ -23,6 +23,7 @@ import type { CheckResult } from '../engine/checkResolution'
 import type { NpcId } from '../content/npcs'
 import { useInsightStore } from './insightStore'
 import { useCasefileStore } from './casefileStore'
+import { useThoughtStore } from './thoughtStore'
 
 export interface StoryLine {
   text: string
@@ -189,6 +190,10 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       gainEvidence: (id) => useCasefileStore.getState().addEvidence(id),
       unlockNote: (id) => useCasefileStore.getState().unlockNote(id),
       setCaseFlag: (flag) => useCasefileStore.getState().setFlag(flag),
+    })
+    bindThoughtFunctions(story, {
+      unlockThought: (id) => useThoughtStore.getState().unlockThought(id),
+      isThoughtEnabled: (id) => useThoughtStore.getState().isEnabled(id),
     })
 
     const insightState = useInsightStore.getState()

@@ -12,6 +12,7 @@ export interface NavRailProps {
   onChar?: () => void
   onMap?: () => void
   onCase?: () => void
+  onThoughts?: () => void
   onMenu?: () => void
   className?: string
   /** Blocks the MAP button without hiding it — e.g. a walkable hub/street requires standing on its entry tile before returning. */
@@ -22,7 +23,17 @@ export interface NavRailProps {
   disabled?: boolean
 }
 
-export function NavRail({ onChar, onMap, onCase, onMenu, className = '', mapDisabled = false, mapTitle, disabled = false }: NavRailProps) {
+export function NavRail({
+  onChar,
+  onMap,
+  onCase,
+  onThoughts,
+  onMenu,
+  className = '',
+  mapDisabled = false,
+  mapTitle,
+  disabled = false,
+}: NavRailProps) {
   return (
     <div className={`flex flex-col gap-3 ${className}`}>
       {onChar && <RailButton label="CHAR" title="Character" onClick={onChar} disabled={disabled} />}
@@ -35,6 +46,7 @@ export function NavRail({ onChar, onMap, onCase, onMenu, className = '', mapDisa
         />
       )}
       {onCase && <RailButton label="CASE" title="Casefile" onClick={onCase} disabled={disabled} />}
+      {onThoughts && <RailButton label="MIND" title="Thought Cabinet" onClick={onThoughts} disabled={disabled} />}
       {onMenu && <RailButton label="MENU" title="Settings" onClick={onMenu} disabled={disabled} />}
     </div>
   )

@@ -7,6 +7,7 @@ import { useAudioStore } from '../../stores/audioStore'
 import { SettingsOverlay } from './SettingsOverlay'
 import { CasefileOverlay } from './CasefileOverlay'
 import { CharacterOverlay } from './CharacterOverlay'
+import { ThoughtCabinetOverlay } from './ThoughtCabinetOverlay'
 import { DebugOverlay } from './DebugOverlay'
 
 export function OverlayHost() {
@@ -28,6 +29,7 @@ export function OverlayHost() {
       {activeOverlay === 'settings' && <SettingsOverlay />}
       {activeOverlay === 'casefile' && <CasefileOverlay />}
       {activeOverlay === 'character' && <CharacterOverlay />}
+      {activeOverlay === 'thoughtCabinet' && <ThoughtCabinetOverlay />}
       {activeOverlay === 'debug' && <DebugOverlay />}
     </div>
   )
