@@ -6,6 +6,7 @@
 import type { Story } from 'inkjs'
 import { INSIGHT_IDS, type InsightId } from '../content/insights'
 import type { ArchetypeId } from '../content/archetypes'
+import { CASE_NOTE_IDS, EVIDENCE_IDS, type CaseNoteId, type EvidenceId } from '../content/casefile'
 import type { CheckResult } from './checkResolution'
 import type { CheckRisk } from '../stores/insightStore'
 
@@ -23,11 +24,38 @@ export interface WellbeingHandlers {
   healComposure: (amount: number) => void
 }
 
+/** Architecture §13 — ink grants casefile progress, TS owns ownership/unlock state. */
+export interface CasefileHandlers {
+  gainEvidence: (id: EvidenceId) => void
+  unlockNote: (id: CaseNoteId) => void
+  /** Flags are free-form strings (also gate Location Hub locked doors) — no ID union to validate against. */
+  setCaseFlag: (flag: string) => void
+}
+
 function assertInsightId(value: unknown): InsightId {
   if (typeof value === 'string' && (INSIGHT_IDS as string[]).includes(value)) {
     return value as InsightId
   }
   throw new Error(`roll_check called with unknown insight "${String(value)}"`)
+}
+
+function assertEvidenceId(value: unknown): EvidenceId {
+  if (typeof value === 'string' && (EVIDENCE_IDS as string[]).includes(value)) {
+    return value as EvidenceId
+  }
+  throw new Error(`gain_evidence called with unknown evidence id "${String(value)}"`)
+}
+
+function assertCaseNoteId(value: unknown): CaseNoteId {
+  if (typeof value === 'string' && (CASE_NOTE_IDS as string[]).includes(value)) {
+    return value as CaseNoteId
+  }
+  throw new Error(`unlock_note called with unknown note id "${String(value)}"`)
+}
+
+function assertFlagName(value: unknown): string {
+  if (typeof value === 'string' && value.length > 0) return value
+  throw new Error(`set_case_flag called with an invalid flag name "${String(value)}"`)
 }
 
 function assertCheckRisk(value: unknown): CheckRisk {
@@ -59,6 +87,22 @@ export function bindWellbeingFunctions(story: Story, handlers: WellbeingHandlers
   story.BindExternalFunction('heal_vitality', (amount: number) => handlers.healVitality(amount))
   story.BindExternalFunction('damage_composure', (amount: number) => handlers.damageComposure(amount))
   story.BindExternalFunction('heal_composure', (amount: number) => handlers.healComposure(amount))
+}
+
+/**
+ * Binds the three casefile EXTERNALs ink calls to grant investigation
+ * progress (Architecture §13): `gain_evidence(evidenceId)` and
+ * `unlock_note(noteId)` are validated against `content/casefile.ts`'s
+ * `EVIDENCE_IDS`/`CASE_NOTE_IDS` the same way `roll_check` validates insight
+ * names, so a typo'd id fails loudly at the ink call site rather than
+ * silently no-opping. `set_case_flag(flag)` takes any non-empty string —
+ * flags aren't a closed content set (Location Hub locked doors key off
+ * them too).
+ */
+export function bindCasefileFunctions(story: Story, handlers: CasefileHandlers): void {
+  story.BindExternalFunction('gain_evidence', (id: string) => handlers.gainEvidence(assertEvidenceId(id)))
+  story.BindExternalFunction('unlock_note', (id: string) => handlers.unlockNote(assertCaseNoteId(id)))
+  story.BindExternalFunction('set_case_flag', (flag: string) => handlers.setCaseFlag(assertFlagName(flag)))
 }
 
 /** ink identifiers are snake_case; InsightIds are camelCase. Explicit map, not a generic transform. */

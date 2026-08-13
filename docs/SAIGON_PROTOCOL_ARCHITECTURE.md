@@ -477,14 +477,22 @@ doesn't belong in front of the player.
 Casefile state is captured/restored as part of the `SaveBlob`
 (`SerializedCasefileState`), the same as Insight/navigation/gameplay state.
 
-**Not yet built:** nothing in the ink↔TS boundary grants evidence, notes, or
-flags — there's no `gain_evidence`/`unlock_note`/`set_case_flag` `EXTERNAL`
-(or TS-side scene-result hook) wired up yet, and `content/casefile.ts`'s
-five evidence items and two notes are still flavor-light placeholders, not
-Case 1-canonical content. Until that lands, the Debug Console's Flags tool
-(`components/screens/DebugFlagsTool.tsx`, dev-build-only) is the only way
-to set a flag — e.g. to test a Location Hub Layer locked door. See "Open /
-not yet built" below.
+**Ink↔TS grant hooks:** `storyEngine.ts`'s `bindCasefileFunctions` binds
+three `EXTERNAL`s ink content can call directly — `gain_evidence(id)` and
+`unlock_note(id)` (each validated against `content/casefile.ts`'s
+`EVIDENCE_IDS`/`CASE_NOTE_IDS`, throwing on an unknown id the same way
+`roll_check` throws on an unknown insight name) and `set_case_flag(flag)`
+(any non-empty string — flags aren't a closed content set).
+`storyStore.ts`'s `loadStory` wires all three to `casefileStore`'s
+`addEvidence`/`unlockNote`/`setFlag`, the same binding pass as
+`bindCheckFunctions`/`bindWellbeingFunctions`. `content/casefile.ts`'s five
+evidence items and two notes are still flavor-light placeholders, not Case
+1-canonical content, and only `checkpoint.ink` calls the grant hooks so
+far (its Red-check success path). The Debug Console's Flags tool
+(`components/screens/DebugFlagsTool.tsx`, dev-build-only) still exists
+alongside this for ad-hoc testing — e.g. to open a Location Hub locked door
+whose in-fiction trigger isn't authored yet. See "Open / not yet built"
+below.
 
 **Debug Console (dev-only):** `App.tsx` renders a `DEV`-gated corner button
 (stripped from production builds) that opens `DebugOverlay` — a flat menu
@@ -731,11 +739,14 @@ persisted state, no save-format changes.
 - In-play Insight leveling (XP, investigation rewards) — doesn't exist;
   the chargen sheet is fixed for the run.
 - Combat/tactical exploration — explicitly out of scope, distant future.
-- Casefile ink integration (§13) — the store/save layer is built, but
-  nothing grants evidence, notes, or flags from ink yet, and
-  `content/casefile.ts`'s content is still placeholder. This also means
-  `checkpoint`'s locked inner-wing door (§7) has no real in-fiction unlock
-  trigger yet — only the Debug Console's Flags tool can open it today.
+- Casefile *content* (§13) — the store/save layer and the ink↔TS grant
+  hooks (`gain_evidence`/`unlock_note`/`set_case_flag`) are both built now,
+  but `content/casefile.ts`'s five evidence items and two notes are still
+  placeholder, not Case 1-canonical. `checkpoint`'s locked inner-wing door
+  (§7) still has no real in-fiction unlock trigger — that needs an actual
+  leverage/investigation-progress mechanic designed first, not just the
+  `set_case_flag` call, which already exists — so only the Debug Console's
+  Flags tool can open it today.
 - The Inner Containment Wing itself (§7's locked-door example) is a
   placeholder room with one generic inspect POI — `CASE_1_LOCATION_MATRIX.md`'s
   actual forensic-reveal scene for that location isn't authored yet.
@@ -756,3 +767,13 @@ persisted state, no save-format changes.
   (Hustle) and weakness (Muscle Memory) are unchanged; only `backstory` in
   `content/archetypes.ts` and the mirrored line in `SEA_CYBERPUNK_GDD.md`
   §4 changed.
+- **Casefile ink↔TS grant hooks wired (2026):** `storyEngine.ts` gained
+  `bindCasefileFunctions` (`gain_evidence`/`unlock_note`/`set_case_flag`),
+  bound in `storyStore.ts`'s `loadStory` alongside the check/wellbeing
+  bindings — the Case 1 implementation spec's Phase 2 system-support
+  prerequisite for letting district story files actually build the
+  casefile as the player investigates. `checkpoint.ink` exercises all
+  three on its Red-check success path as a proof of the plumbing, not real
+  Case 1 content. `content/casefile.ts`'s evidence/notes and `checkpoint`'s
+  locked inner-wing door remain placeholder/undesigned — see "Open / not
+  yet built".

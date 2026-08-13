@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { Compiler } from 'inkjs/full'
 import type { Story } from 'inkjs'
-import { bindCheckFunctions, bindWellbeingFunctions, syncInsightVariables } from './storyEngine'
+import { bindCasefileFunctions, bindCheckFunctions, bindWellbeingFunctions, syncInsightVariables } from './storyEngine'
 import type { CheckResult } from './checkResolution'
 import { INSIGHT_IDS, type InsightId } from '../content/insights'
 
@@ -113,6 +113,67 @@ Done.
 
     expect(damageVitality).toHaveBeenCalledWith(2)
     expect(healComposure).toHaveBeenCalledWith(1)
+  })
+})
+
+describe('bindCasefileFunctions', () => {
+  it('wires gain_evidence, unlock_note, and set_case_flag to the given handlers', () => {
+    const story = compile(`
+EXTERNAL gain_evidence(id)
+EXTERNAL unlock_note(id)
+EXTERNAL set_case_flag(flag)
+~ gain_evidence("drone-log")
+~ unlock_note("note-01")
+~ set_case_flag("checkpoint-inner-wing-unlocked")
+Done.
+-> END
+`)
+    const gainEvidence = vi.fn()
+    const unlockNote = vi.fn()
+    const setCaseFlag = vi.fn()
+    bindCasefileFunctions(story, { gainEvidence, unlockNote, setCaseFlag })
+
+    runToEnd(story)
+
+    expect(gainEvidence).toHaveBeenCalledWith('drone-log')
+    expect(unlockNote).toHaveBeenCalledWith('note-01')
+    expect(setCaseFlag).toHaveBeenCalledWith('checkpoint-inner-wing-unlocked')
+  })
+
+  it('throws when ink passes an unknown evidence id', () => {
+    const story = compile(`
+EXTERNAL gain_evidence(id)
+~ gain_evidence("not-a-real-item")
+-> END
+`)
+    bindCasefileFunctions(story, { gainEvidence: vi.fn(), unlockNote: vi.fn(), setCaseFlag: vi.fn() })
+
+    expect(() => runToEnd(story)).toThrow(/unknown evidence id/)
+  })
+
+  it('throws when ink passes an unknown note id', () => {
+    const story = compile(`
+EXTERNAL unlock_note(id)
+~ unlock_note("not-a-real-note")
+-> END
+`)
+    bindCasefileFunctions(story, { gainEvidence: vi.fn(), unlockNote: vi.fn(), setCaseFlag: vi.fn() })
+
+    expect(() => runToEnd(story)).toThrow(/unknown note id/)
+  })
+
+  it('accepts any non-empty flag name, since flags are not a closed content set', () => {
+    const story = compile(`
+EXTERNAL set_case_flag(flag)
+~ set_case_flag("some-brand-new-flag")
+-> END
+`)
+    const setCaseFlag = vi.fn()
+    bindCasefileFunctions(story, { gainEvidence: vi.fn(), unlockNote: vi.fn(), setCaseFlag })
+
+    runToEnd(story)
+
+    expect(setCaseFlag).toHaveBeenCalledWith('some-brand-new-flag')
   })
 })
 

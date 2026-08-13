@@ -4,6 +4,8 @@
 
 EXTERNAL is_red_check_consumed(checkId)
 EXTERNAL roll_check(insight, targetNumber, checkId, risk)
+EXTERNAL gain_evidence(id)
+EXTERNAL unlock_note(id)
 
 VAR hustle = 0
 VAR static = 0
@@ -45,7 +47,9 @@ Above the queue, a recruitment screen loops Terra Nova's pitch on a three-second
     * [Try to talk your way to the front. # insight: hustle # check: red]
         ~ temp result = roll_check("hustle", 5, "checkpoint-jump-queue", "red")
         { result:
-            The guard shrugs and waves you past the line. Small win.
+            The guard shrugs and waves you past the line. Small win — and close enough to the post terminal now to see the drone's patrol log still open on the screen, timestamps that don't match its route.
+            ~ gain_evidence("drone-log")
+            ~ unlock_note("note-01")
         - else:
             He doesn't even look up. "Back of the line."
         }
