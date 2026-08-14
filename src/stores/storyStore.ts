@@ -19,6 +19,7 @@ import {
   parseLineAmbience,
   parseLineBackground,
   parseLineMusic,
+  parseLinePortrait,
   parseLineSpeaker,
   parseLineVoice,
   type AmbienceCue,
@@ -39,6 +40,8 @@ export interface StoryLine {
   speaker: LineSpeaker
   /** Set only on lines carrying a `# background: <id>` tag; null otherwise (caller keeps the last one shown). */
   background: BackgroundId | null
+  /** Set only on lines carrying a `# portrait: <variantId>` tag (docs/NPC_PORTRAIT_VARIANTS_SPEC.md); null otherwise (caller keeps the last one shown). */
+  portrait: string | null
   /** Set only on lines carrying a `# music: <id>` tag; null otherwise (caller keeps whatever track was last cued). */
   music: MusicId | null
   /** Always present — describes the ambience-layer diff this line applies, empty/false when the line carries no `ambience` tag. */
@@ -127,6 +130,7 @@ function advance(story: Story, set: (partial: Partial<StoryState>) => void): voi
         text: line,
         speaker: parseLineSpeaker(tags),
         background: parseLineBackground(tags),
+        portrait: parseLinePortrait(tags),
         music: parseLineMusic(tags),
         ambienceOps: parseLineAmbience(tags),
         voice: parseLineVoice(tags),
@@ -159,6 +163,7 @@ function hydrateFromRestoredState(story: Story, set: (partial: Partial<StoryStat
           text,
           speaker: parseLineSpeaker(tags),
           background: parseLineBackground(tags),
+          portrait: parseLinePortrait(tags),
           music: parseLineMusic(tags),
           ambienceOps: parseLineAmbience(tags),
           voice: parseLineVoice(tags),

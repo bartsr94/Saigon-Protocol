@@ -106,7 +106,7 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
                   >
                     <div className="flex items-start gap-3">
                       <PortraitFrame
-                        src={npc.portraitSrc}
+                        src={npc.portraits?.neutral}
                         alt={npc.name}
                         fallbackText={npc.name.slice(0, 2).toUpperCase()}
                         size="sm"
@@ -141,7 +141,7 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
                       <button key={presence.label} type="button" onClick={() => onEnterStory(presence.storyLocationId)} className="text-left">
                         <Panel size="md" className="h-full p-4 transition-colors hover:!border-chrome-secondary hover:shadow-[0_0_18px_var(--color-chrome-secondary)]">
                           <div className="flex items-start gap-3">
-                            <PortraitFrame src={npc.portraitSrc} alt={npc.name} fallbackText={npc.name.slice(0, 2).toUpperCase()} size="sm" />
+                            <PortraitFrame src={npc.portraits?.neutral} alt={npc.name} fallbackText={npc.name.slice(0, 2).toUpperCase()} size="sm" />
                             <div className="min-w-0">
                               <p className="font-display text-xs uppercase tracking-[0.3em] text-chrome-secondary">Talk</p>
                               <h2 className="mt-1 font-display text-sm font-bold uppercase tracking-wide text-white">{presence.label}</h2>
@@ -155,7 +155,7 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
                   return (
                     <Panel key={`${presence.label}-locked`} size="md" accent="rgba(255,255,255,0.22)" className="h-full p-4 opacity-70">
                       <div className="flex items-start gap-3">
-                        <PortraitFrame src={npc.portraitSrc} alt={npc.name} fallbackText={npc.name.slice(0, 2).toUpperCase()} size="sm" accent="rgba(255,255,255,0.45)" />
+                        <PortraitFrame src={npc.portraits?.neutral} alt={npc.name} fallbackText={npc.name.slice(0, 2).toUpperCase()} size="sm" accent="rgba(255,255,255,0.45)" />
                         <div className="min-w-0">
                           <p className="font-display text-xs uppercase tracking-[0.3em] text-white/45">Unavailable</p>
                           <h2 className="mt-1 font-display text-sm font-bold uppercase tracking-wide text-white">{presence.label}</h2>

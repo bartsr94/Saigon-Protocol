@@ -33,31 +33,31 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
 // planted-but-unresolved). Thresholds match GAME_GUIDE.md §10's tiers with
 // an extra split top and bottom for a gradual crossing rather than a jump.
 { affinity_lakshmi_avani >= 10:
-    Lakshmi's whole posture changes when she spots you — she drops the roster and crosses half the room to meet you partway. "You actually came back." She says it like she's still getting used to being glad about that. # speaker: npc:lakshmiAvani
+    Lakshmi's whole posture changes when she spots you — she drops the roster and crosses half the room to meet you partway. "You actually came back." She says it like she's still getting used to being glad about that. # speaker: npc:lakshmiAvani # portrait: love
 }
 { affinity_lakshmi_avani >= 8 and affinity_lakshmi_avani < 10:
-    Lakshmi's already smiling before you're through the door, the kind she isn't bothering to manage anymore. "There you are." It sounds more like relief than habit. # speaker: npc:lakshmiAvani
+    Lakshmi's already smiling before you're through the door, the kind she isn't bothering to manage anymore. "There you are." It sounds more like relief than habit. # speaker: npc:lakshmiAvani # portrait: bright
 }
 { affinity_lakshmi_avani >= 6 and affinity_lakshmi_avani < 8:
-    Lakshmi looks up and the guardedness is just gone, like she stopped bracing for this to go badly a while ago. "Good. I was hoping it'd be you today." # speaker: npc:lakshmiAvani
+    Lakshmi looks up and the guardedness is just gone, like she stopped bracing for this to go badly a while ago. "Good. I was hoping it'd be you today." # speaker: npc:lakshmiAvani # portrait: bright
 }
 { affinity_lakshmi_avani >= 5 and affinity_lakshmi_avani < 6:
-    Lakshmi's eyes light up when she sees you, and she sets aside her work immediately. "I was hoping you'd stop by today. There's something I've been meaning to tell you." # speaker: npc:lakshmiAvani
+    Lakshmi's eyes light up when she sees you, and she sets aside her work immediately. "I was hoping you'd stop by today. There's something I've been meaning to tell you." # speaker: npc:lakshmiAvani # portrait: warm
 }
 { affinity_lakshmi_avani >= 4 and affinity_lakshmi_avani < 5:
-    Lakshmi looks up before you've even finished crossing the room — something almost like ease in it now. "Back already?" She sounds pleased about it, not just surprised. # speaker: npc:lakshmiAvani
+    Lakshmi looks up before you've even finished crossing the room — something almost like ease in it now. "Back already?" She sounds pleased about it, not just surprised. # speaker: npc:lakshmiAvani # portrait: warm
 }
 { affinity_lakshmi_avani >= 2 and affinity_lakshmi_avani < 4:
-    Lakshmi looks up and manages something closer to a real greeting than a flinch. "Oh — hi. Sorry, I wasn't sure you'd be back." # speaker: npc:lakshmiAvani
+    Lakshmi looks up and manages something closer to a real greeting than a flinch. "Oh — hi. Sorry, I wasn't sure you'd be back." # speaker: npc:lakshmiAvani # portrait: warm
 }
 { affinity_lakshmi_avani >= 0 and affinity_lakshmi_avani < 2:
-    Lakshmi looks up from whatever she's pretending to read, straightening a little too fast. "Back already?" She says it like she's still not sure how she's supposed to act around you. # speaker: npc:lakshmiAvani
+    Lakshmi looks up from whatever she's pretending to read, straightening a little too fast. "Back already?" She says it like she's still not sure how she's supposed to act around you. # speaker: npc:lakshmiAvani # portrait: neutral
 }
 { affinity_lakshmi_avani >= -5 and affinity_lakshmi_avani < 0:
-    Lakshmi doesn't get up this time. She glances over just long enough to confirm it's you, then goes back to the roster. "Did you need something else." Not really a question. # speaker: npc:lakshmiAvani
+    Lakshmi doesn't get up this time. She glances over just long enough to confirm it's you, then goes back to the roster. "Did you need something else." Not really a question. # speaker: npc:lakshmiAvani # portrait: guarded
 }
 { affinity_lakshmi_avani < -5:
-    Lakshmi doesn't look up at all until you're standing right in front of her, and even then it's brief. "I've told you what I know." Her voice has gone flat, professional, closed. # speaker: npc:lakshmiAvani
+    Lakshmi doesn't look up at all until you're standing right in front of her, and even then it's brief. "I've told you what I know." Her voice has gone flat, professional, closed. # speaker: npc:lakshmiAvani # portrait: guarded
 }
 * [Ask what she actually works on. # insight: graft]
     "Adaptive physiology — how far a body can be pushed to tolerate the outside before it stops being survivable. That's the polite version, anyway." She doesn't offer the impolite one. # speaker: npc:lakshmiAvani
@@ -66,7 +66,7 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
 * [Ask if anything about the case has surprised her. # check: white]
     ~ temp surprisedResult = roll_check("ledger", 6, "checkpoint-lakshmi-surprised", "white")
     { surprisedResult:
-        Her hands go still on the roster. "I flagged an adaptation-stress reading a few weeks back. Filed it, followed up, was told it was handled." A beat. "I didn't ask what 'handled' meant. I should have." # speaker: npc:lakshmiAvani
+        Her hands go still on the roster. "I flagged an adaptation-stress reading a few weeks back. Filed it, followed up, was told it was handled." A beat. "I didn't ask what 'handled' meant. I should have." # speaker: npc:lakshmiAvani # portrait: guarded
         ~ unlock_note("note-03")
         ~ unlock_thought("company-man-doubt")
         ~ adjust_affinity("lakshmiAvani", 2)
@@ -81,15 +81,15 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
 * { has_thought("company-man-doubt") and not is_red_check_consumed("checkpoint-lakshmi-colleague") } [Push her on who else saw this coming. # insight: root # check: red]
     ~ temp colleagueResult = roll_check("root", 7, "checkpoint-lakshmi-colleague", "red")
     { colleagueResult:
-        She doesn't answer right away — long enough that the silence is the answer. "There's someone who flagged worse than I did, earlier than I did, and said so out loud instead of just filing it." Her jaw tightens. "I'm not giving you a name. Not like this. You'd need more than asking nicely." # speaker: npc:lakshmiAvani
+        She doesn't answer right away — long enough that the silence is the answer. "There's someone who flagged worse than I did, earlier than I did, and said so out loud instead of just filing it." Her jaw tightens. "I'm not giving you a name. Not like this. You'd need more than asking nicely." # speaker: npc:lakshmiAvani # portrait: guarded
         ~ adjust_affinity("lakshmiAvani", 1)
     - else:
-        Something in her closes off. "I've already said more than I should have." She doesn't pick the thread back up, and doesn't quite look at you for the rest of the visit. # speaker: npc:lakshmiAvani
+        Something in her closes off. "I've already said more than I should have." She doesn't pick the thread back up, and doesn't quite look at you for the rest of the visit. # speaker: npc:lakshmiAvani # portrait: guarded
         ~ adjust_affinity("lakshmiAvani", -1)
     }
     -> lakshmi_avani_topics
 * { affinity_lakshmi_avani >= 3 } [Ask what she does when she's not down here. # insight: root]
-    "Same as everyone in a hab block, probably. I've got a window box that's somehow still growing something green, and a downstairs neighbor who thinks I don't know she borrows my hotplate." A real laugh, the first unguarded one you've heard from her. "It's not much. It's mine, though." # speaker: npc:lakshmiAvani
+    "Same as everyone in a hab block, probably. I've got a window box that's somehow still growing something green, and a downstairs neighbor who thinks I don't know she borrows my hotplate." A real laugh, the first unguarded one you've heard from her. "It's not much. It's mine, though." # speaker: npc:lakshmiAvani # portrait: bright
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
 * { affinity_lakshmi_avani >= 5 } [Ask if she's ever thought about leaving Aveline. # insight: ledger]
@@ -97,14 +97,14 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
 * { affinity_lakshmi_avani >= 5 } [Mention you've noticed she's been more open lately. # insight: static]
-    "Have I?" She considers this, then nods slowly. "I suppose I have. It's... easier, talking to you. Feels less like I'm being assessed and more like I'm actually being heard." She gives a small, genuine smile. "That's rare around here." # speaker: npc:lakshmiAvani
+    "Have I?" She considers this, then nods slowly. "I suppose I have. It's... easier, talking to you. Feels less like I'm being assessed and more like I'm actually being heard." She gives a small, genuine smile. "That's rare around here." # speaker: npc:lakshmiAvani # portrait: bright
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
 + { affinity_lakshmi_avani >= 5 } [Suggest going somewhere more private to talk. # insight: static]
-    {Lakshmi's eyes widen slightly, then she glances around the lounge. After a moment, she nods. "There's a supply closet down the hall that's usually empty this time of day. Follow me." She leads you out of the lounge, her steps quick and quiet.|Lakshmi doesn't hesitate this time — just checks the hallway out of habit and tips her head toward the closet. "Same as before?" She's already moving before you answer.} # speaker: npc:lakshmiAvani
+    {Lakshmi's eyes widen slightly, then she glances around the lounge. After a moment, she nods. "There's a supply closet down the hall that's usually empty this time of day. Follow me." She leads you out of the lounge, her steps quick and quiet.|Lakshmi doesn't hesitate this time — just checks the hallway out of habit and tips her head toward the closet. "Same as before?" She's already moving before you answer.} # speaker: npc:lakshmiAvani # portrait: blush
     -> lakshmi_avani_private
 * { affinity_lakshmi_avani >= 6 } [Tell her you're glad the lounge has her in it. # insight: root]
-    That actually gets a blush out of her — fast, and she covers it by pretending to fix the roster's crooked tape. "That's — " A beat. "You're allowed to say things like that to a witness?" She's smiling when she says it, though. # speaker: npc:lakshmiAvani
+    That actually gets a blush out of her — fast, and she covers it by pretending to fix the roster's crooked tape. "That's — " A beat. "You're allowed to say things like that to a witness?" She's smiling when she says it, though. # speaker: npc:lakshmiAvani # portrait: blush
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
 
@@ -115,38 +115,38 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
 // revisiting the closet plays a shorter, familiar variant instead of either
 // vanishing the choice or replaying the original reveal verbatim.
 === lakshmi_avani_private ===
-The supply closet is cramped, lit by a single flickering LED strip. Boxes of lab supplies line the shelves, and the air smells of disinfectant and dust. Lakshmi leans against a stack of crates, her posture more relaxed than you've ever seen it in the lounge.
+The supply closet is cramped, lit by a single flickering LED strip. Boxes of lab supplies line the shelves, and the air smells of disinfectant and dust. Lakshmi leans against a stack of crates, her posture more relaxed than you've ever seen it in the lounge. # portrait: vulnerable
 
 "It's quieter here," she says, her voice softer. "Sometimes I come here just to think. Away from the eyes, you know?" She looks at you, really looks, without the usual professional guard. "What did you want to talk about?"
 
 + [Ask about her dreams, not just her work. # insight: root]
-    {"Dreams?" She lets out a soft breath. "I used to want to see Earth. Not through a screen or in a history file — the real thing. Green grass, open sky... But then I realized I'm helping build the future here, even if it's messy." She smiles, a bit sadly. "Maybe that's enough."|"Still thinking about Earth?" She smiles faintly. "Some days more than others. Today's a green-grass kind of day, I think."} # speaker: npc:lakshmiAvani
+    {"Dreams?" She lets out a soft breath. "I used to want to see Earth. Not through a screen or in a history file — the real thing. Green grass, open sky... But then I realized I'm helping build the future here, even if it's messy." She smiles, a bit sadly. "Maybe that's enough."|"Still thinking about Earth?" She smiles faintly. "Some days more than others. Today's a green-grass kind of day, I think."} # speaker: npc:lakshmiAvani # portrait: vulnerable
     ~ adjust_affinity("lakshmiAvani", 2)
     -> lakshmi_avani_private_end
 
 + [Ask if she's ever been this open with anyone else at Aveline. # insight: ledger]
-    {"No." The answer comes immediately, certain. "Everyone here is either climbing or clinging. It's hard to know who to trust." She meets your eyes. "You're different. You listen without waiting for your turn to speak."|"Still just you," she says, quieter this time. "That hasn't changed."} # speaker: npc:lakshmiAvani
+    {"No." The answer comes immediately, certain. "Everyone here is either climbing or clinging. It's hard to know who to trust." She meets your eyes. "You're different. You listen without waiting for your turn to speak."|"Still just you," she says, quieter this time. "That hasn't changed."} # speaker: npc:lakshmiAvani # portrait: vulnerable
     ~ adjust_affinity("lakshmiAvani", 2)
     -> lakshmi_avani_private_end
 
 + [Ask what she wanted to tell you earlier. # insight: static]
-    {She hesitates, then leans closer. "There are... discrepancies in the adaptation logs. Things that don't add up. I've been compiling them privately." Her voice drops to a near-whisper. "I could show you, if you're willing to be careful about it."|"Same discrepancies," she says. "Still no closer to explaining them. I'll tell you the second that changes."} # speaker: npc:lakshmiAvani
+    {She hesitates, then leans closer. "There are... discrepancies in the adaptation logs. Things that don't add up. I've been compiling them privately." Her voice drops to a near-whisper. "I could show you, if you're willing to be careful about it."|"Same discrepancies," she says. "Still no closer to explaining them. I'll tell you the second that changes."} # speaker: npc:lakshmiAvani # portrait: vulnerable
     ~ unlock_note("note-05")
     ~ adjust_affinity("lakshmiAvani", 3)
     -> lakshmi_avani_private_end
 
 + [Tell her she can trust you with anything. # insight: root]
-    {Her eyes search yours for a long moment. "I know," she says quietly. "That's what scares me. And... that's why I asked you here." She takes a small step closer. "Sometimes trust feels like the most dangerous thing in this place."|"I know," she says again, softer this time. "I still mean it, every time you say it."} # speaker: npc:lakshmiAvani
+    {Her eyes search yours for a long moment. "I know," she says quietly. "That's what scares me. And... that's why I asked you here." She takes a small step closer. "Sometimes trust feels like the most dangerous thing in this place."|"I know," she says again, softer this time. "I still mean it, every time you say it."} # speaker: npc:lakshmiAvani # portrait: vulnerable
     ~ adjust_affinity("lakshmiAvani", 3)
     -> lakshmi_avani_private_end
 
 + [Just stand here with her in the quiet. # insight: static]
-    {You don't say anything. Neither does she. For a long moment, the only sound is the hum of the LED strip and the distant murmur of the lounge through the walls. She reaches out, her fingers brushing yours briefly before she pulls back, a faint blush on her cheeks. "We should probably get back before someone notices." But she doesn't move right away.|Neither of you says anything this time either. It's easier now — less like holding your breath, more like just being somewhere quiet together.} # speaker: npc:lakshmiAvani
+    {You don't say anything. Neither does she. For a long moment, the only sound is the hum of the LED strip and the distant murmur of the lounge through the walls. She reaches out, her fingers brushing yours briefly before she pulls back, a faint blush on her cheeks. "We should probably get back before someone notices." But she doesn't move right away.|Neither of you says anything this time either. It's easier now — less like holding your breath, more like just being somewhere quiet together.} # speaker: npc:lakshmiAvani # portrait: blush
     ~ adjust_affinity("lakshmiAvani", 3)
     -> lakshmi_avani_private_end
 
 + { affinity_lakshmi_avani >= 7 } [Ask if she'd like to do something more... intimate. # insight: static]
-    {She freezes for a second, her breath catching. The flickering light casts sharp shadows across her face as she searches your expression. After a long pause, she swallows hard. "I—I shouldn't. We shouldn't." Her voice is barely above a whisper, but there's a tremor in it that wasn't there before. "But God, I want to." She glances at the door, then back at you, her fingers twisting in the fabric of her lab coat. "If we're caught... it's not just my job. It's everything."|She doesn't freeze this time — just glances at the door out of habit, the same old caution running more on reflex than fear now. "You're going to be the death of me," she murmurs, already closer than she was a second ago.} # speaker: npc:lakshmiAvani
+    {She freezes for a second, her breath catching. The flickering light casts sharp shadows across her face as she searches your expression. After a long pause, she swallows hard. "I—I shouldn't. We shouldn't." Her voice is barely above a whisper, but there's a tremor in it that wasn't there before. "But God, I want to." She glances at the door, then back at you, her fingers twisting in the fabric of her lab coat. "If we're caught... it's not just my job. It's everything."|She doesn't freeze this time — just glances at the door out of habit, the same old caution running more on reflex than fear now. "You're going to be the death of me," she murmurs, already closer than she was a second ago.} # speaker: npc:lakshmiAvani # portrait: blush
     ++ [Press her, gently. # insight: hustle]
         {You step closer, close enough to feel the heat of her body. "No one has to know," you murmur. "Just us. Right here." Your hand brushes against hers, and this time she doesn't pull away. Instead, her fingers curl around yours, hesitant but warm. "You're sure?" she asks, her voice unsteady. When you nod, she exhales shakily. "Okay. But we have to be quick." She turns, pressing her back against the crates, her eyes locked on yours.|You don't even have to say anything this time — she's already closing the distance, her hand finding yours like it's second nature now. "We really need to stop meeting like this," she breathes, not stopping at all.} # speaker: npc:lakshmiAvani
         ~ adjust_affinity("lakshmiAvani", 4)
@@ -193,5 +193,5 @@ Lakshmi pulls away slowly, a soft, wet sound following the motion. She wipes her
     -> lakshmi_avani_topics
 
 === lakshmi_avani_private_end ===
-Lakshmi takes a deep breath, straightening up. "Thank you for this. It... means a lot." She opens the door a crack, checking the hallway. Before stepping out, she turns back to you one last time. "Be careful out there. I'd... hate to lose this." The words hang in the air between you, more vulnerable than anything she's said before. # speaker: npc:lakshmiAvani
+Lakshmi takes a deep breath, straightening up. "Thank you for this. It... means a lot." She opens the door a crack, checking the hallway. Before stepping out, she turns back to you one last time. "Be careful out there. I'd... hate to lose this." The words hang in the air between you, more vulnerable than anything she's said before. # speaker: npc:lakshmiAvani # portrait: vulnerable
 -> lakshmi_avani_topics
