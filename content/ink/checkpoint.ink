@@ -238,6 +238,53 @@ The supply closet is cramped, lit by a single flickering LED strip. Boxes of lab
     ~ adjust_affinity("lakshmiAvani", 3)
     -> lakshmi_avani_private_end
 
+* { affinity_lakshmi_avani >= 7 } [Ask if she'd like to do something more... intimate. # insight: static]
+    She freezes for a second, her breath catching. The flickering light casts sharp shadows across her face as she searches your expression. After a long pause, she swallows hard. "I—I shouldn't. We shouldn't." Her voice is barely above a whisper, but there's a tremor in it that wasn't there before. "But God, I want to." She glances at the door, then back at you, her fingers twisting in the fabric of her lab coat. "If we're caught... it's not just my job. It's everything." # speaker: npc:lakshmiAvani
+    * [Press her, gently. # insight: hustle]
+        You step closer, close enough to feel the heat of her body. "No one has to know," you murmur. "Just us. Right here." Your hand brushes against hers, and this time she doesn't pull away. Instead, her fingers curl around yours, hesitant but warm. "You're sure?" she asks, her voice unsteady. When you nod, she exhales shakily. "Okay. But we have to be quick." She turns, pressing her back against the crates, her eyes locked on yours. # speaker: npc:lakshmiAvani
+        ~ adjust_affinity("lakshmiAvani", 4)
+        -> lakshmi_avani_blowjob
+    * [Respect her hesitation. # insight: root]
+        You nod, giving her space. "You're right. It's not worth the risk." The tension in her shoulders eases slightly, but there's a flicker of something—disappointment?—in her eyes before she looks away. "Maybe... another time," she says quietly. "When things aren't so complicated." She straightens her coat, smoothing out the wrinkles. "We should get back." # speaker: npc:lakshmiAvani
+        ~ adjust_affinity("lakshmiAvani", 2)
+        -> lakshmi_avani_private_end
+    * [Tease her, playfully. # insight: graft]
+        You smirk, leaning in just enough to let your breath ghost over her ear. "Scared, Doctor?" The nickname rolls off your tongue, deliberate. She shivers, and you catch the way her pupils dilate. "I don't scare easy," she retorts, but her voice is breathier than before. You chuckle, low and quiet. "Prove it." That does it. She grabs the front of your shirt, pulling you against her, her mouth crashing into yours. It's messy, desperate, and over too soon—she pulls back with a gasp, her lips swollen. "Fuck," she breathes. "We really shouldn't." But she doesn't let go. # speaker: npc:lakshmiAvani
+        ~ adjust_affinity("lakshmiAvani", 5)
+        -> lakshmi_avani_blowjob
+
+=== lakshmi_avani_blowjob ===
+Lakshmi drops to her knees in front of you, her hands trembling as they work at your belt. The flickering LED strip above casts jagged shadows across her face, but her eyes never leave yours. "I—I've never done this here before," she admits, her voice barely audible over the hum of the light. "I don't know if I'm any good at it."
+
+* [Encourage her. # insight: root]
+    You brush your fingers through her hair, tilting her face up gently. "You don't have to be good," you murmur. "Just be here with me." She swallows hard, then nods, her hands finally freeing you. Her touch is hesitant at first, exploratory, but when you let out a low groan, her confidence seems to grow. She takes you in her mouth slowly, her tongue swirling around the tip before she takes more of you in. The heat of her mouth is almost too much, and you have to bite back a curse. "Fuck, that's—" You cut yourself off, not wanting to break the moment. She pulls back just enough to smirk up at you. "Good?" she asks, her voice teasing. Before you can answer, she takes you deep again, her hands working in tandem with her mouth. # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 4)
+    -> lakshmi_avani_blowjob_end
+* [Let her take control. # insight: static]
+    You lean back against the crates, letting her set the pace. She seems to appreciate the trust—her movements become surer, more deliberate. She starts slow, her tongue tracing patterns along your length before she takes you deeper. Her free hand slides up your thigh, nails digging in just enough to make you hiss. "You like that?" she asks, pulling back just enough to speak. You can only nod, and she grins, wicked and knowing. "Good." She goes back to work, her mouth hot and wet, her hand following the rhythm of her lips. You thread your fingers through her hair, not guiding, just holding on. # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 4)
+    -> lakshmi_avani_blowjob_end
+* [Push her further. # insight: hustle]
+    You grip her hair a little tighter, not enough to hurt, but enough to let her know you're in charge. "Open wider," you command, your voice rough. She obeys without hesitation, her lips parting as she takes you deeper. You can feel her throat relax around you, and the sensation is almost too much. "That's it," you murmur. "Just like that." She moans around you, the vibration sending a jolt of pleasure through your body. Her hands grip your thighs, her nails digging in as she works you over, her mouth and tongue relentless. You can feel yourself getting close, and you tug her hair gently. "I'm gonna—" You don't get to finish the sentence. She pulls back just enough to look up at you, her lips swollen and glistening. "Do it," she says, her voice a challenge. "I want to taste you." # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 5)
+    -> lakshmi_avani_blowjob_end
+
+=== lakshmi_avani_blowjob_end ===
+Lakshmi pulls away slowly, wiping her mouth with the back of her hand. She looks up at you, her cheeks flushed, her breath coming in short gasps. "We—we should probably get back," she says, but there's no real urgency in her voice. She stands, smoothing down her lab coat with shaky hands. "That was..." She trails off, searching for the right word. "Intense."
+
+* [Thank her. # insight: root]
+    You tuck yourself back into your pants, then reach out to cup her face. "Thank you," you say softly. "That was... unexpected." She leans into your touch, her eyes closing for a brief moment. "Yeah," she whispers. "It was." She takes a deep breath, then steps back, putting some distance between you. "We should go. Before someone notices we're missing." # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 3)
+    -> lakshmi_avani_topics
+* [Tease her. # insight: graft]
+    You smirk, adjusting your belt. "Not bad, Doctor," you say, your voice light. "I think I'll keep you around." She rolls her eyes, but there's a smile playing at the corners of her mouth. "You're insufferable," she mutters, but she doesn't sound upset. "Come on. Let's get back before someone comes looking." She reaches for the door, but pauses, glancing back at you. "This doesn't change anything, you know." You raise an eyebrow. "Doesn't it?" She hesitates, then shakes her head. "No. It doesn't." But the way she says it, you're not so sure she believes it. # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 4)
+    -> lakshmi_avani_topics
+* [Promise more later. # insight: static]
+    You catch her hand before she can open the door, pulling her back against you. "This isn't over," you murmur against her ear. "Not by a long shot." She shivers, her body pressing into yours. "You're trouble," she says, but there's no real heat in it. "I know." You let her go, and she takes a deep breath, squaring her shoulders. "We should get back." She opens the door, stepping out into the hallway. You follow, the taste of her still on your lips. # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 5)
+    -> lakshmi_avani_topics
+
 === lakshmi_avani_private_end ===
 Lakshmi takes a deep breath, straightening up. "Thank you for this. It... means a lot." She opens the door a crack, checking the hallway. Before stepping out, she turns back to you one last time. "Be careful out there. I'd... hate to lose this." The words hang in the air between you, more vulnerable than anything she's said before. # speaker: npc:lakshmiAvani
 -> lakshmi_avani_topics
