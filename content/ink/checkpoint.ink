@@ -224,7 +224,7 @@ The supply closet is cramped, lit by a single flickering LED strip. Boxes of lab
 
 * [Ask what she wanted to tell you earlier. # insight: static]
     She hesitates, then leans closer. "There are... discrepancies in the adaptation logs. Things that don't add up. I've been compiling them privately." Her voice drops to a near-whisper. "I could show you, if you're willing to be careful about it." # speaker: npc:lakshmiAvani
-    ~ unlock_note("lakshmi-discrepancies")
+    ~ unlock_note("note-05")
     ~ adjust_affinity("lakshmiAvani", 3)
     -> lakshmi_avani_private_end
 

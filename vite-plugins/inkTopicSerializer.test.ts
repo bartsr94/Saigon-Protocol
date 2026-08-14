@@ -47,7 +47,7 @@ describe('parseTopicsKnot', () => {
 
   it('parses the second real topics knot (lakshmi_avani_topics) the same way', () => {
     const parsed = parseTopicsKnot(checkpointInk, 'lakshmi_avani_topics')
-    expect(parsed.topics.length).toBe(6)
+    expect(parsed.topics.length).toBe(9)
     expect(parsed.topics[0]!.kind).toBe('complex')
     const simple = parsed.topics.find((t): t is SimpleTopic => t.kind === 'simple')
     expect(simple).toBeUndefined()

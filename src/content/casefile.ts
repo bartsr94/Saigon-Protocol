@@ -73,8 +73,8 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
   },
 }
 
-export type CaseNoteId = 'note-01' | 'note-02' | 'note-03' | 'note-04'
-export const CASE_NOTE_IDS: CaseNoteId[] = ['note-01', 'note-02', 'note-03', 'note-04']
+export type CaseNoteId = 'note-01' | 'note-02' | 'note-03' | 'note-04' | 'note-05'
+export const CASE_NOTE_IDS: CaseNoteId[] = ['note-01', 'note-02', 'note-03', 'note-04', 'note-05']
 
 export interface CaseNoteDefinition {
   id: CaseNoteId
@@ -113,5 +113,12 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
       "Y Duoc's public intake is real enough. So is the quieter stream behind it: unofficial follow-up care for bodies that look less like ordinary patients and more like something Aveline or its contractors wanted stabilized without leaving the cleanest possible trail.",
     districtId: 'district5',
     tags: ['investigation', 'medical', 'case1'],
+  },
+  'note-05': {
+    id: 'note-05',
+    heading: "Lakshmi's Discrepancies",
+    body: "Lakshmi Avani has been privately compiling adaptation-log entries that don't add up — kept off the record, away from whoever she doesn't trust with them yet. She offered to show them, carefully.",
+    districtId: 'district4',
+    tags: ['investigation', 'staff-testimony', 'case1'],
   },
 }
