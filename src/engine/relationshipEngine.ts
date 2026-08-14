@@ -13,3 +13,9 @@ export function clampAffinity(value: number): number {
 export function createInitialRelationshipState(): SerializedRelationshipState {
   return Object.fromEntries(NPC_IDS.map((id) => [id, 0])) as SerializedRelationshipState
 }
+
+export function adjustAffinity(state: SerializedRelationshipState, npcId: NpcId, amount: number): SerializedRelationshipState {
+  const newState = { ...state };
+  newState[npcId] = clampAffinity((newState[npcId] || 0) + amount);
+  return newState;
+}

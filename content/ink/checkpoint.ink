@@ -140,7 +140,10 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
 { affinity_lakshmi_avani >= 6 and affinity_lakshmi_avani < 8:
     Lakshmi looks up and the guardedness is just gone, like she stopped bracing for this to go badly a while ago. "Good. I was hoping it'd be you today." # speaker: npc:lakshmiAvani
 }
-{ affinity_lakshmi_avani >= 4 and affinity_lakshmi_avani < 6:
+{ affinity_lakshmi_avani >= 5 and affinity_lakshmi_avani < 6:
+    Lakshmi's eyes light up when she sees you, and she sets aside her work immediately. "I was hoping you'd stop by today. There's something I've been meaning to tell you." # speaker: npc:lakshmiAvani
+}
+{ affinity_lakshmi_avani >= 4 and affinity_lakshmi_avani < 5:
     Lakshmi looks up before you've even finished crossing the room — something almost like ease in it now. "Back already?" She sounds pleased about it, not just surprised. # speaker: npc:lakshmiAvani
 }
 { affinity_lakshmi_avani >= 2 and affinity_lakshmi_avani < 4:
@@ -186,6 +189,14 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
     -> lakshmi_avani_topics
 * { affinity_lakshmi_avani >= 3 } [Ask what she does when she's not down here. # insight: root]
     "Same as everyone in a hab block, probably. I've got a window box that's somehow still growing something green, and a downstairs neighbor who thinks I don't know she borrows my hotplate." A real laugh, the first unguarded one you've heard from her. "It's not much. It's mine, though." # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 1)
+    -> lakshmi_avani_topics
+* { affinity_lakshmi_avani >= 5 } [Ask if she's ever thought about leaving Aveline. # insight: ledger]
+    She glances around the lounge before answering, voice dropping. "Sometimes. But where would I go? Terra Nova's always hiring, but their screening process... let's just say they're thorough about who they let off-world." A pause. "And honestly? I still believe in the work. Just not always the people running it." # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 1)
+    -> lakshmi_avani_topics
+* { affinity_lakshmi_avani >= 5 } [Mention you've noticed she's been more open lately. # insight: static]
+    "Have I?" She considers this, then nods slowly. "I suppose I have. It's... easier, talking to you. Feels less like I'm being assessed and more like I'm actually being heard." She gives a small, genuine smile. "That's rare around here." # speaker: npc:lakshmiAvani
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
 * { affinity_lakshmi_avani >= 6 } [Tell her you're glad the lounge has her in it. # insight: root]
