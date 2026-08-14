@@ -199,10 +199,37 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
     "Have I?" She considers this, then nods slowly. "I suppose I have. It's... easier, talking to you. Feels less like I'm being assessed and more like I'm actually being heard." She gives a small, genuine smile. "That's rare around here." # speaker: npc:lakshmiAvani
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
+* { affinity_lakshmi_avani >= 5 } [Suggest going somewhere more private to talk. # insight: static]
+    Lakshmi's eyes widen slightly, then she glances around the lounge. After a moment, she nods. "There's a supply closet down the hall that's usually empty this time of day. Follow me." She leads you out of the lounge, her steps quick and quiet. # speaker: npc:lakshmiAvani
+    -> lakshmi_avani_private
 * { affinity_lakshmi_avani >= 6 } [Tell her you're glad the lounge has her in it. # insight: root]
     That actually gets a blush out of her — fast, and she covers it by pretending to fix the roster's crooked tape. "That's — " A beat. "You're allowed to say things like that to a witness?" She's smiling when she says it, though. # speaker: npc:lakshmiAvani
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
+
+=== lakshmi_avani_private ===
+The supply closet is cramped, lit by a single flickering LED strip. Boxes of lab supplies line the shelves, and the air smells of disinfectant and dust. Lakshmi leans against a stack of crates, her posture more relaxed than you've ever seen it in the lounge.
+
+"It's quieter here," she says, her voice softer. "Sometimes I come here just to think. Away from the eyes, you know?" She looks at you, really looks, without the usual professional guard. "What did you want to talk about?"
+
+* [Ask about her dreams, not just her work. # insight: root]
+    "Dreams?" She lets out a soft breath. "I used to want to see Earth. Not through a screen or in a history file — the real thing. Green grass, open sky... But then I realized I'm helping build the future here, even if it's messy." She smiles, a bit sadly. "Maybe that's enough." # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 2)
+    -> lakshmi_avani_private_end
+
+* [Ask if she's ever been this open with anyone else at Aveline. # insight: ledger]
+    "No." The answer comes immediately, certain. "Everyone here is either climbing or clinging. It's hard to know who to trust." She meets your eyes. "You're different. You listen without waiting for your turn to speak." # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 2)
+    -> lakshmi_avani_private_end
+
+* [Just stand here with her in the quiet. # insight: static]
+    You don't say anything. Neither does she. For a long moment, the only sound is the hum of the LED strip and the distant murmur of the lounge through the walls. She reaches out, her fingers brushing yours briefly before she pulls back, a faint blush on her cheeks. "We should probably get back before someone notices." But she doesn't move right away. # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 3)
+    -> lakshmi_avani_private_end
+
+=== lakshmi_avani_private_end ===
+Lakshmi takes a deep breath, straightening up. "Thank you for this. It... means a lot." She opens the door a crack, checking the hallway. "After you." # speaker: npc:lakshmiAvani
+-> lakshmi_avani_topics
 
 === checkpoint_lounge_roster_wall ===
 A shift roster taped to the wall, corners curling in the lounge's stale air — names, rotations, a scrawled note in the margin about a supply order nobody's approved yet. Half the names already have a line through them, today's date scratched in beside the strikethrough.
