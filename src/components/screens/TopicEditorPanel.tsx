@@ -1,8 +1,10 @@
 // Live topic editor (docs/LIVE_TOPIC_EDITOR_SPEC.md) — lets a dev
 // add/edit/remove/reorder an NPC's repeat-visit topics (the `* [choice]` /
 // response pairs inside their `topicsKnot` loop) straight from Conversation
-// View, writing back to `content/ink/<storyLocationId>.ink` and recompiling
-// it in-process (vite-plugins/debugTopicEditPlugin.ts). Only "simple"
+// View. Writes back to whichever `.ink` file actually contains that knot —
+// `content/ink/<storyLocationId>.ink` itself, or one of its INCLUDEd
+// per-character files (e.g. content/ink/aveline/) — resolved and
+// recompiled in-process by vite-plugins/debugTopicEditPlugin.ts. Only "simple"
 // topics (inkTopicSerializer.ts's shape — no roll_check, no conditional, no
 // casefile grant) are editable; anything else is shown read-only and
 // re-saved byte-for-byte untouched.
@@ -139,7 +141,7 @@ export function TopicEditorPanel({ storyLocationId, knotName, npcId, onClose }: 
             topic.kind === 'complex' ? (
               <div key={index} className="border border-white/10 bg-black/30 p-3">
                 <p className="mb-2 font-body text-xs text-white/40">
-                  Not editable here — check/casefile logic. Hand-edit <code>content/ink/{storyLocationId}.ink</code> directly.
+                  Not editable here — check/casefile logic. Hand-edit the <code>{storyLocationId}</code> story's <code>.ink</code> source directly.
                 </p>
                 <pre className="whitespace-pre-wrap font-mono text-[11px] text-white/60">{topic.raw}</pre>
               </div>

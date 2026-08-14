@@ -456,4 +456,53 @@ Flood wall ahead. # ambience: -marketChatter # ambience: +rain
       }
     })
   })
+
+  // Regression coverage for a real nesting bug: ink only nests a choice under
+  // another by repeating its glyph per depth (`++`/`**` for depth 2), not by
+  // indentation alone. The intimate-scene sub-choices were originally written
+  // as `+` at the same depth as their parent gate choice, so ink read them as
+  // three more top-level siblings — they showed up immediately on entering
+  // the closet (before the gate was ever picked), and picking the gate itself
+  // hit a dead end with no choices to click. Fixed by promoting them to `++`
+  // in content/ink/aveline/lakshmiAvani.ink.
+  describe("Lakshmi Avani's intimate-scene choice nesting (checkpoint.ink)", () => {
+    const GATE_CHOICE = "Ask if she'd like to do something more... intimate."
+    const SUB_CHOICES = ['Press her, gently.', 'Respect her hesitation.', 'Tease her, playfully.']
+
+    beforeEach(() => {
+      useRelationshipStore.setState(useRelationshipStore.getInitialState(), true)
+      useRelationshipStore.getState().adjustAffinity('lakshmiAvani', 7) // meets the gate's own >= 7 requirement
+      useStoryStore.getState().loadStory(checkpointStoryJson, undefined, 'checkpoint', {
+        mode: 'conversation',
+        npcId: 'lakshmiAvani',
+        entryKnot: 'lakshmi_avani_private',
+      })
+    })
+
+    it('does not show the intimate sub-choices before the gate choice is picked', () => {
+      const entryChoiceTexts = useStoryStore.getState().currentChoices.map((c) => c.text)
+      expect(entryChoiceTexts).toContain(GATE_CHOICE)
+      for (const subChoice of SUB_CHOICES) {
+        expect(entryChoiceTexts).not.toContain(subChoice)
+      }
+    })
+
+    it('reveals exactly the three intimate sub-choices once the gate is picked', () => {
+      const gateIndex = useStoryStore.getState().currentChoices.findIndex((c) => c.text === GATE_CHOICE)
+      useStoryStore.getState().choose(gateIndex)
+
+      expect(useStoryStore.getState().currentChoices.map((c) => c.text)).toEqual(SUB_CHOICES)
+    })
+
+    it('advances into the blowjob scene instead of a dead end', () => {
+      const gateIndex = useStoryStore.getState().currentChoices.findIndex((c) => c.text === GATE_CHOICE)
+      useStoryStore.getState().choose(gateIndex)
+      const subIndex = useStoryStore.getState().currentChoices.findIndex((c) => c.text === 'Press her, gently.')
+      useStoryStore.getState().choose(subIndex)
+
+      const state = useStoryStore.getState()
+      expect(state.ended).toBe(false)
+      expect(state.currentChoices.length).toBeGreaterThan(0)
+    })
+  })
 })
