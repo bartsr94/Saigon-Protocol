@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "compile:ink": "node scripts/compile-ink.mjs",
     "audio:convert": "node scripts/wav-to-mp3.mjs",
+    "content:draft": "node scripts/openrouter-draft.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

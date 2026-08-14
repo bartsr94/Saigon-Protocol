@@ -124,6 +124,21 @@ export function tileKey(position: GridPosition): string {
   return `${position.x},${position.y}`
 }
 
+/**
+ * How far (Manhattan distance) around the player's *current* position a tile
+ * renders as a bare fog-of-war outline even if it's never been permanently
+ * revealed — distinct from a grid's own `visionRadius` (gameplayStore.ts),
+ * which governs the much smaller radius that gets permanently remembered
+ * (full detail: icons, POI/door identity) on each move. This radius is
+ * recomputed fresh from the live player position every render rather than
+ * persisted — walk away and a tile outside both this radius and
+ * `revealedTiles` goes back to being fully invisible, not just undetailed,
+ * since the player has no way of knowing there's a room there until they've
+ * actually been close enough to see it (or, eventually, been told about it
+ * by some other means).
+ */
+export const AMBIENT_FOG_RADIUS = 5
+
 function isRevealable(grid: GridLayout, position: GridPosition): boolean {
   const kind = tileKindAt(grid, position)
   return kind === 'floor' || kind === 'poi' || kind === 'door'

@@ -18,7 +18,8 @@ import { useSaveStore } from '../../stores/saveStore'
 import { useAudioStore } from '../../stores/audioStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useUiStore } from '../../stores/uiStore'
-import { LOCATIONS } from '../../content/locations'
+import { LOCATIONS, type LocationId } from '../../content/locations'
+import { LOCATION_STORY_JSON } from '../../content/locationStories'
 import { ARCHETYPES } from '../../content/archetypes'
 import type { NpcId } from '../../content/npcs'
 import { BACKGROUNDS, type BackgroundId } from '../../content/backgrounds'
@@ -44,12 +45,18 @@ export function DialogueScreen() {
   // *currently speaking* via ink `speaker:` tags. Read here only to mark
   // them met once the scene ends (UI_PASS_SPEC.md §4.3).
   const talkNpcId = useStoryStore((s) => s.activeNpcId)
+  // Set alongside talkNpcId whenever that NPC has Conversation View content
+  // (LocationHubScreen's enterHubInteraction) — lets a first-encounter scene
+  // hand off straight into their topic loop once it ends, rather than back
+  // to the map (UI_PASS_SPEC.md §4.3).
+  const sceneTopicsKnot = useStoryStore((s) => s.sceneTopicsKnot)
   const currentLines = useStoryStore((s) => s.currentLines)
   const currentChoices = useStoryStore((s) => s.currentChoices)
   const ended = useStoryStore((s) => s.ended)
   const lastCheckResult = useStoryStore((s) => s.lastCheckResult)
   const choose = useStoryStore((s) => s.choose)
   const resetStory = useStoryStore((s) => s.reset)
+  const loadStory = useStoryStore((s) => s.loadStory)
 
   const selectedLocationId = useNavigationStore((s) => s.selectedLocationId)
   const returnToOverworld = useNavigationStore((s) => s.returnToOverworld)
@@ -111,6 +118,26 @@ export function DialogueScreen() {
 
   function handleReturnToHub() {
     finalizeEndedScene()
+    // A first-encounter scene for an NPC with Conversation View content
+    // hands off straight into their topic loop instead of dropping back to
+    // the hub grid — the player just met them, so "continue" should mean
+    // keep talking, not walk away (UI_PASS_SPEC.md §4.3).
+    if (talkNpcId && sceneTopicsKnot && activeStoryId) {
+      // activeStoryId only ever came from a real LocationId here — it was
+      // set by LocationHubScreen's enterHubInteraction, the only place that
+      // threads npcId+topicsKnot together (storyStore keeps the field as a
+      // bare string since saveStore also needs to stash 'intro' in it).
+      const storyLocationId = activeStoryId as LocationId
+      loadStory(LOCATION_STORY_JSON[storyLocationId], undefined, storyLocationId, {
+        mode: 'conversation',
+        npcId: talkNpcId,
+        entryKnot: sceneTopicsKnot,
+        topicsKnot: sceneTopicsKnot,
+      })
+      useAudioStore.getState().enterLocation(LOCATIONS[storyLocationId])
+      useSaveStore.getState().autosave()
+      return
+    }
     resetStory()
     if (currentHubId && LOCATIONS[currentHubId]) {
       useAudioStore.getState().enterLocation(LOCATIONS[currentHubId])

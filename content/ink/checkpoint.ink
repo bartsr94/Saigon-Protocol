@@ -126,10 +126,34 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
 // (Architecture §14, GAME_GUIDE.md §10); the last three only appear once
 // she's said enough, or warmed up enough, to say them.
 === lakshmi_avani_topics ===
-{ affinity_lakshmi_avani >= 3:
-    Lakshmi looks up before you've even finished crossing the room — something almost like ease in it now. "Back already?" # speaker: npc:lakshmiAvani
-- else:
-    Lakshmi looks up from whatever she's pretending to read. "Back already?" # speaker: npc:lakshmiAvani
+// Entry greeting, staged across her full affinity range so every visit
+// reads her current standing with the detective before a single topic is
+// picked (CASE_1_CAST_SPEC.md's warmth arc — intimidated-then-easy,
+// planted-but-unresolved). Thresholds match GAME_GUIDE.md §10's tiers with
+// an extra split top and bottom for a gradual crossing rather than a jump.
+{ affinity_lakshmi_avani >= 10:
+    Lakshmi's whole posture changes when she spots you — she drops the roster and crosses half the room to meet you partway. "You actually came back." She says it like she's still getting used to being glad about that. # speaker: npc:lakshmiAvani
+}
+{ affinity_lakshmi_avani >= 8 and affinity_lakshmi_avani < 10:
+    Lakshmi's already smiling before you're through the door, the kind she isn't bothering to manage anymore. "There you are." It sounds more like relief than habit. # speaker: npc:lakshmiAvani
+}
+{ affinity_lakshmi_avani >= 6 and affinity_lakshmi_avani < 8:
+    Lakshmi looks up and the guardedness is just gone, like she stopped bracing for this to go badly a while ago. "Good. I was hoping it'd be you today." # speaker: npc:lakshmiAvani
+}
+{ affinity_lakshmi_avani >= 4 and affinity_lakshmi_avani < 6:
+    Lakshmi looks up before you've even finished crossing the room — something almost like ease in it now. "Back already?" She sounds pleased about it, not just surprised. # speaker: npc:lakshmiAvani
+}
+{ affinity_lakshmi_avani >= 2 and affinity_lakshmi_avani < 4:
+    Lakshmi looks up and manages something closer to a real greeting than a flinch. "Oh — hi. Sorry, I wasn't sure you'd be back." # speaker: npc:lakshmiAvani
+}
+{ affinity_lakshmi_avani >= 0 and affinity_lakshmi_avani < 2:
+    Lakshmi looks up from whatever she's pretending to read, straightening a little too fast. "Back already?" She says it like she's still not sure how she's supposed to act around you. # speaker: npc:lakshmiAvani
+}
+{ affinity_lakshmi_avani >= -5 and affinity_lakshmi_avani < 0:
+    Lakshmi doesn't get up this time. She glances over just long enough to confirm it's you, then goes back to the roster. "Did you need something else." Not really a question. # speaker: npc:lakshmiAvani
+}
+{ affinity_lakshmi_avani < -5:
+    Lakshmi doesn't look up at all until you're standing right in front of her, and even then it's brief. "I've told you what I know." Her voice has gone flat, professional, closed. # speaker: npc:lakshmiAvani
 }
 * [Ask what she actually works on. # insight: graft]
     "Adaptive physiology — how far a body can be pushed to tolerate the outside before it stops being survivable. That's the polite version, anyway." She doesn't offer the impolite one. # speaker: npc:lakshmiAvani
