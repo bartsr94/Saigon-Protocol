@@ -19,28 +19,87 @@ import path from 'node:path'
 import type { IncomingMessage } from 'node:http'
 import type { Plugin } from 'vite'
 import { Compiler, CompilerOptions } from 'inkjs/full'
+import { PosixFileHandler } from 'inkjs/compiler/FileHandler/PosixFileHandler'
+import { ErrorType } from 'inkjs/compiler/Parser/ErrorType'
 import { parseTopicsKnot, replaceTopicsInKnot, type TopicBlock } from './inkTopicSerializer.ts'
 
 const INK_DIR = 'content/ink'
+const KNOT_HEADER_RE = /^===\s*(\S+)\s*===$/
+const INCLUDE_RE = /^INCLUDE\s+(\S.*\S)\s*$/
+
+function inkDirAbsolute(): string {
+  return path.resolve(process.cwd(), INK_DIR)
+}
 
 function listStoryLocationIds(): Set<string> {
-  const absoluteDir = path.resolve(process.cwd(), INK_DIR)
-  return new Set(readdirSync(absoluteDir).filter((f) => f.endsWith('.ink')).map((f) => f.slice(0, -'.ink'.length)))
+  return new Set(readdirSync(inkDirAbsolute()).filter((f) => f.endsWith('.ink')).map((f) => f.slice(0, -'.ink'.length)))
 }
 
 function inkPathFor(storyLocationId: string): string {
-  return path.resolve(process.cwd(), INK_DIR, `${storyLocationId}.ink`)
+  return path.resolve(inkDirAbsolute(), `${storyLocationId}.ink`)
 }
 
 function jsonPathFor(storyLocationId: string): string {
-  return path.resolve(process.cwd(), INK_DIR, `${storyLocationId}.json`)
+  return path.resolve(inkDirAbsolute(), `${storyLocationId}.json`)
 }
 
-function compileInkSource(source: string): { json?: string; errors: string[] } {
+function sourceHasKnot(source: string, knotName: string): boolean {
+  return source.replace(/\r\n/g, '\n').split('\n').some((line) => {
+    const match = KNOT_HEADER_RE.exec(line.trim())
+    return match !== null && match[1] === knotName
+  })
+}
+
+/**
+ * A story's entry `.ink` file can INCLUDE per-character files under a
+ * subfolder (content/ink/aveline/, docs/SAIGON_PROTOCOL_ARCHITECTURE.md
+ * §7) rather than authoring every knot itself — so the file holding a
+ * given `topicsKnot` isn't necessarily `${storyLocationId}.ink`. Walks the
+ * INCLUDE graph breadth-first from the entry file and returns the first
+ * file (entry first, then includes in declaration order) whose source
+ * contains that knot's header, mirroring parseTopicsKnot's own
+ * fail-if-missing posture.
+ */
+function findKnotFile(storyLocationId: string, knotName: string): string {
+  const seen = new Set<string>()
+  const queue = [inkPathFor(storyLocationId)]
+  while (queue.length > 0) {
+    const filePath = queue.shift()!
+    if (seen.has(filePath)) continue
+    seen.add(filePath)
+    const source = readFileSync(filePath, 'utf-8')
+    if (sourceHasKnot(source, knotName)) return filePath
+    for (const line of source.replace(/\r\n/g, '\n').split('\n')) {
+      const match = INCLUDE_RE.exec(line.trim())
+      if (match) queue.push(path.resolve(path.dirname(filePath), match[1]))
+    }
+  }
+  throw new Error(`parseTopicsKnot: no knot named '${knotName}' found.`)
+}
+
+function compileInkSource(entryStoryLocationId: string, pendingPath: string, pendingSource: string): { json?: string; errors: string[] } {
+  // Only ErrorType.Error is fatal — inkjs also routes non-fatal Author/Warning
+  // messages through this same callback (e.g. a benign "apparent loose end"
+  // notice elsewhere in the compiled story), and those must not block an
+  // unrelated save.
   const errors: string[] = []
-  const options = new CompilerOptions(null, [], false, (message: string) => errors.push(message), null)
+  const entryPath = inkPathFor(entryStoryLocationId)
+  const baseHandler = new PosixFileHandler(inkDirAbsolute())
+  // Overrides only the one file being edited so the compile-check sees the
+  // pending (not-yet-written) content; every other INCLUDE still reads
+  // from disk via PosixFileHandler. Keeps the "never write a broken file"
+  // guarantee below without writing pendingSource to disk before we know
+  // it compiles.
+  const fileHandler = {
+    ResolveInkFilename: baseHandler.ResolveInkFilename,
+    LoadInkFileContents: (filename: string) => (path.resolve(filename) === pendingPath ? pendingSource : baseHandler.LoadInkFileContents(filename)),
+  }
+  const entrySource = entryPath === pendingPath ? pendingSource : readFileSync(entryPath, 'utf-8')
+  const options = new CompilerOptions(entryPath, [], false, (message: string, errorType: ErrorType) => {
+    if (errorType === ErrorType.Error) errors.push(message)
+  }, fileHandler)
   try {
-    const compiler = new Compiler(source, options)
+    const compiler = new Compiler(entrySource, options)
     const story = compiler.Compile()
     if (errors.length > 0) return { errors }
     return { json: story.ToJson(), errors: [] }
@@ -101,7 +160,7 @@ export function debugTopicEditPlugin(): Plugin {
             return
           }
 
-          const source = readFileSync(inkPathFor(storyLocationId), 'utf-8')
+          const source = readFileSync(findKnotFile(storyLocationId, knotName), 'utf-8')
           const parsed = parseTopicsKnot(source, knotName)
           res.statusCode = 200
           res.end(JSON.stringify({ topics: parsed.topics }))
@@ -135,17 +194,18 @@ export function debugTopicEditPlugin(): Plugin {
               return
             }
 
-            const source = readFileSync(inkPathFor(storyLocationId), 'utf-8')
+            const knotFilePath = findKnotFile(storyLocationId, knotName)
+            const source = readFileSync(knotFilePath, 'utf-8')
             const updatedSource = replaceTopicsInKnot(source, knotName, topics as TopicBlock[])
 
-            const { json, errors } = compileInkSource(updatedSource)
+            const { json, errors } = compileInkSource(storyLocationId, knotFilePath, updatedSource)
             if (!json) {
               res.statusCode = 422
               res.end(JSON.stringify({ error: 'Ink compile failed — nothing was written.', details: errors }))
               return
             }
 
-            writeFileSync(inkPathFor(storyLocationId), updatedSource, 'utf-8')
+            writeFileSync(knotFilePath, updatedSource, 'utf-8')
             writeFileSync(jsonPathFor(storyLocationId), json, 'utf-8')
 
             res.statusCode = 200

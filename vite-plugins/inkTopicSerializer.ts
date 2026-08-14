@@ -34,6 +34,11 @@ export interface ParsedTopicsKnot {
 }
 
 const CHOICE_LINE = /^\* \[(.*)\]$/
+// A choice block can start with `*` (once) or `+` (sticky, docs/GAME_GUIDE.md's
+// repeatable-topic convention) — either marks a new topic boundary here, even
+// though only a bare `* [...]` line (CHOICE_LINE above) is eligible to be
+// classified "simple"; a `+`-led block is always "complex" and preserved raw.
+const CHOICE_START = /^[*+]\s/
 const SPEAKER_LINE = /^(.*)\s#\sspeaker:\snpc:([A-Za-z0-9_]+)$/
 const KNOT_HEADER = /^===.*===$/
 
@@ -88,7 +93,7 @@ function classifyBlock(rawLines: string[], knotName: string): TopicBlock {
       cleanedLines.push('')
       continue
     }
-    if (trimmed.startsWith('~') || trimmed.startsWith('{') || trimmed.startsWith('*') || trimmed.startsWith('->')) {
+    if (trimmed.startsWith('~') || trimmed.startsWith('{') || trimmed.startsWith('*') || trimmed.startsWith('+') || trimmed.startsWith('->')) {
       return { kind: 'complex', raw }
     }
     if (trimmed.includes('#')) {
@@ -121,7 +126,7 @@ export function parseTopicsKnot(source: string, knotName: string): ParsedTopicsK
   const bodyEnd = findKnotBodyEnd(lines, bodyStart)
   const bodyLines = lines.slice(bodyStart, bodyEnd)
 
-  const firstChoiceIndex = bodyLines.findIndex((l) => l.trim().startsWith('* '))
+  const firstChoiceIndex = bodyLines.findIndex((l) => CHOICE_START.test(l.trim()))
   if (firstChoiceIndex === -1) {
     return { preambleLines: bodyLines, topics: [], trailerLines: [] }
   }
@@ -130,7 +135,7 @@ export function parseTopicsKnot(source: string, knotName: string): ParsedTopicsK
 
   const choiceIndices: number[] = []
   for (let i = firstChoiceIndex; i < bodyLines.length; i++) {
-    if (bodyLines[i].trim().startsWith('* ')) choiceIndices.push(i)
+    if (CHOICE_START.test(bodyLines[i].trim())) choiceIndices.push(i)
   }
 
   const topics: TopicBlock[] = []
