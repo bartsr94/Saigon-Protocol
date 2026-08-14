@@ -12,14 +12,24 @@ export interface NpcStagePortraitProps {
   npcId: NpcId | null
   /** Shown as the label under the portrait, and in place of art when npcId is null (e.g. a location name). */
   fallbackLabel: string
+  /**
+   * Which of `npcId`'s `portraits` variants to show
+   * (docs/NPC_PORTRAIT_VARIANTS_SPEC.md) — null/omitted, or a value that
+   * isn't one of this NPC's variant keys, falls back to their `neutral`
+   * entry.
+   */
+  variantId?: string | null
 }
 
-export function NpcStagePortrait({ npcId, fallbackLabel }: NpcStagePortraitProps) {
+export function NpcStagePortrait({ npcId, fallbackLabel, variantId }: NpcStagePortraitProps) {
   const [loadFailed, setLoadFailed] = useState(false)
 
   useEffect(() => {
     setLoadFailed(false)
-  }, [npcId])
+  }, [npcId, variantId])
+
+  const portraits = npcId ? NPCS[npcId].portraits : undefined
+  const src = portraits ? (portraits[variantId ?? 'neutral'] ?? portraits.neutral) : undefined
 
   return (
     <div className="flex h-full flex-col items-center justify-end gap-3">
@@ -33,12 +43,7 @@ export function NpcStagePortrait({ npcId, fallbackLabel }: NpcStagePortraitProps
               '0 0 30px color-mix(in srgb, var(--color-chrome-primary) 20%, transparent), inset 0 0 40px color-mix(in srgb, var(--color-chrome-primary) 10%, transparent)',
           }}
         >
-          <img
-            src={NPCS[npcId].portraitSrc}
-            alt={NPCS[npcId].name}
-            className="h-full w-full object-cover"
-            onError={() => setLoadFailed(true)}
-          />
+          <img src={src} alt={NPCS[npcId].name} className="h-full w-full object-cover" onError={() => setLoadFailed(true)} />
         </div>
       )}
       <span className="font-display text-xs uppercase tracking-widest text-white/40">{npcId ? NPCS[npcId].name : fallbackLabel}</span>

@@ -29,6 +29,7 @@ import { parseChoiceTags } from '../../engine/contentTags'
 import { ChoiceRow, CyberButton, NpcStagePortrait, Panel, PipTrack, PortraitFrame } from '../ui'
 import { enterLocationHub } from './enterLocationHub'
 import { NavRail } from './NavRail'
+import { usePortraitVariant } from './usePortraitVariant'
 import { TranscriptLog } from './storyTranscript'
 import { useTranscript } from './useTranscript'
 
@@ -73,6 +74,7 @@ export function DialogueScreen() {
   )
 
   const [activeNpcId, setActiveNpcId] = useState<NpcId | null>(null)
+  const activePortraitVariant = usePortraitVariant(activeNpcId, currentLines)
   const [activeBackgroundId, setActiveBackgroundId] = useState<BackgroundId | null>(null)
   // Missing/not-yet-authored backdrop art degrades to no backdrop rather
   // than a broken-image icon (same tolerance PortraitFrame already has).
@@ -232,7 +234,7 @@ export function DialogueScreen() {
           art shows until a scene actually names one, per §3's "location
           establishing art can render here when no character is present."
         */}
-        <NpcStagePortrait npcId={activeNpcId} fallbackLabel={locationName} />
+        <NpcStagePortrait npcId={activeNpcId} fallbackLabel={locationName} variantId={activePortraitVariant} />
       </div>
 
       {/* Right quarter: dialogue panel — floating box, inset from the screen edges */}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseChoiceTags, parseLineAmbience, parseLineBackground, parseLineMusic, parseLineSpeaker, parseLineVoice } from './contentTags'
+import { parseChoiceTags, parseLineAmbience, parseLineBackground, parseLineMusic, parseLinePortrait, parseLineSpeaker, parseLineVoice } from './contentTags'
 
 describe('parseLineSpeaker', () => {
   it('defaults to narrator when there are no tags', () => {
@@ -98,6 +98,28 @@ describe('parseLineAmbience', () => {
 
   it('ignores a value with no recognized sigil', () => {
     expect(parseLineAmbience(['ambience: rain'])).toEqual({ add: [], remove: [], clear: false })
+  })
+})
+
+describe('parseLinePortrait', () => {
+  it('returns null when there is no portrait tag', () => {
+    expect(parseLinePortrait(['speaker: npc:meiHong'])).toBeNull()
+  })
+
+  it('resolves a portrait tag value verbatim, with no closed id set to validate against', () => {
+    expect(parseLinePortrait(['portrait: smiling'])).toBe('smiling')
+  })
+
+  it('resolves independently of a speaker tag on the same line', () => {
+    expect(parseLinePortrait(['portrait: smiling', 'speaker: npc:meiHong'])).toBe('smiling')
+  })
+
+  it('resolves the first portrait tag when several appear on one line, matching parseLineBackground/parseLineMusic', () => {
+    expect(parseLinePortrait(['portrait: smiling', 'portrait: hurt'])).toBe('smiling')
+  })
+
+  it('ignores an empty portrait value', () => {
+    expect(parseLinePortrait(['portrait: '])).toBeNull()
   })
 })
 

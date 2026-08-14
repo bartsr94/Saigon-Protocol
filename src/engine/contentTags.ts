@@ -140,6 +140,27 @@ export function parseLineAmbience(tags: string[]): AmbienceCue {
 }
 
 /**
+ * Resolves a line's requested portrait variant id
+ * (docs/NPC_PORTRAIT_VARIANTS_SPEC.md) — first tag on the line wins (same as
+ * `parseLineBackground`/`parseLineMusic`), and the caller holds the result
+ * until the next line that carries one. Unlike every other line-tag parser,
+ * this one does NOT validate against a closed id set — portrait variants
+ * are scoped per-NPC (`content/npcs.ts`), and this parser doesn't know
+ * which NPC is on stage. It only extracts a non-empty trimmed string;
+ * resolving whether that id is actually one of the active NPC's variants
+ * happens one layer up, in `NpcStagePortrait` — the same "typo degrades
+ * gracefully, never throws" tolerance every other tag has, just split
+ * across two steps instead of one.
+ */
+export function parseLinePortrait(tags: string[]): string | null {
+  for (const raw of tags) {
+    const parsed = parseTag(raw)
+    if (parsed && parsed.key === 'portrait' && parsed.value.length > 0) return parsed.value
+  }
+  return null
+}
+
+/**
  * Resolves a line's voiced-clip id (docs/GAME_GUIDE.md §8's curated intros/greetings).
  * One-shot — unlike `background`/`music`, there's no "keep the last one"
  * persistence concept, so an absent/unrecognized tag simply means no clip

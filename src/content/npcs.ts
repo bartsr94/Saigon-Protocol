@@ -9,15 +9,26 @@ export type NpcId = 'meiHong' | 'soraBaek' | 'respondingOfficer' | 'baChau' | 'p
 export interface NpcDefinition {
   id: NpcId
   name: string
-  /** `/portraits/npcs/<id>.png` — served from public/. */
-  portraitSrc?: string
+  /**
+   * Keyed by variant id, free-form per NPC (docs/NPC_PORTRAIT_VARIANTS_SPEC.md
+   * — no shared vocabulary across NPCs). `neutral` is required whenever this
+   * is present: the default shown until an ink line's `# portrait: <id>` tag
+   * says otherwise, and the fallback when a requested variant id isn't one
+   * of this NPC's keys. Served from `/portraits/npcs/...png` in public/.
+   * Absent entirely = no portrait art configured yet (name-label-only
+   * fallback, NpcStagePortrait's existing tolerance).
+   */
+  portraits?: {
+    neutral: string
+    [variantId: string]: string
+  }
 }
 
 export const NPCS: Record<NpcId, NpcDefinition> = {
   meiHong: {
     id: 'meiHong',
     name: 'Mei Hong',
-    portraitSrc: '/portraits/npcs/mei-hong.png',
+    portraits: { neutral: '/portraits/npcs/mei-hong.png' },
   },
   soraBaek: {
     id: 'soraBaek',
@@ -38,7 +49,18 @@ export const NPCS: Record<NpcId, NpcDefinition> = {
   lakshmiAvani: {
     id: 'lakshmiAvani',
     name: 'Lakshmi Avani',
-    portraitSrc: '/portraits/npcs/lakshmi-avani.png',
+    portraits: {
+      neutral: '/portraits/npcs/lakshmi-avani.png',
+      guarded: '/portraits/npcs/lakshmi-avani-guarded.png',
+      warm: '/portraits/npcs/lakshmi-avani-warm.png',
+      bright: '/portraits/npcs/lakshmi-avani-bright.png',
+      blush: '/portraits/npcs/lakshmi-avani-blush.png',
+      vulnerable: '/portraits/npcs/lakshmi-avani-vulnerable.png',
+      // Top affinity tier only (affinity_lakshmi_avani >= 10) — the
+      // "You actually came back" greeting, CASE_1_CAST_SPEC.md's warmth arc's
+      // ceiling.
+      love: '/portraits/npcs/lakshmi-avani-love.png',
+    },
   },
 }
 

@@ -124,6 +124,7 @@ describe('audioStore', () => {
       text: 'Mei Hong looks up.',
       speaker: { type: 'narrator' },
       background: null,
+      portrait: null,
       music: null,
       ambienceOps: NO_OP_CUE,
       voice: 'meiHongIntro',

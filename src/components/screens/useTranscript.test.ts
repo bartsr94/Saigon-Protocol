@@ -23,6 +23,7 @@ function line(text: string): StoryLine {
     text,
     speaker: { type: 'narrator' },
     background: null,
+    portrait: null,
     music: null,
     ambienceOps: { add: [], remove: [], clear: false },
     voice: null,

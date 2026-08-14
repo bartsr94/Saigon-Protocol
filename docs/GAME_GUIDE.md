@@ -258,6 +258,7 @@ line — last one wins if several appear; `ambience` is the exception, every
 | `speaker: npc:<npcId>` | NPC line, `<npcId>` → `content/npcs.ts` | Name row; center-stage portrait swaps and holds until the next `npc:` tag |
 | `speaker: insight:<insightId>` | Insight interjection, `<insightId>` → `content/insights.ts` | `InsightChip`-headed entry in that Insight's color |
 | `background: <id>` | Scene backdrop, `<id>` → `content/backgrounds.ts`. Independent of `speaker`. | Dimmed full-bleed backdrop, holds until the next `background:` tag |
+| `portrait: <variantId>` | Which of the on-stage NPC's `content/npcs.ts` `portraits` entries to show, e.g. `smiling`/`hurt`. Not validated against a shared id set — an id that isn't one of that NPC's keys falls back to their `neutral` entry. | Center-stage portrait swaps and holds until the next `portrait:` tag, or resets to `neutral` when a different NPC becomes the speaker |
 | `music: <id>` | Scene music cue, `<id>` → `content/music.ts`. `'none'` explicitly silences music. | Crossfades, holds until the next `music:` tag |
 | `ambience: +<id>` / `-<id>` / `clear` | Layered environmental sound, `<id>` → `content/ambience.ts` | Adds/removes/clears a looping layer, faded in/out |
 | `voice: <id>` | Curated voiced line (intros/greetings only), `<id>` → `content/voiceClips.ts` | Plays once as the line appears; shows a replay glyph |

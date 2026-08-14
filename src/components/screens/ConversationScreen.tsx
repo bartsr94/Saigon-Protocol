@@ -27,6 +27,7 @@ import { PORTRAITS } from '../../content/portraits'
 import { parseChoiceTags } from '../../engine/contentTags'
 import { CyberButton, NpcStagePortrait, Panel, PipTrack, PortraitFrame } from '../ui'
 import { NavRail } from './NavRail'
+import { usePortraitVariant } from './usePortraitVariant'
 import { TranscriptLog } from './storyTranscript'
 import { TopicEditorPanel } from './TopicEditorPanel'
 import { useTranscript } from './useTranscript'
@@ -51,6 +52,7 @@ export function ConversationScreen() {
   const openOverlay = useUiStore((s) => s.openOverlay)
 
   const [editingTopics, setEditingTopics] = useState(false)
+  const activePortraitVariant = usePortraitVariant(npcId, currentLines)
 
   // Capped (PERFORMANCE_PASS_SPEC.md §1) — unlike DialogueScreen's one-scene
   // sessions, the ink Story here stays parked on the same `storyInstance`
@@ -112,7 +114,7 @@ export function ConversationScreen() {
               </div>
             </div>
 
-            <NpcStagePortrait npcId={npcId} fallbackLabel={npc.name} />
+            <NpcStagePortrait npcId={npcId} fallbackLabel={npc.name} variantId={activePortraitVariant} />
           </div>
 
           {/* Right quarter: same dialogue panel treatment as DialogueScreen, minus the choice row — that's now the dedicated bottom bar below. */}
