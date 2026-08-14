@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Compiler } from 'inkjs/full'
 import { useStoryStore } from './storyStore'
 import { useInsightStore } from './insightStore'
+import { useRelationshipStore } from './relationshipStore'
 import introStoryJson from '../../content/ink/intro.json'
+import checkpointStoryJson from '../../content/ink/checkpoint.json'
 
 function compileToJson(inkSource: string): Record<string, unknown> {
   const story = new Compiler(inkSource).Compile()
@@ -120,6 +122,19 @@ describe('storyStore', () => {
     })
     useStoryStore.getState().reset()
     expect(useStoryStore.getState().activeTopicsKnot).toBeNull()
+  })
+
+  it('records sceneTopicsKnot in scene mode too (unlike activeTopicsKnot), and clears it on reset', () => {
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK), undefined, 'checkpoint', {
+      mode: 'scene',
+      npcId: 'meiHong',
+      topicsKnot: 'done',
+    })
+    expect(useStoryStore.getState().sceneTopicsKnot).toBe('done')
+    expect(useStoryStore.getState().activeTopicsKnot).toBeNull()
+
+    useStoryStore.getState().reset()
+    expect(useStoryStore.getState().sceneTopicsKnot).toBeNull()
   })
 
   it('a successful check advances past the branch with no composure damage, and consumes the Red check in insightStore', () => {
@@ -370,5 +385,74 @@ Flood wall ahead. # ambience: -marketChatter # ambience: +rain
     const drivingText = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
 
     expect(drivingText).toContain('how much water sits on the other side of that wall')
+  })
+
+  // Lakshmi Avani's entry greeting (checkpoint.ink's lakshmi_avani_topics) is
+  // the first content built against the affinity-tiered-greeting pattern —
+  // a bank of mutually exclusive `{ affinity_x >= lo and affinity_x < hi: }`
+  // blocks keyed to GAME_GUIDE.md §10's tiers, synced live via
+  // relationshipStore (Architecture §14). This suite doubles as the
+  // regression test for her specific lines and as the template to copy when
+  // wiring the same pattern up for another NPC: set affinity, enter the
+  // conversation via entryKnot, assert on the tier line, and (once) assert
+  // the tiers are non-overlapping.
+  describe("Lakshmi Avani's affinity-tiered greeting (checkpoint.ink)", () => {
+    beforeEach(() => {
+      useRelationshipStore.setState(useRelationshipStore.getInitialState(), true)
+    })
+
+    function enterLakshmiConversation(): string {
+      useStoryStore.getState().loadStory(checkpointStoryJson, undefined, 'checkpoint', {
+        mode: 'conversation',
+        npcId: 'lakshmiAvani',
+        entryKnot: 'lakshmi_avani_topics',
+        topicsKnot: 'lakshmi_avani_topics',
+      })
+      return useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
+    }
+
+    it.each([
+      [10, 'You actually came back.'],
+      [9, 'There you are.'],
+      [8, 'There you are.'],
+      [7, "Good. I was hoping it'd be you today."],
+      [6, "Good. I was hoping it'd be you today."],
+      [5, 'pleased about it, not just surprised.'],
+      [4, 'pleased about it, not just surprised.'],
+      [3, "Sorry, I wasn't sure you'd be back."],
+      [2, "Sorry, I wasn't sure you'd be back."],
+      [1, "still not sure how she's supposed to act around you."],
+      [0, "still not sure how she's supposed to act around you."],
+      [-1, 'Did you need something else.'],
+      [-5, 'Did you need something else.'],
+      [-6, "I've told you what I know."],
+      [-10, "I've told you what I know."],
+    ])('greets at affinity %i with the matching tier line', (affinity, expectedText) => {
+      useRelationshipStore.getState().adjustAffinity('lakshmiAvani', affinity)
+      expect(enterLakshmiConversation()).toContain(expectedText)
+    })
+
+    it('shows exactly one tier line per visit, never zero or two at once', () => {
+      const tierLines = [
+        'You actually came back.',
+        'There you are.',
+        "Good. I was hoping it'd be you today.",
+        'pleased about it, not just surprised.',
+        "Sorry, I wasn't sure you'd be back.",
+        "still not sure how she's supposed to act around you.",
+        'Did you need something else.',
+        "I've told you what I know.",
+      ]
+      // Sweeps past every documented threshold (-10, -5, 0, 2, 4, 6, 8, 10)
+      // plus a value in each gap between them, to catch a future tier-copy
+      // mistake that leaves a gap (no line fires) or an overlap (two do).
+      for (let affinity = -10; affinity <= 10; affinity++) {
+        useRelationshipStore.setState(useRelationshipStore.getInitialState(), true)
+        useRelationshipStore.getState().adjustAffinity('lakshmiAvani', affinity)
+        const opening = enterLakshmiConversation()
+        const matches = tierLines.filter((line) => opening.includes(line))
+        expect(matches, `affinity ${affinity} matched ${matches.length} tier lines`).toHaveLength(1)
+      }
+    })
   })
 })

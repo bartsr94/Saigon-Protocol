@@ -8,7 +8,7 @@
 import { useCallback, useMemo } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { GridHubDefinition, GridPosition, HubInteraction } from '../../content/locationHubs'
-import { doorAt, reachableTiles, tileKey, tileKindAt } from '../../engine/gridMovement'
+import { AMBIENT_FOG_RADIUS, doorAt, reachableTiles, tileKey, tileKindAt, tilesWithinRadius } from '../../engine/gridMovement'
 import { useCasefileStore } from '../../stores/casefileStore'
 import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
@@ -43,6 +43,8 @@ interface HubGridViewProps {
 }
 
 const TILE_PX = 56
+const TILE_GAP = 2
+const TILE_PITCH = TILE_PX + TILE_GAP
 const EMPTY_REVEALED: Set<string> = new Set()
 
 export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap, atEntry }: HubGridViewProps) {
@@ -76,6 +78,14 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
   // and shared with useGridKeydownMovement below, rather than each
   // recomputing its own flood-fill (PERFORMANCE_PASS_SPEC.md §2).
   const reachable = useMemo(() => reachableTiles(hub.grid, isDoorUnlocked), [hub.grid, isDoorUnlocked])
+
+  // Tiles within AMBIENT_FOG_RADIUS of wherever the player is standing right
+  // now — recomputed live off playerPosition rather than persisted, unlike
+  // revealedTiles below (see gridMovement.ts's AMBIENT_FOG_RADIUS doc
+  // comment). Lets a hub's floor plan sprawl arbitrarily far past what's
+  // ever been walked, since only this nearby bubble plus permanently
+  // revealed tiles ever render at all.
+  const nearbyTiles = useMemo(() => new Set(tilesWithinRadius(hub.grid, playerPosition, AMBIENT_FOG_RADIUS)), [hub.grid, playerPosition])
 
   useGridKeydownMovement(hub.grid, playerPosition, moveTo, reachable, Boolean(activeOverlay) || editingMap)
 
@@ -128,74 +138,95 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
         />
       )}
 
-      <div className="relative z-10 flex h-full flex-col gap-4 p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <Panel size="md" className="inline-flex max-w-xl flex-col gap-3 p-4">
-            <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">Location Hub — AR Scan</span>
-            <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{hub.name}</h1>
-            {squareBlurbIsHubBlurb ? (
-              <EditableText className="font-body text-base leading-6 text-white/72" value={squareBlurb} file="locationHubs" field="blurb" />
-            ) : (
-              <p className="font-body text-base leading-6 text-white/72">{squareBlurb}</p>
-            )}
-            {/* HubCardListView already has an inline "Return to Map" button;
-                grid hubs relied on NavRail's small MAP icon alone, which
-                didn't read as an obvious way out. Gated on standing at the
-                grid's entry tile — the same square you walked in on is the
-                only way back out, same as entering. */}
-            <div className="flex gap-2">
-              <CyberButton
-                className="self-start !px-3 !py-2 !text-xs"
-                disabled={!atEntry}
-                title={atEntry ? undefined : 'Return to the entrance to leave.'}
-                onClick={onReturnToMap}
-              >
-                Return to Map
+      {/* Floating AR-scan overlay — absolutely positioned over the grid
+          rather than a flex sibling of it, so a long blurb (a POI's joined
+          interaction descriptions, or the hub's own blurb) can never steal
+          vertical space from the grid area below and force it into its own
+          scrollbar. Panel's own bg-black/75 + backdrop-blur (ui/Panel.tsx)
+          is exactly the "hovering HUD chrome over the scene" look this
+          needs, the same treatment DialogueScreen's status HUD already
+          uses. pointer-events-none on the wrapper, re-enabled per-panel, so
+          the dead space between the two panels doesn't swallow clicks/drags
+          meant for the grid underneath. */}
+      <div className="pointer-events-none absolute inset-x-6 top-6 z-20 flex flex-wrap items-start justify-between gap-4">
+        <Panel size="md" className="pointer-events-auto inline-flex max-w-xl flex-col gap-3 p-4">
+          <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">Location Hub — AR Scan</span>
+          <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{hub.name}</h1>
+          {squareBlurbIsHubBlurb ? (
+            <EditableText className="font-body text-base leading-6 text-white/72" value={squareBlurb} file="locationHubs" field="blurb" />
+          ) : (
+            <p className="font-body text-base leading-6 text-white/72">{squareBlurb}</p>
+          )}
+          {/* HubCardListView already has an inline "Return to Map" button;
+              grid hubs relied on NavRail's small MAP icon alone, which
+              didn't read as an obvious way out. Gated on standing at the
+              grid's entry tile — the same square you walked in on is the
+              only way back out, same as entering. */}
+          <div className="flex gap-2">
+            <CyberButton
+              className="self-start !px-3 !py-2 !text-xs"
+              disabled={!atEntry}
+              title={atEntry ? undefined : 'Return to the entrance to leave.'}
+              onClick={onReturnToMap}
+            >
+              Return to Map
+            </CyberButton>
+            {import.meta.env.DEV && mapEditEnabled && (
+              <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={openMapEditor}>
+                Edit Map
               </CyberButton>
-              {import.meta.env.DEV && mapEditEnabled && (
-                <CyberButton className="self-start !px-3 !py-2 !text-xs" onClick={openMapEditor}>
-                  Edit Map
-                </CyberButton>
-              )}
-            </div>
-          </Panel>
+            )}
+          </div>
+        </Panel>
 
-          {/* Text fallback for keyboard/precision players and screen readers —
-              only lists POIs already revealed; clicking one is equivalent to
-              walking onto it, so a POI glimpsed through a locked door is
-              listed but disabled rather than a fog/door-bypassing shortcut. */}
-          <Panel size="sm" className="max-w-xs p-3">
-            <p className="font-display text-[10px] uppercase tracking-[0.3em] text-white/60">Known Places</p>
-            <div className="mt-2 flex flex-col gap-1">
-              {discoveredPois.length === 0 && <p className="font-body text-xs text-white/40">Nothing mapped yet. Move to reveal the room.</p>}
-              {discoveredPois.map((poi) => {
-                const isReachable = reachable.has(tileKey(poi.position))
-                return (
-                  <button
-                    key={poi.id}
-                    type="button"
-                    disabled={!isReachable}
-                    title={isReachable ? undefined : 'Sealed behind a locked door.'}
-                    onClick={() => isReachable && moveTo(poi.position)}
-                    className={`text-left font-body text-xs underline decoration-white/20 underline-offset-2 ${
-                      isReachable ? 'text-white/65 hover:text-chrome-secondary' : 'text-white/30 no-underline'
-                    }`}
-                  >
-                    {poi.interactions.map((interaction) => interaction.label).join(' / ')}
-                  </button>
-                )
-              })}
-            </div>
-          </Panel>
-        </div>
+        {/* Text fallback for keyboard/precision players and screen readers —
+            only lists POIs already revealed; clicking one is equivalent to
+            walking onto it, so a POI glimpsed through a locked door is
+            listed but disabled rather than a fog/door-bypassing shortcut. */}
+        <Panel size="sm" className="pointer-events-auto max-w-xs p-3">
+          <p className="font-display text-[10px] uppercase tracking-[0.3em] text-white/60">Known Places</p>
+          <div className="mt-2 flex flex-col gap-1">
+            {discoveredPois.length === 0 && <p className="font-body text-xs text-white/40">Nothing mapped yet. Move to reveal the room.</p>}
+            {discoveredPois.map((poi) => {
+              const isReachable = reachable.has(tileKey(poi.position))
+              return (
+                <button
+                  key={poi.id}
+                  type="button"
+                  disabled={!isReachable}
+                  title={isReachable ? undefined : 'Sealed behind a locked door.'}
+                  onClick={() => isReachable && moveTo(poi.position)}
+                  className={`text-left font-body text-xs underline decoration-white/20 underline-offset-2 ${
+                    isReachable ? 'text-white/65 hover:text-chrome-secondary' : 'text-white/30 no-underline'
+                  }`}
+                >
+                  {poi.interactions.map((interaction) => interaction.label).join(' / ')}
+                </button>
+              )
+            })}
+          </div>
+        </Panel>
+      </div>
 
-        <div className="flex flex-1 items-center justify-center overflow-auto">
+      <div className="relative z-10 flex h-full flex-col gap-4 p-6">
+        {/* Camera viewport: fixed-size and overflow-hidden rather than the
+            old "center the whole grid, scroll if it's bigger than the
+            screen" layout — the inner grid is absolutely positioned and
+            panned via `transform` so the player's tile always sits at the
+            viewport's center, however large the authored grid is. This is
+            also what makes AMBIENT_FOG_RADIUS's "sprawl past the visible
+            area" fog meaningful: without a camera, a big enough hub would
+            just force a scrollbar (or shrink to fit) instead of staying
+            explorable. */}
+        <div className="relative flex-1 overflow-hidden">
           <div
+            className={`absolute left-1/2 top-1/2 ${reduceMotion ? '' : 'transition-transform duration-200 ease-out'}`}
             style={{
               display: 'grid',
               gridTemplateColumns: `repeat(${hub.grid.width}, ${TILE_PX}px)`,
               gridTemplateRows: `repeat(${hub.grid.height}, ${TILE_PX}px)`,
-              gap: 2,
+              gap: TILE_GAP,
+              transform: `translate(${-(playerPosition.x * TILE_PITCH + TILE_PX / 2)}px, ${-(playerPosition.y * TILE_PITCH + TILE_PX / 2)}px)`,
             }}
           >
             {hub.grid.layoutRows.flatMap((row, y) =>
@@ -211,6 +242,10 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
                 if (kind !== 'floor' && kind !== 'poi' && kind !== 'door') return <div key={key} className="pointer-events-none" />
 
                 const revealed = revealedTiles.has(key)
+                // Neither permanently revealed nor currently nearby — render
+                // nothing, same as a wall/void tile, rather than the faint
+                // "unrevealed" outline below (AMBIENT_FOG_RADIUS above).
+                if (!revealed && !nearbyTiles.has(key)) return <div key={key} className="pointer-events-none" />
                 const isPlayer = playerPosition.x === x && playerPosition.y === y
                 const poi = hub.grid.pois.find((p) => p.position.x === x && p.position.y === y)
                 const door = kind === 'door' ? doorAt(hub.grid, { x, y }) : null

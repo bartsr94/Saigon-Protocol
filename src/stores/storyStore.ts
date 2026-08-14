@@ -71,6 +71,15 @@ interface StoryState {
    * `activeStoryId`'s `.ink` file it's editing.
    */
   activeTopicsKnot: string | null
+  /**
+   * The `topicsKnot` a first-encounter 'scene' session's NPC (`activeNpcId`)
+   * has, if any — set from `loadStory`'s `topicsKnot` option regardless of
+   * mode, unlike `activeTopicsKnot` above which stays conversation-mode-only
+   * (that one drives the live topic editor). DialogueScreen reads this once
+   * such a scene ends to hand off straight into Conversation View with this
+   * NPC instead of returning to the map (UI_PASS_SPEC.md §4.3).
+   */
+  sceneTopicsKnot: string | null
   currentLines: StoryLine[]
   currentChoices: Choice[]
   canContinue: boolean
@@ -172,6 +181,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   storyMode: 'scene',
   activeNpcId: null,
   activeTopicsKnot: null,
+  sceneTopicsKnot: null,
   currentLines: [],
   currentChoices: [],
   canContinue: false,
@@ -227,6 +237,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       storyMode: options?.mode ?? 'scene',
       activeNpcId: options?.npcId ?? null,
       activeTopicsKnot: options?.mode === 'conversation' ? (options?.topicsKnot ?? null) : null,
+      sceneTopicsKnot: options?.topicsKnot ?? null,
       lastCheckResult: null,
     })
     if (savedStateJson) {
@@ -256,6 +267,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       storyMode: 'scene',
       activeNpcId: null,
       activeTopicsKnot: null,
+      sceneTopicsKnot: null,
       currentLines: [],
       currentChoices: [],
       canContinue: false,

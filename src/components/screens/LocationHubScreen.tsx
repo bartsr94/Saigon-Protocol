@@ -70,6 +70,7 @@ export function LocationHubScreen() {
         mode: 'scene',
         npcId: topicsKnot ? npcId : undefined,
         entryKnot: sceneKnot,
+        topicsKnot,
       })
     }
 
