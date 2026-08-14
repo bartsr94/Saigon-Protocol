@@ -222,13 +222,24 @@ The supply closet is cramped, lit by a single flickering LED strip. Boxes of lab
     ~ adjust_affinity("lakshmiAvani", 2)
     -> lakshmi_avani_private_end
 
+* [Ask what she wanted to tell you earlier. # insight: static]
+    She hesitates, then leans closer. "There are... discrepancies in the adaptation logs. Things that don't add up. I've been compiling them privately." Her voice drops to a near-whisper. "I could show you, if you're willing to be careful about it." # speaker: npc:lakshmiAvani
+    ~ unlock_note("lakshmi-discrepancies")
+    ~ adjust_affinity("lakshmiAvani", 3)
+    -> lakshmi_avani_private_end
+
+* [Tell her she can trust you with anything. # insight: root]
+    Her eyes search yours for a long moment. "I know," she says quietly. "That's what scares me. And... that's why I asked you here." She takes a small step closer. "Sometimes trust feels like the most dangerous thing in this place." # speaker: npc:lakshmiAvani
+    ~ adjust_affinity("lakshmiAvani", 3)
+    -> lakshmi_avani_private_end
+
 * [Just stand here with her in the quiet. # insight: static]
     You don't say anything. Neither does she. For a long moment, the only sound is the hum of the LED strip and the distant murmur of the lounge through the walls. She reaches out, her fingers brushing yours briefly before she pulls back, a faint blush on her cheeks. "We should probably get back before someone notices." But she doesn't move right away. # speaker: npc:lakshmiAvani
     ~ adjust_affinity("lakshmiAvani", 3)
     -> lakshmi_avani_private_end
 
 === lakshmi_avani_private_end ===
-Lakshmi takes a deep breath, straightening up. "Thank you for this. It... means a lot." She opens the door a crack, checking the hallway. "After you." # speaker: npc:lakshmiAvani
+Lakshmi takes a deep breath, straightening up. "Thank you for this. It... means a lot." She opens the door a crack, checking the hallway. Before stepping out, she turns back to you one last time. "Be careful out there. I'd... hate to lose this." The words hang in the air between you, more vulnerable than anything she's said before. # speaker: npc:lakshmiAvani
 -> lakshmi_avani_topics
 
 === checkpoint_lounge_roster_wall ===
