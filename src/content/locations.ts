@@ -5,7 +5,7 @@
 import type { MusicId } from './music'
 import type { AmbienceId } from './ambience'
 
-export type DistrictId = 'district1' | 'district2' | 'district4' | 'district5'
+export type DistrictId = 'district1' | 'district2' | 'district3' | 'district4' | 'district5'
 export type LocationId =
   | 'checkpoint'
   | 'noodleStall'
@@ -18,6 +18,8 @@ export type LocationId =
   | 'cidOffice'
   | 'sezacRecords'
   | 'corporatePlaza'
+  | 'turtleLakePlaza'
+  | 'pasteurStreetTaproom'
 
 export const LOCATION_IDS: LocationId[] = [
   'checkpoint',
@@ -31,6 +33,8 @@ export const LOCATION_IDS: LocationId[] = [
   'cidOffice',
   'sezacRecords',
   'corporatePlaza',
+  'turtleLakePlaza',
+  'pasteurStreetTaproom',
 ]
 
 export interface LocationDefinition {
@@ -115,7 +119,7 @@ export const LOCATIONS: Record<LocationId, LocationDefinition> = {
     name: 'Back-Alley Noodle Stall',
     blurb: 'Off the books, off the grid — real garlic, real fish sauce, nothing here came through a licensed import lane. Good place to hear what the corpo-govs don’t.',
     unlockedByDefault: false,
-    unlocksOnComplete: ['yDuocInstitute', 'deltaSquat'],
+    unlocksOnComplete: ['deltaSquat'],
     ambienceIds: ['marketChatter'],
   },
   yDuocInstitute: {
@@ -124,7 +128,7 @@ export const LOCATIONS: Record<LocationId, LocationDefinition> = {
     name: 'Y Duoc - Cholon Medical Institute',
     blurb:
       'A teaching hospital whose public face still looks legitimate enough to trust. Behind intake, the referrals get quieter: tolerance graft follow-up, adaptation drugs, and the kind of aftercare nobody wants tied back to a payroll system.',
-    unlockedByDefault: false,
+    unlockedByDefault: true,
     ambienceIds: ['marketChatter', 'filterStatic'],
   },
   deltaSquat: {
@@ -134,5 +138,21 @@ export const LOCATIONS: Record<LocationId, LocationDefinition> = {
     blurb: 'Reclaimed wetland shanties, half underwater, close enough to hear the greenhouse platforms humming out past the flood line. Salvagers and worse.',
     unlockedByDefault: false,
     ambienceIds: ['rain', 'greenhouseHum', 'hazeWind'],
+  },
+  turtleLakePlaza: {
+    id: 'turtleLakePlaza',
+    districtId: 'district3',
+    name: 'Turtle Lake Plaza',
+    blurb: 'Three regimes tried to make this fountain square mean something official, and gave up in turn. What\'s left is street food, live acoustic sets, and whoever\'s standing here tonight.',
+    unlockedByDefault: true,
+    ambienceIds: ['marketChatter'],
+  },
+  pasteurStreetTaproom: {
+    id: 'pasteurStreetTaproom',
+    districtId: 'district3',
+    name: 'Pasteur Street Taproom',
+    blurb: 'A villa ground floor turned taproom, hand-brewed and human-run — the kind of authenticity a district with no trade wealth has to make a whole identity out of.',
+    unlockedByDefault: true,
+    ambienceIds: ['marketChatter'],
   },
 }

@@ -150,6 +150,34 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
       },
     ],
   },
+  district3: {
+    id: 'district3',
+    name: 'District 3 — the Canopy',
+    blurb: 'Tree-shaded streets over old villa gardens, no cargo throat and no trading floor to speak of — just Turtle Lake at one end and Pasteur Street\'s taproom light at the other.',
+    backgroundId: null,
+    width: 9,
+    height: 3,
+    // Same short-spur convention as District 5's street: two destinations,
+    // one branch off the main road is enough.
+    entryTile: { x: 0, y: 2 },
+    layoutRows: ['     #   ', '     o   ', '.o.......'],
+    pois: [
+      {
+        id: 'district3-turtle-lake-plaza',
+        position: { x: 1, y: 2 },
+        locationId: 'turtleLakePlaza',
+        label: 'Turtle Lake Plaza',
+        description: 'Street food, live acoustic sets, and a fountain square three regimes have already tried and failed to own the meaning of.',
+      },
+      {
+        id: 'district3-pasteur-street-taproom',
+        position: { x: 5, y: 1 },
+        locationId: 'pasteurStreetTaproom',
+        label: 'Pasteur Street Taproom',
+        description: 'A converted villa ground floor, hand-brewed beer, and a name that has outlived every company that\'s owned it.',
+      },
+    ],
+  },
   district5: {
     id: 'district5',
     name: 'District 5 — Cholon',
@@ -169,6 +197,7 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
         locationId: 'noodleStall',
         label: 'Back-Alley Noodle Stall',
         description: 'Steam and neon over a counter that never quite closes — off the books, off the grid.',
+        lockedReason: 'Nobody off the books talks to a badge without a reason. Not yet.',
       },
       {
         id: 'district5-y-duoc-institute',

@@ -3,9 +3,16 @@
 // convention's `# background: <id>` line tag (docs/GAME_GUIDE.md),
 // same shape as content/npcs.ts.
 
-export type BackgroundId = 'avelineLabExterior' | 'cholonMarket' | 'cholonClinic' | 'district4FloodWall'
+export type BackgroundId = 'avelineLabExterior' | 'cholonMarket' | 'cholonClinic' | 'district4FloodWall' | 'turtleLakePlaza' | 'pasteurStreetTaproom'
 
-export const BACKGROUND_IDS: BackgroundId[] = ['avelineLabExterior', 'cholonMarket', 'cholonClinic', 'district4FloodWall']
+export const BACKGROUND_IDS: BackgroundId[] = [
+  'avelineLabExterior',
+  'cholonMarket',
+  'cholonClinic',
+  'district4FloodWall',
+  'turtleLakePlaza',
+  'pasteurStreetTaproom',
+]
 
 export interface BackgroundDefinition {
   id: BackgroundId
@@ -26,5 +33,11 @@ export const BACKGROUNDS: Record<BackgroundId, BackgroundDefinition> = {
   },
   district4FloodWall: {
     id: 'district4FloodWall',
+  },
+  turtleLakePlaza: {
+    id: 'turtleLakePlaza',
+  },
+  pasteurStreetTaproom: {
+    id: 'pasteurStreetTaproom',
   },
 }
