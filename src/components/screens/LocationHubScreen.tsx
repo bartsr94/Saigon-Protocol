@@ -59,11 +59,12 @@ export function LocationHubScreen() {
 
     if (npcId && topicsKnot && useConversationStore.getState().hasMet(npcId)) {
       const savedState = useConversationStore.getState().getConversationState(npcId)
-      loadStory(LOCATION_STORY_JSON[storyLocationId], savedState, storyLocationId, {
+      loadStory(LOCATION_STORY_JSON[storyLocationId], savedState?.ink, storyLocationId, {
         mode: 'conversation',
         npcId,
         entryKnot: savedState ? undefined : topicsKnot,
         topicsKnot,
+        savedLines: savedState?.lines,
       })
     } else {
       loadStory(LOCATION_STORY_JSON[storyLocationId], undefined, storyLocationId, {

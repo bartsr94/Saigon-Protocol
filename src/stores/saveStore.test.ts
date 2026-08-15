@@ -147,6 +147,32 @@ describe('saveStore', () => {
     expect(useStoryStore.getState().ended || useStoryStore.getState().currentChoices.length > 0).toBe(true)
   })
 
+  // Regression coverage for the real end-to-end path behind the "leaving
+  // Lakshmi and coming back shows nothing" bug: a full save/reload also
+  // round-trips through captureBlob's `inkStateLines`/loadSlot's
+  // `savedLines`, not just storyStore.loadStory called directly (see
+  // storyStore.test.ts's own regression test for that narrower unit). This
+  // one exercises the whole chain including JSON.stringify/parse through
+  // localStorage, since `inkStateLines` only became part of the blob
+  // alongside `inkStateJson`.
+  it('loadSlot restores real narration text for a mid-scene save, not blank text with only choices showing', () => {
+    useInsightStore.getState().selectArchetype('hustler')
+    useNavigationStore.getState().unlockLocation('noodleStall')
+    useNavigationStore.getState().selectLocation('noodleStall')
+    useStoryStore.getState().loadStory(noodleStallJson, undefined, 'noodleStall')
+    const openingText = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
+    expect(openingText.length).toBeGreaterThan(0)
+
+    useSaveStore.getState().autosave()
+    useStoryStore.getState().reset()
+    useInsightStore.setState(useInsightStore.getInitialState(), true)
+    useNavigationStore.setState(useNavigationStore.getInitialState(), true)
+
+    expect(useSaveStore.getState().loadSlot(AUTOSAVE_SLOT_ID)).toBe(true)
+    const restoredText = useStoryStore.getState().currentLines.map((l) => l.text).join(' ')
+    expect(restoredText).toBe(openingText)
+  })
+
   it('loadSlot restores an intro-scene save the same way', () => {
     useInsightStore.getState().selectArchetype('companyMan')
     useStoryStore.getState().loadStory(introStoryJson, undefined, 'intro')

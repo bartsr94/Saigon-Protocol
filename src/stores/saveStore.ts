@@ -128,6 +128,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
     relationship: { ...relationship.affinity },
     conversation: serializeConversationState(conversation),
     inkStateJson: story ? story.state.ToJson() : null,
+    inkStateLines: story ? storyState.currentLines : null,
     activeStoryId: story ? storyState.activeStoryId : null,
     storyMode: story ? storyState.storyMode : 'scene',
     activeNpcId: story ? storyState.activeNpcId : null,
@@ -188,6 +189,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
       useStoryStore.getState().loadStory(storyJson, blob.inkStateJson, blob.activeStoryId, {
         mode: blob.storyMode,
         npcId: blob.activeNpcId ?? undefined,
+        savedLines: blob.inkStateLines ?? undefined,
       })
     } else {
       useStoryStore.getState().reset()

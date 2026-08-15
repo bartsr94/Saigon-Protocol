@@ -10,15 +10,21 @@ import type { SerializedCasefileState } from './casefileEngine'
 import type { SerializedConversationState } from './conversationEngine'
 import type { SerializedThoughtState } from './thoughtEngine'
 import type { SerializedRelationshipState } from './relationshipEngine'
+import type { StoryLine } from './storyEngine'
 import type { InsightId } from '../content/insights'
 import type { NpcId } from '../content/npcs'
 import { LOCATIONS, type DistrictId, type LocationId } from '../content/locations'
 
+// Bumped to 11 when `inkStateLines` was added alongside `inkStateJson` — a
+// mid-scene/mid-conversation save now also captures the `currentLines`
+// batch that was showing at save time, since restoring purely from ink's
+// own serialized state can silently come back with blank narration text for
+// some knot shapes (see storyStore.ts's `hydrateFromRestoredState`).
 // Bumped to 10 when the Relationship System (SAIGON_PROTOCOL_ARCHITECTURE.md §14)
 // added a top-level `relationship` field (per-NPC affinity score).
 // There is still no migration path; older saves are treated as absent
 // rather than partially restored.
-export const SAVE_FORMAT_VERSION = 10
+export const SAVE_FORMAT_VERSION = 11
 export const AUTOSAVE_SLOT_ID = 'autosave'
 export const SAVE_KEY_PREFIX = 'saigon-protocol:save:'
 
@@ -77,6 +83,8 @@ export interface SaveBlob {
   conversation: SerializedConversationState
   /** null when saved with no active scene (e.g. standing on the Overworld). */
   inkStateJson: string | null
+  /** The `currentLines` batch showing when `inkStateJson` was captured — see `StoryLine`'s doc comment for why this can't be reconstructed from `inkStateJson` alone on restore. Null alongside a null `inkStateJson`. */
+  inkStateLines: StoryLine[] | null
   /** Which compiled story inkStateJson belongs to ('intro' or a LocationId) — storyStore.activeStoryId at save time. Null alongside a null inkStateJson. */
   activeStoryId: string | null
   /** 'conversation' when inkStateJson/activeStoryId belong to a Conversation View session rather than a normal scene — tells restore-on-load which screen to route back into. */

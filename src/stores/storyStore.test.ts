@@ -221,25 +221,44 @@ The end.
     expect(useInsightStore.getState().isRedCheckConsumed('checkpoint-stare-down')).toBe(true)
   })
 
-  it('loadStory with a saved ink state restores choices and mechanical state without re-running past it', () => {
+  it('loadStory with a saved ink state restores choices, mechanical state, and the exact currentLines batch that was showing at save time', () => {
     useInsightStore.getState().selectArchetype('hustler')
     vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5) // comfortable success, non-double
 
     useStoryStore.getState().loadStory(compileToJson(DEMO_INK))
     const savedStateJson = useStoryStore.getState().story!.state.ToJson()
+    const savedLines = useStoryStore.getState().currentLines
 
     useStoryStore.getState().reset()
     useInsightStore.setState(useInsightStore.getInitialState(), true) // simulate a fresh session before restoring
 
-    useStoryStore.getState().loadStory(compileToJson(DEMO_INK), savedStateJson)
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK), savedStateJson, undefined, { savedLines })
     const restored = useStoryStore.getState()
     expect(restored.currentChoices).toHaveLength(1)
     expect(restored.ended).toBe(false)
     expect(restored.canContinue).toBe(false)
 
-    // The restored batch collapses to a single block rather than the original
-    // per-line speaker breakdown — the documented save/restore simplification.
-    expect(restored.currentLines).toHaveLength(1)
+    // Restored verbatim from the caller-supplied batch, not reconstructed
+    // from ink's own state — see hydrateFromRestoredState's doc comment for
+    // why that reconstruction can't be trusted.
+    expect(restored.currentLines).toEqual(savedLines)
+    expect(restored.currentLines.map((l) => l.text).join(' ')).toContain('You approach the checkpoint.')
+  })
+
+  it('loadStory omitting savedLines for a saved ink state restores blank narration text (documents the failure mode, not desired behavior)', () => {
+    useInsightStore.getState().selectArchetype('hustler')
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0.34).mockReturnValueOnce(0.5)
+
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK))
+    const savedStateJson = useStoryStore.getState().story!.state.ToJson()
+
+    useStoryStore.getState().reset()
+    useInsightStore.setState(useInsightStore.getInitialState(), true)
+
+    useStoryStore.getState().loadStory(compileToJson(DEMO_INK), savedStateJson)
+    const restored = useStoryStore.getState()
+    expect(restored.currentChoices).toHaveLength(1)
+    expect(restored.currentLines).toEqual([])
   })
 
   it('tags an Insight interjection and an NPC line with their respective speakers, per line', () => {
@@ -365,15 +384,17 @@ Flood wall ahead. # ambience: -marketChatter # ambience: +rain
     expect(voicedLine?.voice).toBe('meiHongIntro')
     expect(opening?.voice).toBeNull()
 
-    // Restore path: the batch collapses to one block (documented save/restore
-    // simplification), tagged from whatever currentTags the story holds at
-    // that flattened point — same dual-parse requirement as background/speaker.
+    // Restore path: the exact original per-line batch (all three lines,
+    // each with its own tags) round-trips via the caller-supplied
+    // `savedLines`, not a reconstruction off the restored story's own state.
     const savedStateJson = useStoryStore.getState().story!.state.ToJson()
+    const savedLines = useStoryStore.getState().currentLines
     useStoryStore.getState().reset()
-    useStoryStore.getState().loadStory(compileToJson(AUDIO_INK), savedStateJson)
+    useStoryStore.getState().loadStory(compileToJson(AUDIO_INK), savedStateJson, undefined, { savedLines })
     const restored = useStoryStore.getState().currentLines
-    expect(restored).toHaveLength(1)
-    expect(restored[0].voice).toBe('meiHongIntro')
+    expect(restored).toEqual(savedLines)
+    const restoredVoicedLine = restored.find((l) => l.text.includes("You're the detective"))
+    expect(restoredVoicedLine?.voice).toBe('meiHongIntro')
   })
 
   it('the intro surfaces the Static interjection once free points push it past the threshold', () => {
@@ -430,6 +451,37 @@ Flood wall ahead. # ambience: -marketChatter # ambience: +rain
     ])('greets at affinity %i with the matching tier line', (affinity, expectedText) => {
       useRelationshipStore.getState().adjustAffinity('lakshmiAvani', affinity)
       expect(enterLakshmiConversation()).toContain(expectedText)
+    })
+
+    // Regression test for the reported bug: leaving Lakshmi's Conversation
+    // View and returning showed no greeting at all, just the bare topic
+    // buttons. Root cause was hydrateFromRestoredState reading ink's own
+    // currentText/currentTags after LoadJson — for this exact knot shape (a
+    // bank of top-level `{ cond: }` blocks with nothing after the matching
+    // one), ink's currentText getter reads back empty even though real text
+    // was generated, because the internal continue step right before the
+    // choice list is itself empty and currentText only reflects the *last*
+    // step. Fixed by having the caller supply the currentLines batch it
+    // already had at save time instead of trying to recover it from `story`.
+    it('still shows the greeting text after a leave-and-return (LoadJson restore), not just bare topic buttons', () => {
+      useRelationshipStore.getState().adjustAffinity('lakshmiAvani', 10)
+      const opening = enterLakshmiConversation()
+      expect(opening).toContain('You actually came back.')
+
+      const savedStateJson = useStoryStore.getState().story!.state.ToJson()
+      const savedLines = useStoryStore.getState().currentLines
+      useStoryStore.getState().reset()
+
+      useStoryStore.getState().loadStory(checkpointStoryJson, savedStateJson, 'checkpoint', {
+        mode: 'conversation',
+        npcId: 'lakshmiAvani',
+        topicsKnot: 'lakshmi_avani_topics',
+        savedLines,
+      })
+
+      const restored = useStoryStore.getState()
+      expect(restored.currentLines.map((l) => l.text).join(' ')).toContain('You actually came back.')
+      expect(restored.currentChoices.length).toBeGreaterThan(0)
     })
 
     it('shows exactly one tier line per visit, never zero or two at once', () => {

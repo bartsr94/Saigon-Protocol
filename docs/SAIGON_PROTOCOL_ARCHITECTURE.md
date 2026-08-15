@@ -195,13 +195,36 @@ interface StoryState {
 `currentLines` is rebuilt per `Continue()` batch by `advance()`, reading
 `story.currentTags` right after each line's own `Continue()` call (a batch
 can mix narrator/NPC/Insight lines that each need their own speaker tag).
-Restoring a save calls `hydrateFromRestoredState()` instead — `story.state
-.LoadJson()` positions the story exactly, but ink's serialized state
-collapses the whole "output since last choice" into one flat
-`currentText`/`currentTags` pair, so a restored batch renders as a single
-block rather than its original per-line breakdown. This is a documented,
-deliberate simplification: Insight values, wellbeing, consumed Red checks,
-and the story's actual position are all restored exactly regardless.
+`StoryLine` itself is defined in `storyEngine.ts` (not `storyStore.ts`,
+which re-exports it) precisely so other pure engine modules — currently
+`saveEngine.ts` and `conversationEngine.ts` — can reference the type
+without importing a store.
+
+Restoring a save calls `hydrateFromRestoredState()` instead of `advance()`
+— `story.state.LoadJson()` positions the story exactly, but the restored
+`story`'s own `currentText`/`currentTags` getters are **not** a reliable
+source for what to show: they reflect only the output stream's *last*
+internal continue step, and for some knot shapes that step is itself empty
+even though real text was generated moments earlier in the same batch (a
+bank of top-level `{ cond: }` blocks with nothing after the matching one —
+Lakshmi Avani's affinity-tiered greeting in `checkpoint.ink` is the shape
+that surfaced this — reproduces it every time; simpler knots often happen
+not to). That silently restored every repeat Conversation View visit to her
+to blank narration with only the topic buttons showing. Fixed by never
+reading text back off the restored `story` at all: every caller that
+serializes ink state via `story.state.ToJson()` also captures the
+`currentLines` batch it had in hand at that moment and threads it through
+as `loadStory`'s `savedLines` option, and `hydrateFromRestoredState` just
+re-displays that verbatim. This is a strict improvement over the old
+"one flattened block" behavior it replaced, not just a fix — a restored
+batch now keeps its real per-line speaker/portrait/tag breakdown. Insight
+values, wellbeing, consumed Red checks, and the story's actual position are
+still restored exactly via `LoadJson` regardless. Both save points
+(`ConversationScreen.handleLeaveConversation` for Conversation View's
+per-NPC resume state, `saveStore.captureBlob` for a full mid-scene/
+mid-conversation game save) now carry `lines` alongside the ink JSON — see
+§8's `SaveBlob.inkStateLines` and `conversationEngine.ts`'s
+`SavedConversationState`.
 
 See `GAME_GUIDE.md` for the ink content-tagging vocabulary
 (`speaker`/`background`/`music`/`ambience`/`voice`/choice tags) that
@@ -351,16 +374,20 @@ the Overworld and on selecting a location) plus player-named manual slots
 (create-new or overwrite), via `SettingsOverlay`'s Save/Load section and
 `TitleScreen`'s Continue (loads the most recent slot).
 
-**`SaveBlob` shape** (`SAVE_FORMAT_VERSION = 2`): `insight`
-(`SerializedInsightState`), `navigation` (`SerializedNavigationState`),
-`inkStateJson: string | null`, and `activeStoryId: string | null` —
-`inkStateJson`/`activeStoryId` are always captured/restored together (both
-set mid-scene, both `null` on the Overworld). `activeStoryId` is what lets
-`loadSlot` recompile the *same* story `inkStateJson` was serialized from
-(`resolveStoryJson()` maps `'intro'` → `introStoryJson`, else looks up
-`LOCATION_STORY_JSON`) instead of always restoring against one fixture —
-this was a real bug (see running log) that the version bump exists to
-guard against for any pre-fix save.
+**`SaveBlob` shape** (`SAVE_FORMAT_VERSION`, bumped on every breaking shape
+change — see the running log for what each bump added, current value in
+`saveEngine.ts`): `insight` (`SerializedInsightState`), `navigation`
+(`SerializedNavigationState`), `inkStateJson: string | null`,
+`inkStateLines: StoryLine[] | null`, and `activeStoryId: string | null` —
+`inkStateJson`/`inkStateLines`/`activeStoryId` are always captured/restored
+together (all set mid-scene, all `null`/empty on the Overworld).
+`activeStoryId` is what lets `loadSlot` recompile the *same* story
+`inkStateJson` was serialized from (`resolveStoryJson()` maps `'intro'` →
+`introStoryJson`, else looks up `LOCATION_STORY_JSON`) instead of always
+restoring against one fixture — this was a real bug (see running log) that
+a version bump exists to guard against for any pre-fix save.
+`inkStateLines` exists because `inkStateJson` alone isn't enough to show
+anything on restore — see §6's `hydrateFromRestoredState` for why.
 
 **Version handling:** `parseSaveBlob` treats a version mismatch as "no
 save" (returns `null`) rather than throwing or attempting migration — there
@@ -368,7 +395,8 @@ is no migration path, a stale-shape blob is just discarded.
 
 `insightStore`/`navigationStore` each expose a `hydrate()` bulk-restore
 action (rebuilds `Set`s from serialized arrays); `storyStore.loadStory()`
-takes an optional `savedStateJson` + `storyId` pair that routes to
+takes an optional `savedStateJson` + `storyId` pair (plus `options.savedLines`
+— required alongside `savedStateJson`, see §6) that routes to
 `hydrateFromRestoredState()` instead of `advance()`. `settingsStore` is
 explicitly **not** part of a save blob — it's a persistent user preference
 tier, not a game-run snapshot, and stays session-only.
@@ -776,6 +804,34 @@ authored against it.
   a case where advancing dialogue faster than `CROSSFADE_MS` could leave
   two intervals racing on the same element's volume. `PERFORMANCE_PASS_SPEC.md`
   covered the original findings and is now folded in here and deleted.
+- **Conversation/scene restore no longer reads text back off `story`
+  (2026):** fixed a real bug — leaving Lakshmi Avani's Conversation View and
+  returning showed only her topic buttons, no greeting text at all, once her
+  affinity reached the point where every tier line had been seen at least
+  once through a leave-and-return cycle. Root cause and fix are covered in
+  §6/§8 above; summarized here because it changes a documented-as-permanent
+  "simplification" (the old "restored batch collapses to one flat block"
+  behavior) into something better, not just a bugfix: a restored batch now
+  keeps its real per-line breakdown, since `StoryLine`s are carried through
+  save/restore verbatim instead of reconstructed from ink's `currentText`.
+  `SAVE_FORMAT_VERSION` bumped to 11 for the new `SaveBlob.inkStateLines`
+  field. Also removed `relationshipEngine.ts`'s exported `adjustAffinity`
+  pure function while reviewing this system end-to-end — dead code with no
+  callers (`relationshipStore.adjustAffinity` has always reimplemented the
+  same clamp-and-set logic inline, matching every other store's
+  `casefileStore`/`thoughtStore`-style pattern of keeping mutation logic in
+  the store and only serialize/hydrate helpers in the engine module — the
+  extra pure function was the one inconsistency with that convention, not
+  a second supported way to do it). New test coverage added at the layer
+  that was previously untested end-to-end: `LocationHubScreen.test.tsx`
+  (new file) drives the real Talk → Conversation View → "Leave
+  Conversation" → Talk-again round trip through the actual
+  `LocationHubScreen`/`ConversationScreen` component wiring — the
+  integration point a store-level regression test alone can't reach, since
+  it's `enterHubInteraction`/`handleLeaveConversation` that thread
+  `savedLines` through, not `storyStore` itself. `saveStore.test.ts` gained
+  a matching full-save-blob round-trip test for the same class of bug via
+  `captureBlob`/`loadSlot`.
 
 ### Open / not yet built
 
