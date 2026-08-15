@@ -38,6 +38,7 @@ export function OverworldScreen() {
     const grouped = {
       district1: [] as LocationId[],
       district2: [] as LocationId[],
+      district3: [] as LocationId[],
       district4: [] as LocationId[],
       district5: [] as LocationId[],
     }

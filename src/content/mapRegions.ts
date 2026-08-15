@@ -15,7 +15,7 @@ export interface DistrictRegionDefinition {
   polygon: MapPoint[]
 }
 
-export const DISTRICT_IDS: DistrictId[] = ['district1', 'district4', 'district5', 'district2']
+export const DISTRICT_IDS: DistrictId[] = ['district1', 'district3', 'district4', 'district5', 'district2']
 
 export const DISTRICT_REGIONS: Record<DistrictId, DistrictRegionDefinition> = {
   district1: {
@@ -32,6 +32,22 @@ export const DISTRICT_REGIONS: Record<DistrictId, DistrictRegionDefinition> = {
       { x: 0.519, y: 0.627 },
       { x: 0.453, y: 0.626 },
       { x: 0.429, y: 0.585 },
+    ],
+  },
+  district3: {
+    id: 'district3',
+    name: 'District 3',
+    shortName: 'the Canopy',
+    blurb: 'Old villa gardens gone quietly to seed, absentee landlords in orbit, and the SEZ\'s actual night out.',
+    accent: '#c084fc',
+    labelAnchor: { x: 0.4, y: 0.55 },
+    polygon: [
+      { x: 0.36, y: 0.51 },
+      { x: 0.405, y: 0.478 },
+      { x: 0.446, y: 0.5 },
+      { x: 0.429, y: 0.585 },
+      { x: 0.372, y: 0.578 },
+      { x: 0.35, y: 0.545 },
     ],
   },
   district4: {

@@ -14,6 +14,8 @@ import transitPlatformJson from '../../content/ink/transitPlatform.json'
 import cidOfficeJson from '../../content/ink/cidOffice.json'
 import sezacRecordsJson from '../../content/ink/sezacRecords.json'
 import corporatePlazaJson from '../../content/ink/corporatePlaza.json'
+import turtleLakePlazaJson from '../../content/ink/turtleLakePlaza.json'
+import pasteurStreetTaproomJson from '../../content/ink/pasteurStreetTaproom.json'
 import type { LocationId } from './locations'
 
 export const LOCATION_STORY_JSON: Record<LocationId, Record<string, unknown>> = {
@@ -28,4 +30,6 @@ export const LOCATION_STORY_JSON: Record<LocationId, Record<string, unknown>> = 
   cidOffice: cidOfficeJson,
   sezacRecords: sezacRecordsJson,
   corporatePlaza: corporatePlazaJson,
+  turtleLakePlaza: turtleLakePlazaJson,
+  pasteurStreetTaproom: pasteurStreetTaproomJson,
 }

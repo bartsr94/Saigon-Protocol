@@ -155,6 +155,8 @@ export const HUB_IDS: HubId[] = [
   'cidOffice',
   'sezacRecords',
   'corporatePlaza',
+  'turtleLakePlaza',
+  'pasteurStreetTaproom',
 ]
 
 export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
@@ -527,5 +529,72 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
         available: true,
       },
     ],
+  },
+  turtleLakePlaza: {
+    id: 'turtleLakePlaza',
+    name: 'Turtle Lake Plaza',
+    blurb: 'Fountain, food stalls, and whoever\'s playing acoustic tonight — the one square in the SEZ nobody\'s ever managed to keep official.',
+    backgroundId: 'turtleLakePlaza',
+    layout: 'cardList',
+    characters: [],
+    actions: [
+      {
+        id: 'turtle-lake-plaza-scene',
+        type: 'inspect',
+        label: 'Sit by the water',
+        description: 'Take a seat at the fountain\'s edge and see what a district with nothing anyone upstairs wants is actually like after dark.',
+        storyLocationId: 'turtleLakePlaza',
+        available: true,
+      },
+    ],
+  },
+  pasteurStreetTaproom: {
+    id: 'pasteurStreetTaproom',
+    name: 'Pasteur Street Taproom',
+    blurb: 'A converted villa ground floor doing hand-brewed beer and live sets — the kind of authenticity a district with no trade wealth has to make an identity out of.',
+    backgroundId: 'pasteurStreetTaproom',
+    layout: 'grid',
+    grid: {
+      width: 5,
+      height: 5,
+      // Same short-hall convention as Y Duoc's grid — a family photo wall
+      // up one branch, Diễm behind the bar on the other.
+      entryTile: { x: 0, y: 2 },
+      layoutRows: ['  #  ', '  o  ', '.....', '  o  ', '  #  '],
+      pois: [
+        {
+          id: 'pasteur-street-family-wall',
+          position: { x: 2, y: 1 },
+          interactions: [
+            {
+              id: 'pasteur-street-inspect-family-wall',
+              type: 'inspect',
+              label: 'Family Photo Wall',
+              description: 'Framed portraits going back further than the SEZ itself, thinning out noticeably somewhere around the last two generations.',
+              storyLocationId: 'pasteurStreetTaproom',
+              available: true,
+              sceneKnot: 'pasteur_street_family_wall',
+            },
+          ],
+        },
+        {
+          id: 'pasteur-street-diem-khuong',
+          position: { x: 2, y: 3 },
+          interactions: [
+            {
+              id: 'pasteur-street-talk-diem-khuong',
+              type: 'talk',
+              npcId: 'diemKhuong',
+              label: 'Diễm Khương',
+              description: 'Runs the taps out of her own family\'s ground floor, and doesn\'t especially want to talk about who still owns the floors above it.',
+              storyLocationId: 'pasteurStreetTaproom',
+              available: true,
+              sceneKnot: 'diem_khuong_intro',
+              topicsKnot: 'diem_khuong_topics',
+            },
+          ],
+        },
+      ],
+    },
   },
 }

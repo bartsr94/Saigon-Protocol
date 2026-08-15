@@ -48,6 +48,7 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       baChau: 0,
       pakRahman: 0,
       sarahMulligan: 0,
+      diemKhuong: 0,
       lakshmiAvani: 3,
     },
     conversation: {

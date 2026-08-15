@@ -13,6 +13,7 @@ import { type RefObject, useEffect, useRef, useState } from 'react'
 import { useAudioStore } from '../../stores/audioStore'
 import type { StoryLine } from '../../stores/storyStore'
 import { useSettingsStore, TEXT_SPEED_MS } from '../../stores/settingsStore'
+import { useUiStore } from '../../stores/uiStore'
 import type { CheckResult } from '../../engine/checkResolution'
 
 export interface LogEntry {
@@ -116,6 +117,30 @@ export function useTranscript(
   function handleSkip() {
     if (latestEntry && typedChars < latestEntryText.length) setTypedChars(latestEntryText.length)
   }
+
+  // Spacebar mirrors clicking the dialogue panel (handleSkip above) — same
+  // typewriter-skip, no separate fast-forward mechanic. Ignored while an
+  // overlay is open (it pauses the screen beneath, per OverlayHost) or while
+  // a text field has focus (e.g. TopicEditorPanel's live-edit inputs), so
+  // spacing in prose or hitting Space on a focused button doesn't leak
+  // through to the scene underneath.
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.code !== 'Space') return
+      if (useUiStore.getState().activeOverlay) return
+      const target = event.target as HTMLElement | null
+      // BUTTON included so a focused ChoiceRow/CyberButton keeps its own
+      // native Space-to-activate behavior instead of us also skipping text
+      // underneath on the same keypress.
+      if (target && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName)) return
+      if (target?.isContentEditable) return
+      event.preventDefault()
+      handleSkip()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestEntry, typedChars, latestEntryText])
 
   function handleLogScroll() {
     const el = logRef.current
