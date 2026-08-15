@@ -4,7 +4,7 @@
 // docs/GAME_GUIDE.md), tagged as the speaker via the content-tagging
 // convention (docs/GAME_GUIDE.md), not a hardcoded test render.
 
-export type NpcId = 'meiHong' | 'soraBaek' | 'respondingOfficer' | 'baChau' | 'pakRahman' | 'lakshmiAvani'
+export type NpcId = 'meiHong' | 'soraBaek' | 'respondingOfficer' | 'baChau' | 'pakRahman' | 'lakshmiAvani' | 'sarahMulligan'
 
 export interface NpcDefinition {
   id: NpcId
@@ -61,6 +61,10 @@ export const NPCS: Record<NpcId, NpcDefinition> = {
       // ceiling.
       love: '/portraits/npcs/lakshmi-avani-love.png',
     },
+  },
+  sarahMulligan: {
+    id: 'sarahMulligan',
+    name: 'Sarah Mulligan',
   },
 }
 

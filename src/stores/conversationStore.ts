@@ -10,16 +10,21 @@
 
 import { create } from 'zustand'
 import type { NpcId } from '../content/npcs'
-import { hydrateConversationState, type SerializedConversationState } from '../engine/conversationEngine'
+import {
+  hydrateConversationState,
+  type SavedConversationState,
+  type SerializedConversationState,
+} from '../engine/conversationEngine'
+import type { StoryLine } from '../engine/storyEngine'
 
 interface ConversationState {
   metNpcIds: Set<NpcId>
-  stateByNpc: Partial<Record<NpcId, string>>
+  stateByNpc: Partial<Record<NpcId, SavedConversationState>>
 
   markMet: (npcId: NpcId) => void
   hasMet: (npcId: NpcId) => boolean
-  saveConversationState: (npcId: NpcId, json: string) => void
-  getConversationState: (npcId: NpcId) => string | undefined
+  saveConversationState: (npcId: NpcId, ink: string, lines: StoryLine[]) => void
+  getConversationState: (npcId: NpcId) => SavedConversationState | undefined
 
   hydrate: (state: SerializedConversationState) => void
   reset: () => void
@@ -36,8 +41,8 @@ export const useConversationStore = create<ConversationState>((set, get) => ({
 
   hasMet: (npcId) => get().metNpcIds.has(npcId),
 
-  saveConversationState: (npcId, json) => {
-    set({ stateByNpc: { ...get().stateByNpc, [npcId]: json } })
+  saveConversationState: (npcId, ink, lines) => {
+    set({ stateByNpc: { ...get().stateByNpc, [npcId]: { ink, lines } } })
   },
 
   getConversationState: (npcId) => get().stateByNpc[npcId],

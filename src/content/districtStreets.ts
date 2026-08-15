@@ -10,9 +10,9 @@
 //
 // Only districts that have earned a street map appear in DISTRICT_STREETS
 // (same phased-rollout precedent as `checkpoint` being the only
-// `layout: 'grid'` Hub today) — District 5/2 have no real destinations
-// yet, so they stay on the Overworld's plain district-panel presentation
-// until they do.
+// `layout: 'grid'` Hub today) — District 2 has no real destinations yet,
+// so it stays on the Overworld's plain district-panel presentation until
+// it does.
 
 import type { BackgroundId } from './backgrounds'
 import type { DistrictId, LocationId } from './locations'
@@ -147,6 +147,35 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
         label: 'District 1 Corporate Plaza',
         description: 'A lobby built to remind visitors exactly how far below the top floor they still are — even the recruitment screen by the elevators is pitching a different future than the one outside.',
         lockedReason: 'Nobody with real authority takes meetings with beat detectives. Not yet.',
+      },
+    ],
+  },
+  district5: {
+    id: 'district5',
+    name: 'District 5 — Cholon',
+    blurb: 'Steam off the noodle stalls, a queue for the tram, and Y Duoc’s intake doors half a block down — Cholon keeps its business quiet and its market loud.',
+    backgroundId: null,
+    width: 9,
+    height: 3,
+    // A short spur off the market road up to the Institute's intake door,
+    // same non-rectangular-via-void convention as District 1/4 — only two
+    // destinations here, so a single branch is enough.
+    entryTile: { x: 0, y: 2 },
+    layoutRows: ['     #   ', '     o   ', '.o.......'],
+    pois: [
+      {
+        id: 'district5-noodle-stall',
+        position: { x: 1, y: 2 },
+        locationId: 'noodleStall',
+        label: 'Back-Alley Noodle Stall',
+        description: 'Steam and neon over a counter that never quite closes — off the books, off the grid.',
+      },
+      {
+        id: 'district5-y-duoc-institute',
+        position: { x: 5, y: 1 },
+        locationId: 'yDuocInstitute',
+        label: 'Y Duoc — Cholon Medical Institute',
+        description: 'A teaching hospital whose intake doors still look legitimate enough to trust.',
       },
     ],
   },

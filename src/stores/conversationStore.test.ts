@@ -33,37 +33,37 @@ describe('conversationStore', () => {
     expect(useConversationStore.getState().hasMet('baChau')).toBe(false)
   })
 
-  it('saveConversationState stores per-NPC ink state independently, and getConversationState reads it back', () => {
-    useConversationStore.getState().saveConversationState('meiHong', '{"topic":"role"}')
-    useConversationStore.getState().saveConversationState('baChau', '{"topic":"other"}')
+  it('saveConversationState stores per-NPC ink state and lines independently, and getConversationState reads it back', () => {
+    useConversationStore.getState().saveConversationState('meiHong', '{"topic":"role"}', [])
+    useConversationStore.getState().saveConversationState('baChau', '{"topic":"other"}', [])
 
-    expect(useConversationStore.getState().getConversationState('meiHong')).toBe('{"topic":"role"}')
-    expect(useConversationStore.getState().getConversationState('baChau')).toBe('{"topic":"other"}')
+    expect(useConversationStore.getState().getConversationState('meiHong')).toEqual({ ink: '{"topic":"role"}', lines: [] })
+    expect(useConversationStore.getState().getConversationState('baChau')).toEqual({ ink: '{"topic":"other"}', lines: [] })
   })
 
   it('saveConversationState overwrites a previous save for the same NPC', () => {
-    useConversationStore.getState().saveConversationState('meiHong', '{"topic":"role"}')
-    useConversationStore.getState().saveConversationState('meiHong', '{"topic":"checkpoint"}')
+    useConversationStore.getState().saveConversationState('meiHong', '{"topic":"role"}', [])
+    useConversationStore.getState().saveConversationState('meiHong', '{"topic":"checkpoint"}', [])
 
-    expect(useConversationStore.getState().getConversationState('meiHong')).toBe('{"topic":"checkpoint"}')
+    expect(useConversationStore.getState().getConversationState('meiHong')).toEqual({ ink: '{"topic":"checkpoint"}', lines: [] })
   })
 
   it('hydrate bulk-restores met NPCs (as a Set) and per-NPC conversation state from a save blob', () => {
     useConversationStore.getState().hydrate({
       metNpcIds: ['meiHong', 'meiHong', 'baChau'],
-      stateByNpc: { meiHong: '{"topic":"role"}' },
+      stateByNpc: { meiHong: { ink: '{"topic":"role"}', lines: [] } },
     })
 
     const state = useConversationStore.getState()
     expect(state.metNpcIds).toEqual(new Set(['meiHong', 'baChau']))
     expect(state.hasMet('meiHong')).toBe(true)
     expect(state.hasMet('baChau')).toBe(true)
-    expect(state.getConversationState('meiHong')).toBe('{"topic":"role"}')
+    expect(state.getConversationState('meiHong')).toEqual({ ink: '{"topic":"role"}', lines: [] })
   })
 
   it('reset clears both met NPCs and saved conversation state back to empty', () => {
     useConversationStore.getState().markMet('meiHong')
-    useConversationStore.getState().saveConversationState('meiHong', '{"topic":"role"}')
+    useConversationStore.getState().saveConversationState('meiHong', '{"topic":"role"}', [])
 
     useConversationStore.getState().reset()
 

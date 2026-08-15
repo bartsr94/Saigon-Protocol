@@ -71,7 +71,7 @@ export function ConversationScreen() {
   // so next visit resumes at exactly this point.
   function handleLeaveConversation() {
     if (storyInstance && npcId) {
-      useConversationStore.getState().saveConversationState(npcId, storyInstance.state.ToJson())
+      useConversationStore.getState().saveConversationState(npcId, storyInstance.state.ToJson(), currentLines)
     }
     resetStory()
     if (currentHubId && LOCATIONS[currentHubId]) {

@@ -11,6 +11,36 @@ import { THOUGHT_IDS, type ThoughtId } from '../content/thoughts'
 import { NPC_IDS, type NpcId } from '../content/npcs'
 import type { CheckResult } from './checkResolution'
 import type { CheckRisk } from '../stores/insightStore'
+import type { BackgroundId } from '../content/backgrounds'
+import type { MusicId } from '../content/music'
+import type { VoiceClipId } from '../content/voiceClips'
+import type { AmbienceCue, LineSpeaker } from './contentTags'
+
+/**
+ * A single parsed batch of ink output plus whatever line-tags applied to it —
+ * storyStore's per-`Continue()` unit, and also the unit saved/restored
+ * verbatim by the Save/Persistence Layer and Conversation View's per-NPC
+ * resume state (see saveEngine.ts's `inkStateLines` and conversationEngine.ts's
+ * `SavedConversationState`), since ink's own serialized state doesn't
+ * reliably round-trip `currentText`/`currentTags` for every knot shape —
+ * see storyStore.ts's `hydrateFromRestoredState` for why. Defined here
+ * rather than in storyStore.ts so those pure engine modules can reference it
+ * without importing a store.
+ */
+export interface StoryLine {
+  text: string
+  speaker: LineSpeaker
+  /** Set only on lines carrying a `# background: <id>` tag; null otherwise (caller keeps the last one shown). */
+  background: BackgroundId | null
+  /** Set only on lines carrying a `# portrait: <variantId>` tag (docs/NPC_PORTRAIT_VARIANTS_SPEC.md); null otherwise (caller keeps the last one shown). */
+  portrait: string | null
+  /** Set only on lines carrying a `# music: <id>` tag; null otherwise (caller keeps whatever track was last cued). */
+  music: MusicId | null
+  /** Always present — describes the ambience-layer diff this line applies, empty/false when the line carries no `ambience` tag. */
+  ambienceOps: AmbienceCue
+  /** Set only on lines carrying a `# voice: <id>` tag; one-shot, no persistence concept. */
+  voice: VoiceClipId | null
+}
 
 export interface CheckHandlers {
   isRedCheckConsumed: (checkId: string) => boolean

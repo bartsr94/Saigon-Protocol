@@ -338,19 +338,51 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
     blurb:
       'A public-facing teaching hospital with enough legitimate traffic to hide a quieter current underneath: unofficial follow-up care, referral slips without signatures, and patients trying not to say where they came from.',
     backgroundId: 'cholonClinic',
-    layout: 'cardList',
-    characters: [],
-    actions: [
-      {
-        id: 'y-duoc-scene',
-        type: 'inspect',
-        label: 'Follow the referral trail',
-        description:
-          'Work the intake floor and see what kind of treatment gets routed through Cholon once official care would leave too clear a paper trail.',
-        storyLocationId: 'yDuocInstitute',
-        available: true,
-      },
-    ],
+    layout: 'grid',
+    grid: {
+      width: 5,
+      height: 5,
+      // A short intake hall with a records desk up one branch and Sarah
+      // Mulligan working the other — same non-rectangular-via-void,
+      // decorative-wall-cap convention as District 1/4's street maps.
+      entryTile: { x: 0, y: 2 },
+      layoutRows: ['  #  ', '  o  ', '.....', '  o  ', '  #  '],
+      pois: [
+        {
+          id: 'y-duoc-referral-desk',
+          position: { x: 2, y: 1 },
+          interactions: [
+            {
+              id: 'y-duoc-talk-referral-desk',
+              type: 'inspect',
+              label: 'Intake & Referral Desk',
+              description:
+                'The counter where paperwork trails go quiet — and where every off-book referral slip in Cholon eventually starts.',
+              storyLocationId: 'yDuocInstitute',
+              available: true,
+              sceneKnot: 'y_duoc_referral_desk',
+            },
+          ],
+        },
+        {
+          id: 'y-duoc-sarah-mulligan',
+          position: { x: 2, y: 3 },
+          interactions: [
+            {
+              id: 'y-duoc-talk-sarah-mulligan',
+              type: 'talk',
+              npcId: 'sarahMulligan',
+              label: 'Sarah Mulligan',
+              description: 'An Erasmus exchange student working the intake floor like she already runs the place.',
+              storyLocationId: 'yDuocInstitute',
+              available: true,
+              sceneKnot: 'sarah_mulligan_intro',
+              topicsKnot: 'sarah_mulligan_topics',
+            },
+          ],
+        },
+      ],
+    },
   },
   deltaSquat: {
     id: 'deltaSquat',
