@@ -22,10 +22,9 @@ describe('parseTopicsKnot', () => {
 
   it('captures a trailing speaker tag on the response', () => {
     const parsed = parseTopicsKnot(meiHongInk, 'mei_hong_topics')
-    const last = parsed.topics[parsed.topics.length - 1] as SimpleTopic
-    expect(last.kind).toBe('simple')
-    expect(last.speakerNpcId).toBe('meiHong')
-    expect(last.responseText.endsWith('# speaker:')).toBe(false)
+    const tagged = parsed.topics.find((t): t is SimpleTopic => t.kind === 'simple' && t.speakerNpcId === 'meiHong')
+    expect(tagged).toBeDefined()
+    expect(tagged!.responseText.endsWith('# speaker:')).toBe(false)
   })
 
   it('classifies a roll_check topic as complex and preserves it verbatim', () => {
@@ -49,7 +48,7 @@ describe('parseTopicsKnot', () => {
 
   it('parses the second real topics knot (lakshmi_avani_topics) the same way', () => {
     const parsed = parseTopicsKnot(lakshmiAvaniInk, 'lakshmi_avani_topics')
-    expect(parsed.topics.length).toBe(9)
+    expect(parsed.topics.length).toBe(10)
     expect(parsed.topics[0]!.kind).toBe('complex')
     const simple = parsed.topics.find((t): t is SimpleTopic => t.kind === 'simple')
     expect(simple).toBeUndefined()

@@ -217,6 +217,9 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       gainEvidence: (id) => useCasefileStore.getState().addEvidence(id),
       unlockNote: (id) => useCasefileStore.getState().unlockNote(id),
       setCaseFlag: (flag) => useCasefileStore.getState().setFlag(flag),
+      hasEvidence: (id) => useCasefileStore.getState().hasEvidence(id),
+      hasNote: (id) => useCasefileStore.getState().hasNote(id),
+      hasFlag: (flag) => useCasefileStore.getState().hasFlag(flag),
     })
     bindThoughtFunctions(story, {
       unlockThought: (id) => useThoughtStore.getState().unlockThought(id),
