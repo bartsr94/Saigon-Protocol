@@ -141,7 +141,14 @@ Done.
     const gainEvidence = vi.fn()
     const unlockNote = vi.fn()
     const setCaseFlag = vi.fn()
-    bindCasefileFunctions(story, { gainEvidence, unlockNote, setCaseFlag })
+    bindCasefileFunctions(story, {
+      gainEvidence,
+      unlockNote,
+      setCaseFlag,
+      hasEvidence: vi.fn(),
+      hasNote: vi.fn(),
+      hasFlag: vi.fn(),
+    })
 
     runToEnd(story)
 
@@ -156,7 +163,14 @@ EXTERNAL gain_evidence(id)
 ~ gain_evidence("not-a-real-item")
 -> END
 `)
-    bindCasefileFunctions(story, { gainEvidence: vi.fn(), unlockNote: vi.fn(), setCaseFlag: vi.fn() })
+    bindCasefileFunctions(story, {
+      gainEvidence: vi.fn(),
+      unlockNote: vi.fn(),
+      setCaseFlag: vi.fn(),
+      hasEvidence: vi.fn(),
+      hasNote: vi.fn(),
+      hasFlag: vi.fn(),
+    })
 
     expect(() => runToEnd(story)).toThrow(/unknown evidence id/)
   })
@@ -167,7 +181,14 @@ EXTERNAL unlock_note(id)
 ~ unlock_note("not-a-real-note")
 -> END
 `)
-    bindCasefileFunctions(story, { gainEvidence: vi.fn(), unlockNote: vi.fn(), setCaseFlag: vi.fn() })
+    bindCasefileFunctions(story, {
+      gainEvidence: vi.fn(),
+      unlockNote: vi.fn(),
+      setCaseFlag: vi.fn(),
+      hasEvidence: vi.fn(),
+      hasNote: vi.fn(),
+      hasFlag: vi.fn(),
+    })
 
     expect(() => runToEnd(story)).toThrow(/unknown note id/)
   })
@@ -179,11 +200,76 @@ EXTERNAL set_case_flag(flag)
 -> END
 `)
     const setCaseFlag = vi.fn()
-    bindCasefileFunctions(story, { gainEvidence: vi.fn(), unlockNote: vi.fn(), setCaseFlag })
+    bindCasefileFunctions(story, {
+      gainEvidence: vi.fn(),
+      unlockNote: vi.fn(),
+      setCaseFlag,
+      hasEvidence: vi.fn(),
+      hasNote: vi.fn(),
+      hasFlag: vi.fn(),
+    })
 
     runToEnd(story)
 
     expect(setCaseFlag).toHaveBeenCalledWith('some-brand-new-flag')
+  })
+
+  it('lets ink query has_evidence/has_note/has_case_flag directly inside a conditional, same pattern as has_thought', () => {
+    const story = compile(`
+EXTERNAL has_evidence(id)
+EXTERNAL has_note(id)
+EXTERNAL has_case_flag(flag)
+{has_evidence("drone-log"): Evidence.|No evidence.}
+{has_note("note-05"): Note.|No note.}
+{has_case_flag("checkpoint-inner-wing-unlocked"): Flag.|No flag.}
+-> END
+`)
+    bindCasefileFunctions(story, {
+      gainEvidence: vi.fn(),
+      unlockNote: vi.fn(),
+      setCaseFlag: vi.fn(),
+      hasEvidence: vi.fn().mockReturnValue(true),
+      hasNote: vi.fn().mockReturnValue(true),
+      hasFlag: vi.fn().mockReturnValue(true),
+    })
+
+    const text = runToEnd(story)
+
+    expect(text).toContain('Evidence.')
+    expect(text).toContain('Note.')
+    expect(text).toContain('Flag.')
+  })
+
+  it('throws when ink passes an unknown evidence/note id to the read-side externals', () => {
+    const evidenceStory = compile(`
+EXTERNAL has_evidence(id)
+~ temp result = has_evidence("not-a-real-item")
+-> END
+`)
+    bindCasefileFunctions(evidenceStory, {
+      gainEvidence: vi.fn(),
+      unlockNote: vi.fn(),
+      setCaseFlag: vi.fn(),
+      hasEvidence: vi.fn(),
+      hasNote: vi.fn(),
+      hasFlag: vi.fn(),
+    })
+    expect(() => runToEnd(evidenceStory)).toThrow(/unknown evidence id/)
+
+    const noteStory = compile(`
+EXTERNAL has_note(id)
+~ temp result = has_note("not-a-real-note")
+-> END
+`)
+    bindCasefileFunctions(noteStory, {
+      gainEvidence: vi.fn(),
+      unlockNote: vi.fn(),
+      setCaseFlag: vi.fn(),
+      hasEvidence: vi.fn(),
+      hasNote: vi.fn(),
+      hasFlag: vi.fn(),
+    })
+    expect(() => runToEnd(noteStory)).toThrow(/unknown note id/)
   })
 })
 

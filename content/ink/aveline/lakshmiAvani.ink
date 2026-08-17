@@ -107,6 +107,11 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
     That actually gets a blush out of her — fast, and she covers it by pretending to fix the roster's crooked tape. "That's — " A beat. "You're allowed to say things like that to a witness?" She's smiling when she says it, though. # speaker: npc:lakshmiAvani # portrait: blush
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
+* { affinity_lakshmi_avani >= 10 and not has_case_flag("checkpoint-inner-wing-unlocked") } [Ask her to help you get into the inner wing. # insight: root]
+    Lakshmi goes quiet for a second, the kind of quiet that means she's already decided and is just bracing for it. "My badge still opens that door. Nobody's revoked it, they just stopped expecting me to use it." She sets the roster down like it matters less than it did a minute ago. "Come on. I'll walk you back myself." # speaker: npc:lakshmiAvani # portrait: love
+    ~ set_case_flag("checkpoint-inner-wing-unlocked")
+    ~ adjust_affinity("lakshmiAvani", 1)
+    -> lakshmi_avani_topics
 
 // A repeatable "repeat scene," not a topic loop of its own — each visit is
 // still pick-one-and-leave (-> lakshmi_avani_private_end), but every choice

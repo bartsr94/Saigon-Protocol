@@ -15,6 +15,10 @@ EXTERNAL unlock_note(id)
 EXTERNAL unlock_thought(id)
 EXTERNAL has_thought(id)
 EXTERNAL adjust_affinity(npcId, amount)
+EXTERNAL has_evidence(id)
+EXTERNAL has_note(id)
+EXTERNAL has_case_flag(flag)
+EXTERNAL set_case_flag(flag)
 
 VAR hustle = 0
 VAR static = 0

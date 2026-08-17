@@ -514,21 +514,42 @@ Casefile state is captured/restored as part of the `SaveBlob`
 (`SerializedCasefileState`), the same as Insight/navigation/gameplay state.
 
 **Ink↔TS grant hooks:** `storyEngine.ts`'s `bindCasefileFunctions` binds
-three `EXTERNAL`s ink content can call directly — `gain_evidence(id)` and
-`unlock_note(id)` (each validated against `content/casefile.ts`'s
+three write `EXTERNAL`s ink content can call directly — `gain_evidence(id)`
+and `unlock_note(id)` (each validated against `content/casefile.ts`'s
 `EVIDENCE_IDS`/`CASE_NOTE_IDS`, throwing on an unknown id the same way
 `roll_check` throws on an unknown insight name) and `set_case_flag(flag)`
-(any non-empty string — flags aren't a closed content set).
-`storyStore.ts`'s `loadStory` wires all three to `casefileStore`'s
-`addEvidence`/`unlockNote`/`setFlag`, the same binding pass as
-`bindCheckFunctions`/`bindWellbeingFunctions`. `content/casefile.ts`'s five
-evidence items and two notes are still flavor-light placeholders, not Case
-1-canonical content, and only `checkpoint.ink` calls the grant hooks so
-far (its Red-check success path). The Debug Console's Flags tool
-(`components/screens/DebugFlagsTool.tsx`, dev-build-only) still exists
-alongside this for ad-hoc testing — e.g. to open a Location Hub locked door
-whose in-fiction trigger isn't authored yet. See "Open / not yet built"
-below.
+(any non-empty string — flags aren't a closed content set) — plus three
+paired read `EXTERNAL`s added alongside them (2026): `has_evidence(id)`,
+`has_note(id)`, `has_case_flag(flag)`, the same "call an EXTERNAL inside an
+ink conditional" shape `has_thought`/`is_red_check_consumed` already use.
+`storyStore.ts`'s `loadStory` wires all six to `casefileStore`'s
+`addEvidence`/`unlockNote`/`setFlag`/`hasEvidence`/`hasNote`/`hasFlag`, the
+same binding pass as `bindCheckFunctions`/`bindWellbeingFunctions`.
+`content/casefile.ts`'s five evidence items and two of its notes are still
+flavor-light placeholders, not Case 1-canonical content. The Debug
+Console's Flags tool (`components/screens/DebugFlagsTool.tsx`,
+dev-build-only) still exists alongside this for ad-hoc testing.
+
+**Checkpoint's inner-wing door unlock (2026):** the first content to use
+the read EXTERNALs — closes the gap `content/locationHubs.ts`'s
+`checkpoint-inner-door` `HubDoor` left open since the Location Hub grid
+work (`unlockFlag: 'checkpoint-inner-wing-unlocked'`, previously only
+settable via the Debug Console's Flags tool). Two independent,
+narratively-distinct paths each call `set_case_flag`, an OR rather than a
+single hard gate: a **leverage** path in `mei_hong_topics`
+(`content/ink/aveline/meiHong.ink`) — a Red check (`checkpoint-mei-hong-leverage`,
+ledger, TN 7) offered only once the player holds both `drone-log` evidence
+and `note-05` (`has_evidence(...) and has_note(...)`), mirroring the
+existing `checkpoint-lakshmi-colleague` gated-Red-check pattern; and a
+**trust** path in `lakshmi_avani_topics`
+(`content/ink/aveline/lakshmiAvani.ink`) — no check, offered once
+`affinity_lakshmi_avani >= 10` (her top tier), guarded by
+`not has_case_flag(...)` so it doesn't repeat once used. The two paths are
+deliberately redundant: a failed Red check on the leverage path doesn't
+lock a playthrough out of the mandatory content behind the door, since the
+trust path remains available. Sora Baek (checkpoint's still-unavailable
+security-liaison POI) and the Inner Containment Wing's actual
+forensic-reveal scene remain untouched — see "Open / not yet built".
 
 **Debug Console (dev-only):** `App.tsx` renders a `DEV`-gated corner button
 (stripped from production builds) that opens `DebugOverlay` — a flat menu
@@ -832,6 +853,12 @@ authored against it.
   `savedLines` through, not `storyStore` itself. `saveStore.test.ts` gained
   a matching full-save-blob round-trip test for the same class of bug via
   `captureBlob`/`loadSlot`.
+- **Casefile read-EXTERNALs + checkpoint's inner-wing door unlock (2026):**
+  added `has_evidence`/`has_note`/`has_case_flag` alongside the existing
+  write-only casefile `EXTERNAL`s, then used them to close the one gap they
+  left open — `checkpoint-inner-door`'s `unlockFlag` had nothing but the
+  Debug Console setting it. Two independent paths now call `set_case_flag`;
+  full detail in §13.
 
 ### Open / not yet built
 
@@ -845,15 +872,15 @@ authored against it.
   the chargen sheet is fixed for the run.
 - Combat/tactical exploration — explicitly out of scope, distant future.
 - Casefile *content* (§13) — the store/save layer and the ink↔TS grant
-  hooks (`gain_evidence`/`unlock_note`/`set_case_flag`) are both built now,
-  but `content/casefile.ts`'s five evidence items are still placeholder, not
-  Case 1-canonical; two of its three notes are too. The third
-  (`note-03`, unlocked from Lakshmi Avani's Faculty Lounge topics loop) is
-  real Case 1 cast content, per `CASE_1_CAST_SPEC.md`. `checkpoint`'s locked
-  inner-wing door (§7) still has no real in-fiction unlock trigger — that
-  needs an actual leverage/investigation-progress mechanic designed first,
-  not just the `set_case_flag` call, which already exists — so only the
-  Debug Console's Flags tool can open it today.
+  hooks (`gain_evidence`/`unlock_note`/`set_case_flag`/`has_evidence`/
+  `has_note`/`has_case_flag`) are both built now, but `content/casefile.ts`'s
+  five evidence items are still placeholder, not Case 1-canonical; two of
+  its three notes are too. The third (`note-03`, unlocked from Lakshmi
+  Avani's Faculty Lounge topics loop) is real Case 1 cast content, per
+  `CASE_1_CAST_SPEC.md`. `checkpoint`'s locked inner-wing door (§7) now has
+  a real in-fiction unlock trigger (§13's "Checkpoint's inner-wing door
+  unlock" entry) — the Debug Console's Flags tool is no longer the only way
+  to open it.
 - The Inner Containment Wing itself (§7's locked-door example) is a
   placeholder room with one generic inspect POI — `CASE_1_LOCATION_MATRIX.md`'s
   actual forensic-reveal scene for that location isn't authored yet.

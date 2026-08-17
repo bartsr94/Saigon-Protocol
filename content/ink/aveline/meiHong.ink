@@ -33,6 +33,15 @@ Mei Hong gives you her attention again — patient, watchful, still deciding how
 * [Ask where the rest of the staff are. # insight: ledger]
     "The lounge, mostly." She nods toward it without quite looking. "Everyone off the floor is parked in there until your people finish. Some of them will talk to you. Most of them don't know enough to be careful about it yet." # speaker: npc:meiHong
     -> mei_hong_topics
+* { has_evidence("drone-log") and has_note("note-05") and not is_red_check_consumed("checkpoint-mei-hong-leverage") } [Press her with the drone log and Lakshmi's discrepancies. # insight: ledger # check: red]
+    ~ temp leverageResult = roll_check("ledger", 7, "checkpoint-mei-hong-leverage", "red")
+    { leverageResult:
+        You lay it out: a patrol log that doesn't match its own route, and a colleague's private notes on an anomaly somebody called "handled." Mei Hong's composure doesn't crack so much as fold, quietly, like she's been waiting for someone to make her stop pretending. "Fine." She doesn't look relieved. "I'll get you past the inner door. But whatever's back there — you didn't hear it from me." # speaker: npc:meiHong
+        ~ set_case_flag("checkpoint-inner-wing-unlocked")
+    - else:
+        She hears you out, arms crossed, and doesn't budge. "A log and somebody's notebook." Her voice is flat, final. "That's not leverage. That's a rumor with a timestamp." # speaker: npc:meiHong
+    }
+    -> mei_hong_topics
 
 // End of Mei Hong's content. Lakshmi Avani's intro/topics/private scene
 // live in content/ink/aveline/lakshmiAvani.ink.

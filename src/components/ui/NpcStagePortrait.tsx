@@ -23,13 +23,28 @@ export interface NpcStagePortraitProps {
 
 export function NpcStagePortrait({ npcId, fallbackLabel, variantId }: NpcStagePortraitProps) {
   const [loadFailed, setLoadFailed] = useState(false)
+  // Tracks the one-shot intro clip (if this variant has one): starts
+  // 'playing' each time the clip changes, moves to 'done' once it ends or
+  // fails to load — either way settling on the plain static image, same as
+  // an NPC/variant with no clip configured at all.
+  const [videoState, setVideoState] = useState<'playing' | 'done'>('playing')
 
   useEffect(() => {
     setLoadFailed(false)
   }, [npcId, variantId])
 
-  const portraits = npcId ? NPCS[npcId].portraits : undefined
-  const src = portraits ? (portraits[variantId ?? 'neutral'] ?? portraits.neutral) : undefined
+  const npc = npcId ? NPCS[npcId] : undefined
+  const portraits = npc?.portraits
+  const requestedVariant = variantId ?? 'neutral'
+  const resolvedVariant = portraits && portraits[requestedVariant] !== undefined ? requestedVariant : 'neutral'
+  const src = portraits?.[resolvedVariant]
+  const introVideo = npc?.portraitVideos?.[resolvedVariant]
+
+  useEffect(() => {
+    setVideoState('playing')
+  }, [introVideo])
+
+  const showVideo = introVideo !== undefined && videoState === 'playing'
 
   return (
     <div className="flex h-full flex-col items-center justify-end gap-3">
@@ -43,7 +58,27 @@ export function NpcStagePortrait({ npcId, fallbackLabel, variantId }: NpcStagePo
               '0 0 30px color-mix(in srgb, var(--color-chrome-primary) 20%, transparent), inset 0 0 40px color-mix(in srgb, var(--color-chrome-primary) 10%, transparent)',
           }}
         >
-          <img src={src} alt={NPCS[npcId].name} className="h-full w-full object-cover" onError={() => setLoadFailed(true)} />
+          {/* Underneath the whole time (not just once the clip ends) so it's
+              already decoded and ready the moment the crossfade starts —
+              swapping `src` in only on 'done' would flash a blank frame. */}
+          <img
+            src={src}
+            alt={npc?.name}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${showVideo ? 'opacity-0' : 'opacity-100'}`}
+            onError={() => setLoadFailed(true)}
+          />
+          {introVideo && (
+            <video
+              key={introVideo}
+              src={introVideo}
+              autoPlay
+              muted
+              playsInline
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${showVideo ? 'opacity-100' : 'opacity-0'}`}
+              onEnded={() => setVideoState('done')}
+              onError={() => setVideoState('done')}
+            />
+          )}
         </div>
       )}
       <span className="font-display text-xs uppercase tracking-widest text-white/40">{npcId ? NPCS[npcId].name : fallbackLabel}</span>

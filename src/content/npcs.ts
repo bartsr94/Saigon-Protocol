@@ -22,6 +22,17 @@ export interface NpcDefinition {
     neutral: string
     [variantId: string]: string
   }
+  /**
+   * Optional one-shot intro clip per portrait variant id (same keys as
+   * `portraits`, no `neutral` requirement — most variants have no clip).
+   * NpcStagePortrait plays it muted/autoplay the moment that variant becomes
+   * active, then crossfades to that variant's static image once it ends (or
+   * immediately if the clip fails to load). Served from
+   * `/portraits/npcs/...mp4` in public/, same folder as the stills.
+   */
+  portraitVideos?: {
+    [variantId: string]: string
+  }
 }
 
 export const NPCS: Record<NpcId, NpcDefinition> = {
@@ -60,6 +71,9 @@ export const NPCS: Record<NpcId, NpcDefinition> = {
       // "You actually came back" greeting, CASE_1_CAST_SPEC.md's warmth arc's
       // ceiling.
       love: '/portraits/npcs/lakshmi-avani-love.png',
+    },
+    portraitVideos: {
+      love: '/portraits/npcs/lakshmi-avani-love.mp4',
     },
   },
   sarahMulligan: {

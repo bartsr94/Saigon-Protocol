@@ -62,6 +62,10 @@ export interface CasefileHandlers {
   unlockNote: (id: CaseNoteId) => void
   /** Flags are free-form strings (also gate Location Hub locked doors) — no ID union to validate against. */
   setCaseFlag: (flag: string) => void
+  /** Read-side counterparts, letting ink gate content on casefile state already granted (same shape as `has_thought`). */
+  hasEvidence: (id: EvidenceId) => boolean
+  hasNote: (id: CaseNoteId) => boolean
+  hasFlag: (flag: string) => boolean
 }
 
 function assertInsightId(value: unknown): InsightId {
@@ -143,12 +147,18 @@ export function bindWellbeingFunctions(story: Story, handlers: WellbeingHandlers
  * names, so a typo'd id fails loudly at the ink call site rather than
  * silently no-opping. `set_case_flag(flag)` takes any non-empty string —
  * flags aren't a closed content set (Location Hub locked doors key off
- * them too).
+ * them too). `has_evidence`/`has_note`/`has_case_flag` are the read-side
+ * counterparts, letting ink gate a choice on casefile state it already
+ * granted — same "call an EXTERNAL inside an ink conditional" pattern
+ * `has_thought`/`is_red_check_consumed` already use.
  */
 export function bindCasefileFunctions(story: Story, handlers: CasefileHandlers): void {
   story.BindExternalFunction('gain_evidence', (id: string) => handlers.gainEvidence(assertEvidenceId(id)))
   story.BindExternalFunction('unlock_note', (id: string) => handlers.unlockNote(assertCaseNoteId(id)))
   story.BindExternalFunction('set_case_flag', (flag: string) => handlers.setCaseFlag(assertFlagName(flag)))
+  story.BindExternalFunction('has_evidence', (id: string) => handlers.hasEvidence(assertEvidenceId(id)))
+  story.BindExternalFunction('has_note', (id: string) => handlers.hasNote(assertCaseNoteId(id)))
+  story.BindExternalFunction('has_case_flag', (flag: string) => handlers.hasFlag(assertFlagName(flag)))
 }
 
 /** Progression System plan — thought cabinet EXTERNALs. */
