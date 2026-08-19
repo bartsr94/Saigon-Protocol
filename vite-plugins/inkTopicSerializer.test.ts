@@ -5,9 +5,9 @@ import { describe, expect, it } from 'vitest'
 import { parseTopicsKnot, replaceTopicsInKnot, serializeTopicsKnot, type SimpleTopic } from './inkTopicSerializer'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
-const checkpointInk = readFileSync(path.join(here, '../content/ink/checkpoint.ink'), 'utf-8')
-const meiHongInk = readFileSync(path.join(here, '../content/ink/aveline/meiHong.ink'), 'utf-8')
-const lakshmiAvaniInk = readFileSync(path.join(here, '../content/ink/aveline/lakshmiAvani.ink'), 'utf-8')
+const checkpointInk = readFileSync(path.join(here, '../content/ink/district4/checkpoint.ink'), 'utf-8')
+const meiHongInk = readFileSync(path.join(here, '../content/ink/district4/aveline/meiHong.ink'), 'utf-8')
+const lakshmiAvaniInk = readFileSync(path.join(here, '../content/ink/district4/aveline/lakshmiAvani.ink'), 'utf-8')
 
 describe('parseTopicsKnot', () => {
   it('classifies a plain choice+response+self-divert topic as simple', () => {

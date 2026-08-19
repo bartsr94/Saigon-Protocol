@@ -58,7 +58,7 @@ Static text only, same mechanism as the existing blurb layer. No new `AmbienceId
 
 ## File impact summary
 
-- `content/ink/*.ink` (8 files, each recompiled to its sibling `.json`): `checkpoint`, `workerCanteen`, `transitPlatform`, `cidOffice`, `sezacRecords`, `corporatePlaza`, `noodleStall`, `deltaSquat`
+- `content/ink/**/*.ink` (8 files, each recompiled to its sibling `.json`): `district4/checkpoint`, `district4/workerCanteen`, `district4/transitPlatform`, `district1/cidOffice`, `district1/sezacRecords`, `district1/corporatePlaza`, `district5/noodleStall`, `district2/deltaSquat`
 - `src/content/locations.ts` — 3 blurb edits
 - `src/content/locationHubs.ts` — 2 blurb edits
 - `src/content/districtStreets.ts` — 1 POI description edit

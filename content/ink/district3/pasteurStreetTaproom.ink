@@ -2,10 +2,10 @@
 // anchor, per the vault's District 3 file: a villa ground floor converted
 // into a hand-brewed taproom, run by Diễm Khương out of her own family's
 // house. Optional city-life location, not Case 1 content — same status as
-// content/ink/workerCanteen.ink. Two POIs: the family photo wall below,
-// and Diễm Khương (content/ink/district3/diemKhuong.ink).
+// content/ink/district4/workerCanteen.ink. Two POIs: the family photo wall
+// below, and Diễm Khương (content/ink/district3/pasteurStreet/diemKhuong.ink).
 
-INCLUDE district3/diemKhuong.ink
+INCLUDE pasteurStreet/diemKhuong.ink
 
 EXTERNAL adjust_affinity(npcId, amount)
 

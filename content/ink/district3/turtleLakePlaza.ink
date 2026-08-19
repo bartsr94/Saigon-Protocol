@@ -3,7 +3,7 @@
 // square that's been a citadel gate, a colonial water tower, and a
 // diplomatic monument in turn, now just where the district's actual
 // nightlife happens. Optional city-life location (same status as
-// content/ink/workerCanteen.ink), not real Case 1 content. No check in this
+// content/ink/district4/workerCanteen.ink), not real Case 1 content. No check in this
 // scene — a location file isn't required to exercise the check EXTERNALs to
 // be valid.
 

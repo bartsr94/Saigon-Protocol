@@ -130,8 +130,8 @@ pattern Atmosphere Tier 1 used:
 | File | Change |
 |---|---|
 | `src/content/locations.ts` | Extend `blurb` for `checkpoint`, `transitPlatform`, `corporatePlaza` with a one-line ad-presence beat, per the placement table above. |
-| `content/ink/checkpoint.ink`, `transitPlatform.ink` | Add Ledger/Hustle (primary) and Static (secondary) interjection lines reacting to the ad content, following the Atmosphere Tier 1 pass's interjection pattern. |
-| `content/ink/workerCanteen.ink` | One Root-voiced line or NPC beat referencing a contract-taker, not ad copy — per the placement table's dialogue-not-signage note. |
+| `content/ink/district4/checkpoint.ink`, `district4/transitPlatform.ink` | Add Ledger/Hustle (primary) and Static (secondary) interjection lines reacting to the ad content, following the Atmosphere Tier 1 pass's interjection pattern. |
+| `content/ink/district4/workerCanteen.ink` | One Root-voiced line or NPC beat referencing a contract-taker, not ad copy — per the placement table's dialogue-not-signage note. |
 | `src/content/districtStreets.ts` | Extend one or two `district4` POI `description` entries with a glimpsed-ad beat; at most one low-key `district1` POI entry. |
 
 No new `AmbienceId`s are required for this pass — if a looping jingle/

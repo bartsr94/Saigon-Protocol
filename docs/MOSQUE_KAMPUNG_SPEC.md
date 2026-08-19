@@ -99,7 +99,7 @@ same as `root`/`ledger` did for `workerCanteen.ink`. No new Insight.
 
 ## Content directions, per surface
 
-### `content/ink/mosque.ink` (new file)
+### `content/ink/district4/mosque.ink` (new file)
 
 - **Open on arrival, not on a service in progress** — a small, plain room,
   no minaret, no dome, converted from whatever platform-level space was
@@ -167,7 +167,7 @@ same as `root`/`ledger` did for `workerCanteen.ink`. No new Insight.
 
 | File | Change |
 |---|---|
-| `content/ink/mosque.ink` (new, + compiled `mosque.json`) | New single-node scene: Pak Rahman, Ledger/Root/Muscle Memory/Mask beats, surveillance hook |
+| `content/ink/district4/mosque.ink` (new, + compiled `mosque.json`) | New single-node scene: Pak Rahman, Ledger/Root/Muscle Memory/Mask beats, surveillance hook |
 | `src/content/npcs.ts` | Add `pakRahman` to `NpcId` and `NPCS` |
 | `src/content/locations.ts` | Add `'mosque'` to `LocationId`/`LOCATION_IDS`; new `LocationDefinition` |
 | `src/content/locationHubs.ts` | New `mosque` hub entry; add to hub-ordering array |
@@ -180,7 +180,7 @@ pass.
 ## Recommended sequencing
 
 1. Add `pakRahman` to `src/content/npcs.ts`.
-2. Write `content/ink/mosque.ink`: Pak Rahman, the four Insight beats,
+2. Write `content/ink/district4/mosque.ink`: Pak Rahman, the four Insight beats,
    the surveillance hook, single node ending at `-> END`.
 3. Compile via `npm run compile:ink`.
 4. Add the `mosque` `LocationId`/`LocationDefinition` to `locations.ts`.

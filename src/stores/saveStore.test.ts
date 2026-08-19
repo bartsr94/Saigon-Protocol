@@ -8,7 +8,7 @@ import { useGameplayStore } from './gameplayStore'
 import { useThoughtStore } from './thoughtStore'
 import { useRelationshipStore } from './relationshipStore'
 import { AUTOSAVE_SLOT_ID } from '../engine/saveEngine'
-import noodleStallJson from '../../content/ink/noodleStall.json'
+import noodleStallJson from '../../content/ink/district5/noodleStall.json'
 import introStoryJson from '../../content/ink/intro.json'
 
 class MemoryStorage implements Storage {

@@ -1,7 +1,7 @@
 // Parses/serializes the "simple topic" shape inside a topicsKnot loop
 // (docs/LIVE_TOPIC_EDITOR_SPEC.md) — one `* [choice text]` line, a plain
 // response, and a self-divert back to the knot, the exact shape
-// `mei_hong_topics`/`lakshmi_avani_topics` (content/ink/checkpoint.ink)
+// `mei_hong_topics`/`lakshmi_avani_topics` (content/ink/district4/checkpoint.ink)
 // use. Anything else inside a topicsKnot (a roll_check call, a
 // conditional, a casefile grant, a precondition-gated choice) is a
 // "complex" topic: parsed as an opaque block and re-emitted byte-for-byte,

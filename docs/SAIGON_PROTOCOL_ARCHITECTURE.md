@@ -458,14 +458,29 @@ lives*, not what it looks like or why.
 
 ## 11. Content pipeline (code-level summary)
 
-Each Overworld location owns exactly one `content/ink/<locationId>.ink`
-file, compiled to a sibling `.json` via `npm run compile:ink`
-(`scripts/compile-ink.mjs`, walks `content/ink/*.ink`, writes each sibling
-`.json` via `inkjs/full`'s `Compiler`). `src/content/locationStories.ts`
-maps `LocationId` → compiled JSON; `OverworldScreen.handleSelect` reads
-from it. This is a manual step — no build-time or pre-commit hook forces
-recompilation, so a stale `.json` after an `.ink` edit is a real hazard a
-content author has to remember.
+Each Overworld location owns exactly one
+`content/ink/<districtId>/<locationId>.ink` file, grouped one level deep by
+district (2026) — `content/ink/district4/checkpoint.ink`, etc. — so a
+district's authored content is visible at a glance from its directory
+listing alone. `intro.ink`/`intro.json` (the pre-chargen onboarding scene,
+no `LocationId`) is the one exception, staying at the `content/ink/` root.
+A location's INCLUDE-only per-character files live in a subfolder alongside
+it (e.g. `content/ink/district4/aveline/`, §6/§14).
+
+`scripts/compile-ink.mjs` compiles every `.ink` file to a sibling `.json`
+via `inkjs/full`'s `Compiler`, one directory at a time: it compiles
+`content/ink/` itself (picking up `intro.ink`), then each of its direct
+subdirectories (each district) — a `compileDir(dir)` helper rooted at that
+one directory, so a `PosixFileHandler(dir)` resolves that directory's
+relative `INCLUDE`s correctly regardless of nesting depth. It never
+recurses a second level, same as before the district split — a location's
+own `aveline`/`cholon`-style subfolder is never scanned for its own `.json`,
+only folded in via `INCLUDE`. `src/content/locationStories.ts` maps
+`LocationId` → compiled JSON (grouped by district in its import list, same
+convention); `OverworldScreen.handleSelect` reads from it. Recompiling is
+still a manual step — no build-time or pre-commit hook forces it, so a
+stale `.json` after an `.ink` edit is a real hazard a content author has to
+remember.
 
 Static content modules (`src/content/*.ts`) — `insights.ts`,
 `archetypes.ts`, `wellbeing.ts`, `locations.ts`, `npcs.ts`, `backgrounds.ts`,
@@ -475,9 +490,11 @@ string-literal ID type, with a companion `_IDS` array for iteration. New
 content modules should follow this shape rather than inventing a new
 pattern.
 
-`content/ink/demo.ink`/`demo.json` is a throwaway Story Engine wiring
-fixture (`storyStore.test.ts`/`storyEngine.test.ts` depend on its exact
-content) — not real GDD content, don't treat it as canonical.
+`storyStore.test.ts`/`saveStore.test.ts` import the real compiled
+`intro.json` (and `district5/noodleStall.json`/`district4/checkpoint.json`)
+directly as convenient realistic fixtures — there is no separate throwaway
+demo story; one existed early on (`content/ink/demo.ink`) and was removed
+once the intro scene could serve the same purpose.
 
 Ink authoring conventions (the `speaker`/`background`/`music`/`ambience`/
 `voice` tag vocabulary, choice tags, check-definition placement, `checkId`
@@ -537,12 +554,12 @@ work (`unlockFlag: 'checkpoint-inner-wing-unlocked'`, previously only
 settable via the Debug Console's Flags tool). Two independent,
 narratively-distinct paths each call `set_case_flag`, an OR rather than a
 single hard gate: a **leverage** path in `mei_hong_topics`
-(`content/ink/aveline/meiHong.ink`) — a Red check (`checkpoint-mei-hong-leverage`,
-ledger, TN 7) offered only once the player holds both `drone-log` evidence
-and `note-05` (`has_evidence(...) and has_note(...)`), mirroring the
-existing `checkpoint-lakshmi-colleague` gated-Red-check pattern; and a
-**trust** path in `lakshmi_avani_topics`
-(`content/ink/aveline/lakshmiAvani.ink`) — no check, offered once
+(`content/ink/district4/aveline/meiHong.ink`) — a Red check
+(`checkpoint-mei-hong-leverage`, ledger, TN 7) offered only once the player
+holds both `drone-log` evidence and `note-05` (`has_evidence(...) and
+has_note(...)`), mirroring the existing `checkpoint-lakshmi-colleague`
+gated-Red-check pattern; and a **trust** path in `lakshmi_avani_topics`
+(`content/ink/district4/aveline/lakshmiAvani.ink`) — no check, offered once
 `affinity_lakshmi_avani >= 10` (her top tier), guarded by
 `not has_case_flag(...)` so it doesn't repeat once used. The two paths are
 deliberately redundant: a failed Red check on the leverage path doesn't
@@ -859,6 +876,23 @@ authored against it.
   left open — `checkpoint-inner-door`'s `unlockFlag` had nothing but the
   Debug Console setting it. Two independent paths now call `set_case_flag`;
   full detail in §13.
+- **`content/ink/` reorganized one level deep by district (2026):** every
+  location's `.ink`/`.json` pair (and its `aveline`/`cholon`-style
+  per-character subfolder) moved under `content/ink/<districtId>/`, purely
+  so a district's content volume is visible from its directory listing —
+  no content or behavior changed. The one pre-existing subfolder actually
+  named after its district rather than its venue (`content/ink/district3/`,
+  holding `diemKhuong.ink`) was renamed to `pasteurStreet/` first, to avoid
+  a confusing `district3/district3/` nesting once the new grouping folder
+  existed. `scripts/compile-ink.mjs` changed from a single non-recursive
+  pass over `content/ink/*.ink` to a `compileDir(dir)` helper run once per
+  directory (the root, then each district) — still never recursing a
+  second level, so a location's own NPC subfolder is still `INCLUDE`-only,
+  never compiled standalone. `vite-plugins/debugTopicEditPlugin.ts`'s file
+  resolution (`inkPathFor`/`listStoryLocationIds`) changed the same way,
+  and its compile-check's `PosixFileHandler` now roots at the entry file's
+  own directory rather than a fixed `content/ink/` root, so it keeps
+  resolving relative `INCLUDE`s correctly regardless of nesting depth.
 
 ### Open / not yet built
 

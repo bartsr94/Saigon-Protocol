@@ -1,7 +1,7 @@
 // SEZ Checkpoint (src/content/locations.ts) — flavor-light placeholder scene,
 // not real GDD content (docs/GAME_GUIDE.md). Exercises a Red
 // check inline, per this location's own content. The Aveline Faculty
-// Lounge's NPCs each own their own file under content/ink/aveline/
+// Lounge's NPCs each own their own file under content/ink/district4/aveline/
 // (INCLUDEd below) rather than being authored here — this file keeps only
 // the shared EXTERNAL/VAR declarations and its own top-level queue flow.
 
@@ -80,7 +80,7 @@ Eventually the queue spits you through, badge scanned, no questions asked.
 // Faculty Lounge") — reached via its own Hub POIs' `sceneKnot`/`topicsKnot`
 // rather than this file's default top-level flow (LocationHubScreen.tsx's
 // enterHubInteraction). Mei Hong's and Lakshmi Avani's content lives in
-// content/ink/aveline/ (INCLUDEd above); this file only keeps the lounge's
+// content/ink/district4/aveline/ (INCLUDEd above); this file only keeps the lounge's
 // own fixture inspect below.
 
 === checkpoint_lounge_roster_wall ===

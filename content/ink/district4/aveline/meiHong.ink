@@ -1,5 +1,5 @@
 // Mei Hong — Aveline District 4 Laboratory operations lead. INCLUDEd from
-// content/ink/checkpoint.ink, which owns the shared EXTERNAL declarations
+// content/ink/district4/checkpoint.ink, which owns the shared EXTERNAL declarations
 // and the hustle/static/graft/ledger insight VARs this file reads.
 
 // Mei Hong's repeat-visit topic loop (UI_PASS_SPEC.md §4) — a separate
@@ -44,4 +44,4 @@ Mei Hong gives you her attention again — patient, watchful, still deciding how
     -> mei_hong_topics
 
 // End of Mei Hong's content. Lakshmi Avani's intro/topics/private scene
-// live in content/ink/aveline/lakshmiAvani.ink.
+// live in content/ink/district4/aveline/lakshmiAvani.ink.

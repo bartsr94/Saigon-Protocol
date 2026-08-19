@@ -14,7 +14,7 @@
 // `apply: 'serve'` keeps this out of `vite build`/`vite preview` entirely,
 // same as the other dev-only plugins.
 
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import type { IncomingMessage } from 'node:http'
 import type { Plugin } from 'vite'
@@ -31,16 +31,39 @@ function inkDirAbsolute(): string {
   return path.resolve(process.cwd(), INK_DIR)
 }
 
+/**
+ * content/ink/ is organized one level deep by district
+ * (content/ink/district4/checkpoint.ink), with intro.ink alone at the root
+ * — mirrors scripts/compile-ink.mjs's two-level walk. Returns the root plus
+ * each of its direct subdirectories, so a story location's `.ink` file is
+ * found regardless of which of those it lives in.
+ */
+function storyDirs(): string[] {
+  const root = inkDirAbsolute()
+  const subdirs = readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => path.join(root, entry.name))
+  return [root, ...subdirs]
+}
+
 function listStoryLocationIds(): Set<string> {
-  return new Set(readdirSync(inkDirAbsolute()).filter((f) => f.endsWith('.ink')).map((f) => f.slice(0, -'.ink'.length)))
+  const ids = new Set<string>()
+  for (const dir of storyDirs()) {
+    for (const f of readdirSync(dir).filter((f) => f.endsWith('.ink'))) ids.add(f.slice(0, -'.ink'.length))
+  }
+  return ids
 }
 
 function inkPathFor(storyLocationId: string): string {
-  return path.resolve(inkDirAbsolute(), `${storyLocationId}.ink`)
+  for (const dir of storyDirs()) {
+    const candidate = path.join(dir, `${storyLocationId}.ink`)
+    if (existsSync(candidate)) return candidate
+  }
+  throw new Error(`No .ink file found for storyLocationId '${storyLocationId}'.`)
 }
 
 function jsonPathFor(storyLocationId: string): string {
-  return path.resolve(inkDirAbsolute(), `${storyLocationId}.json`)
+  return inkPathFor(storyLocationId).replace(/\.ink$/, '.json')
 }
 
 function sourceHasKnot(source: string, knotName: string): boolean {
@@ -52,7 +75,7 @@ function sourceHasKnot(source: string, knotName: string): boolean {
 
 /**
  * A story's entry `.ink` file can INCLUDE per-character files under a
- * subfolder (content/ink/aveline/, docs/SAIGON_PROTOCOL_ARCHITECTURE.md
+ * subfolder (content/ink/district4/aveline/, docs/SAIGON_PROTOCOL_ARCHITECTURE.md
  * §7) rather than authoring every knot itself — so the file holding a
  * given `topicsKnot` isn't necessarily `${storyLocationId}.ink`. Walks the
  * INCLUDE graph breadth-first from the entry file and returns the first
@@ -84,7 +107,7 @@ function compileInkSource(entryStoryLocationId: string, pendingPath: string, pen
   // unrelated save.
   const errors: string[] = []
   const entryPath = inkPathFor(entryStoryLocationId)
-  const baseHandler = new PosixFileHandler(inkDirAbsolute())
+  const baseHandler = new PosixFileHandler(path.dirname(entryPath))
   // Overrides only the one file being edited so the compile-check sees the
   // pending (not-yet-written) content; every other INCLUDE still reads
   // from disk via PosixFileHandler. Keeps the "never write a broken file"

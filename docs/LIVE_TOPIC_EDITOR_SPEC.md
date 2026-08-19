@@ -11,8 +11,9 @@ a met NPC, let a dev add/edit/remove/reorder that NPC's repeat-visit
 **topics** — the `* [Choice text]` / response pairs inside their
 `topicsKnot` loop (`docs/GAME_GUIDE.md` §5, `SAIGON_PROTOCOL_ARCHITECTURE.md`
 §7) — and have Save write the result straight back to
-`content/ink/<storyLocationId>.ink`, recompile it to its sibling `.json`
-in-process, and have the change show up on the next topic-bar render. Same
+`content/ink/<districtId>/<storyLocationId>.ink`, recompile it to its
+sibling `.json` in-process, and have the change show up on the next
+topic-bar render. Same
 "live, writes to disk, dev-only" model the text and map editors already
 established.
 
@@ -54,8 +55,8 @@ established.
 ### 1. What a "simple topic" is
 
 Looking at the topics loops that exist today (`mei_hong_topics`,
-`lakshmi_avani_topics` in `content/ink/checkpoint.ink`), most topics share
-one exact shape:
+`lakshmi_avani_topics` in `content/ink/district4/checkpoint.ink`), most
+topics share one exact shape:
 
 ```ink
 * [Choice text here. # insight: <insightId>]
@@ -118,7 +119,8 @@ diff, same simplicity tradeoff the map editor made for whole-record
 replace).
 
 1. Validate `storyLocationId` resolves to an existing
-   `content/ink/<storyLocationId>.ink` (allow-list = the directory listing,
+   `content/ink/<districtId>/<storyLocationId>.ink` (allow-list = the
+   directory listing across `content/ink/` and its district subdirectories,
    same spirit as `debugTextEditPlugin.ts`'s `EDITABLE_FILES` but derived
    rather than hand-enumerated, since every location already has exactly
    one ink file).

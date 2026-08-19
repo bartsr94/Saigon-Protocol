@@ -4,7 +4,7 @@ import { useStoryStore } from './storyStore'
 import { useInsightStore } from './insightStore'
 import { useRelationshipStore } from './relationshipStore'
 import introStoryJson from '../../content/ink/intro.json'
-import checkpointStoryJson from '../../content/ink/checkpoint.json'
+import checkpointStoryJson from '../../content/ink/district4/checkpoint.json'
 
 function compileToJson(inkSource: string): Record<string, unknown> {
   const story = new Compiler(inkSource).Compile()
@@ -516,7 +516,7 @@ Flood wall ahead. # ambience: -marketChatter # ambience: +rain
   // three more top-level siblings — they showed up immediately on entering
   // the closet (before the gate was ever picked), and picking the gate itself
   // hit a dead end with no choices to click. Fixed by promoting them to `++`
-  // in content/ink/aveline/lakshmiAvani.ink.
+  // in content/ink/district4/aveline/lakshmiAvani.ink.
   describe("Lakshmi Avani's intimate-scene choice nesting (checkpoint.ink)", () => {
     const GATE_CHOICE = "Ask if she'd like to do something more... intimate."
     const SUB_CHOICES = ['Press her, gently.', 'Respect her hesitation.', 'Tease her, playfully.']

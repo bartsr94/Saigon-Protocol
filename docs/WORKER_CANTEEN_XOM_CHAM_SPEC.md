@@ -108,7 +108,7 @@ and `ledger` just aren't declared in this file yet.
 
 ## Content directions, per surface
 
-### `content/ink/workerCanteen.ink`
+### `content/ink/district4/workerCanteen.ink`
 
 Current shape: anonymous "shift-change crowd" opener, one `graft >= 3`
 block, one `hustle >= 3` block, single linear node ending at `-> END`.
@@ -197,7 +197,7 @@ this content-only pass unless explicitly pulled in.
 
 | File | Change |
 |---|---|
-| `content/ink/workerCanteen.ink` (+ recompiled `workerCanteen.json`) | Rewrite opener around Bà Châu and Xóm Chàm identity; deepen `graft >= 3`; reframe `hustle >= 3`; add `root >= 3`; add `ledger` beat; light-touch Cham Bani/Islam line; Đáy hook |
+| `content/ink/district4/workerCanteen.ink` (+ recompiled `workerCanteen.json`) | Rewrite opener around Bà Châu and Xóm Chàm identity; deepen `graft >= 3`; reframe `hustle >= 3`; add `root >= 3`; add `ledger` beat; light-touch Cham Bani/Islam line; Đáy hook |
 | `src/content/npcs.ts` | Add `baChau` to `NpcId` and `NPCS` (name only — `portraitSrc` omitted, matching `soraBaek`/`respondingOfficer`). |
 | `src/content/locations.ts` | Rewrite `workerCanteen.blurb`. No schema change beyond the `npcs.ts` addition above. |
 | `src/content/locationHubs.ts` | Rewrite `workerCanteen` hub `blurb` and its one action's `description`. No schema change. |

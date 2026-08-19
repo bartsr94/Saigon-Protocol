@@ -1,6 +1,6 @@
 // Lakshmi Avani — Aveline District 4 Laboratory bio-engineer, met in the
 // Aveline Faculty Lounge sub-location (CASE_1_LOCATION_MATRIX.md). INCLUDEd
-// from content/ink/checkpoint.ink, which owns the shared EXTERNAL
+// from content/ink/district4/checkpoint.ink, which owns the shared EXTERNAL
 // declarations and the ledger insight VAR this file reads.
 
 VAR affinity_lakshmi_avani = 0

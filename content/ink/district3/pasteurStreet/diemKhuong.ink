@@ -1,7 +1,7 @@
 // Diễm Khương — runs Pasteur Street Taproom out of her own family's villa
 // ground floor. Last of her line who didn't take the off-world offer when
 // the rest of it did (see the vault's District 3 file, "Absentee Ground").
-// INCLUDEd from content/ink/pasteurStreetTaproom.ink, which owns the shared
+// INCLUDEd from content/ink/district3/pasteurStreetTaproom.ink, which owns the shared
 // EXTERNAL declarations and Insight VARs this file reads.
 
 VAR affinity_diem_khuong = 0

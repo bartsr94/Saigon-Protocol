@@ -2,8 +2,8 @@
 // add/edit/remove/reorder an NPC's repeat-visit topics (the `* [choice]` /
 // response pairs inside their `topicsKnot` loop) straight from Conversation
 // View. Writes back to whichever `.ink` file actually contains that knot —
-// `content/ink/<storyLocationId>.ink` itself, or one of its INCLUDEd
-// per-character files (e.g. content/ink/aveline/) — resolved and
+// `content/ink/<district>/<storyLocationId>.ink` itself, or one of its
+// INCLUDEd per-character files (e.g. content/ink/district4/aveline/) — resolved and
 // recompiled in-process by vite-plugins/debugTopicEditPlugin.ts. Only "simple"
 // topics (inkTopicSerializer.ts's shape — no roll_check, no conditional, no
 // casefile grant) are editable; anything else is shown read-only and

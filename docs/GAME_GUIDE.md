@@ -215,9 +215,14 @@ roll transparently before continuing into the branch:
 
 ### 5.1 File layout & compiling
 
-Each Overworld location owns one `content/ink/<locationId>.ink` file. The
-`intro` scene (`content/ink/intro.ink`) is the one active story with no
-location — it auto-plays right after Character Creation confirms.
+Each Overworld location owns one `content/ink/<districtId>/<locationId>.ink`
+file, grouped one level deep by district (`content/ink/district4/checkpoint.ink`,
+etc.) so a district's content is visible at a glance. A location's own
+INCLUDE-only per-character files live in a subfolder alongside it (e.g.
+`content/ink/district4/aveline/`). The `intro` scene
+(`content/ink/intro.ink`) is the one active story with no location or
+district — it auto-plays right after Character Creation confirms, and stays
+at the `content/ink/` root.
 
 Compile every `.ink` file to its sibling `.json` with:
 
@@ -231,7 +236,8 @@ always recompile before testing a content change in the browser.
 
 **Adding a new location's content:**
 1. Add the `LocationId` + `LocationDefinition` entry to `content/locations.ts`.
-2. Write `content/ink/<id>.ink`.
+2. Write `content/ink/<districtId>/<id>.ink` under its district's folder
+   (create the folder if this is that district's first location).
 3. `npm run compile:ink`.
 4. Add the compiled JSON to `src/content/locationStories.ts`'s
    `LOCATION_STORY_JSON` map.

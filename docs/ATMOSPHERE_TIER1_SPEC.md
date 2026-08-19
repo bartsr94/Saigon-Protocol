@@ -144,7 +144,7 @@ entries.
 | File | Change |
 |---|---|
 | `src/content/locations.ts` | Rewrite `blurb` for all 9 `LocationId` entries per the table above. No schema change. |
-| `content/ink/*.ink` (8 files: `checkpoint`, `noodleStall`, `deltaSquat`, `publicIncidentScene`, `workerCanteen`, `transitPlatform`, `cidOffice`, `sezacRecords`, `corporatePlaza`) | Add Static/Root (and secondary Hustle/Ledger/Graft where noted) interjection lines carrying the relevant doc's specifics, following `noodleStall.ink`'s existing Root-line pattern. |
+| `content/ink/**/*.ink` (8 files, one per district folder: `district4/checkpoint`, `district5/noodleStall`, `district2/deltaSquat`, `district4/publicIncidentScene`, `district4/workerCanteen`, `district4/transitPlatform`, `district1/cidOffice`, `district1/sezacRecords`, `district1/corporatePlaza`) | Add Static/Root (and secondary Hustle/Ledger/Graft where noted) interjection lines carrying the relevant doc's specifics, following `noodleStall.ink`'s existing Root-line pattern. |
 | `src/content/ambience.ts` | Add 4 proposed `AmbienceId` entries (or fewer, if scoped down) and their `AMBIENCE` records. |
 | `public/audio/ambience/*.mp3` | New assets for each added ambience id, sourced/recorded and run through `npm run audio:convert`. |
 | `src/content/locationHubs.ts` | Add/extend POI `description` text for `checkpoint`'s grid to carry environmental beats. |

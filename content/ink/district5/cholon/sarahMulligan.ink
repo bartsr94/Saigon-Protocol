@@ -1,6 +1,6 @@
 // Sarah Mulligan — an American exchange student on Erasmus, working the
 // intake floor at the Y Duoc Cholon Medical Institute. INCLUDEd from
-// content/ink/yDuocInstitute.ink, which owns the shared EXTERNAL
+// content/ink/district5/yDuocInstitute.ink, which owns the shared EXTERNAL
 // declarations and Insight VARs this file reads.
 
 VAR affinity_sarah_mulligan = 0
