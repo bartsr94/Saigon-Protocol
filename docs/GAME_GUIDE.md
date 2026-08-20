@@ -420,6 +420,15 @@ ASCII grid below for anything bigger than a quick edit.
    general `blurb` — rather than staying fixed on the hub-wide blurb.
    Fog-of-war is per-hub, per-save, and never re-fogs once revealed.
 
+**Talk portraits:** every `talk` interaction in the bottom action bar gets a
+miniature `PortraitFrame` (`size="sm"`) stacked above its button —
+`conversationStore.hasMet(npcId)` false shows the generic silhouette (the
+`character` icon, `PortraitFrame`'s `silhouette` prop), true shows that
+NPC's `portraits.neutral` (or the usual initials fallback if no art is
+authored yet). Dimmed the same way a locked interaction's button already is
+when `available` is false — met-ness and availability are independent axes.
+`inspect` interactions render bare, no portrait (docs/HUB_INTERACTION_PORTRAITS_SPEC.md).
+
 **Locked doors:** a `HubDoor` (`{ id, position, unlockFlag, label,
 lockedReason }`) gates a `d` tile behind `casefileStore.hasFlag(unlockFlag)`
 — but the door tile itself can always be walked onto and read up close;

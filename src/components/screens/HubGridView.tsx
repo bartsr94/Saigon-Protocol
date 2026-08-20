@@ -8,17 +8,57 @@
 import { useCallback, useMemo } from 'react'
 import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { GridHubDefinition, GridPosition, HubInteraction } from '../../content/locationHubs'
+import { NPCS, type NpcId } from '../../content/npcs'
 import { AMBIENT_FOG_RADIUS, doorAt, reachableTiles, tileKey, tileKindAt, tilesWithinRadius } from '../../engine/gridMovement'
 import { useCasefileStore } from '../../stores/casefileStore'
+import { useConversationStore } from '../../stores/conversationStore'
 import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
-import { CyberButton, Icon, Panel } from '../ui'
+import { CyberButton, Icon, Panel, PortraitFrame } from '../ui'
 import { EditableText } from '../debug/EditableText'
 import { MapEditorPanel, type SaveResult } from './MapEditorPanel'
 import { hubToBuilderState } from './mapEditorSeed'
 import { useGridKeydownMovement } from './useGridKeydownMovement'
+
+// Large portrait stacked above a Talk button in the bottom interaction bar
+// (docs/HUB_INTERACTION_PORTRAITS_SPEC.md) — silhouette until
+// conversationStore.hasMet(npcId), the NPC's real portrait after. Dimmed
+// like HubCardListView's locked-presence treatment when the interaction
+// itself isn't available yet; met-ness and availability are independent.
+// Sized well past PortraitFrame's square presets (native ~2:3 portrait
+// aspect instead) and rendered `frameless` — no accent border/glow or dark
+// backdrop — so it reads as the NPC standing in front of the scene rather
+// than a HUD chip.
+function TalkPortrait({ npcId, available }: { npcId: NpcId; available: boolean }) {
+  const met = useConversationStore((s) => s.hasMet(npcId))
+  const npc = NPCS[npcId]
+  return (
+    <PortraitFrame
+      src={met ? npc.portraits?.neutral : undefined}
+      silhouette={!met}
+      alt={npc.name}
+      fallbackText={npc.name.slice(0, 2).toUpperCase()}
+      size="lg"
+      width={260}
+      height={380}
+      frameless
+      accent={available ? 'var(--color-chrome-primary)' : 'rgba(255,255,255,0.45)'}
+    />
+  )
+}
+
+// A talk interaction's button label is the NPC's name (authored directly as
+// `HubInteraction.label`) — hide it behind the same `hasMet` gate as the
+// portrait above it, so a stranger's name doesn't leak through their first
+// silhouette encounter. A plain inline hasMet lookup can't live in the
+// `.interactions.map()` below (Rules of Hooks forbids a hook call inside a
+// loop), hence its own tiny component.
+function TalkButtonLabel({ npcId, label }: { npcId: NpcId; label: string }) {
+  const met = useConversationStore((s) => s.hasMet(npcId))
+  return <>{met ? label : '…'}</>
+}
 
 async function saveHubRecord(hubId: string, record: object): Promise<SaveResult> {
   try {
@@ -295,22 +335,47 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
         </div>
 
         {/* Bottom interaction bar — only ever shows the current tile's POI, a
-            list because one POI can hold several people/things. */}
-        <div className="min-h-[6rem]">
+            list because one POI can hold several people/things. The action
+            row itself (Panel) stays a thin strip; a talk entry's portrait
+            floats above it instead of living inside it — Panel's clip-path
+            corner-cut would crop off anything overflowing its own box, so
+            the portrait row is a sibling positioned via `bottom-full` off
+            this wrapper's own relative box, free to rise above (and visually
+            over) the grid viewport rather than inflating the strip's
+            height. Silhouette until conversationStore.hasMet(npcId), the
+            NPC's real portrait after (docs/HUB_INTERACTION_PORTRAITS_SPEC.md). */}
+        <div className="relative min-h-[6rem]">
           {currentPoi && (
-            <Panel size="md" className="flex flex-wrap gap-3 p-4">
-              {currentPoi.interactions.map((interaction) => (
-                <CyberButton
-                  key={interaction.id}
-                  disabled={!interaction.available}
-                  tag={interaction.type === 'talk' ? 'Talk' : 'Inspect'}
-                  title={interaction.available ? interaction.description : (interaction.lockedReason ?? interaction.description)}
-                  onClick={() => interaction.available && onEnterInteraction(interaction)}
-                >
-                  {interaction.label}
-                </CyberButton>
-              ))}
-            </Panel>
+            <>
+              <div className="pointer-events-none absolute inset-x-4 bottom-full z-10 flex flex-wrap items-end gap-3 pb-2">
+                {currentPoi.interactions.map(
+                  (interaction) =>
+                    interaction.type === 'talk' &&
+                    interaction.npcId && (
+                      <div key={interaction.id} className="pointer-events-auto">
+                        <TalkPortrait npcId={interaction.npcId} available={interaction.available} />
+                      </div>
+                    ),
+                )}
+              </div>
+              <Panel size="md" className="flex flex-wrap items-end gap-3 p-4 !bg-black/20">
+                {currentPoi.interactions.map((interaction) => (
+                  <CyberButton
+                    key={interaction.id}
+                    disabled={!interaction.available}
+                    tag={interaction.type === 'talk' ? 'Talk' : 'Inspect'}
+                    title={interaction.available ? interaction.description : (interaction.lockedReason ?? interaction.description)}
+                    onClick={() => interaction.available && onEnterInteraction(interaction)}
+                  >
+                    {interaction.type === 'talk' && interaction.npcId ? (
+                      <TalkButtonLabel npcId={interaction.npcId} label={interaction.label} />
+                    ) : (
+                      interaction.label
+                    )}
+                  </CyberButton>
+                ))}
+              </Panel>
+            </>
           )}
         </div>
       </div>
