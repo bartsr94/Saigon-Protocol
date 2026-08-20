@@ -29,7 +29,7 @@ export interface PortraitFrameProps {
    * True forces the generic "unidentified person" glyph (the same
    * `character` icon the map uses for an un-stepped-on talk POI) regardless
    * of `src` — for a not-yet-met NPC, so their real portrait never leaks
-   * through early (docs/HUB_INTERACTION_PORTRAITS_SPEC.md).
+   * through early (docs/GAME_GUIDE.md §6.2's "Talk portraits").
    */
   silhouette?: boolean
   /**

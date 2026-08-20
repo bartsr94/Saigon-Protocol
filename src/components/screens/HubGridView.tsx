@@ -23,7 +23,7 @@ import { hubToBuilderState } from './mapEditorSeed'
 import { useGridKeydownMovement } from './useGridKeydownMovement'
 
 // Large portrait stacked above a Talk button in the bottom interaction bar
-// (docs/HUB_INTERACTION_PORTRAITS_SPEC.md) — silhouette until
+// (docs/GAME_GUIDE.md §6.2's "Talk portraits") — silhouette until
 // conversationStore.hasMet(npcId), the NPC's real portrait after. Dimmed
 // like HubCardListView's locked-presence treatment when the interaction
 // itself isn't available yet; met-ness and availability are independent.
@@ -343,7 +343,7 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
             this wrapper's own relative box, free to rise above (and visually
             over) the grid viewport rather than inflating the strip's
             height. Silhouette until conversationStore.hasMet(npcId), the
-            NPC's real portrait after (docs/HUB_INTERACTION_PORTRAITS_SPEC.md). */}
+            NPC's real portrait after (docs/GAME_GUIDE.md §6.2's "Talk portraits"). */}
         <div className="relative min-h-[6rem]">
           {currentPoi && (
             <>

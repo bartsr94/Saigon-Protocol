@@ -421,13 +421,18 @@ ASCII grid below for anything bigger than a quick edit.
    Fog-of-war is per-hub, per-save, and never re-fogs once revealed.
 
 **Talk portraits:** every `talk` interaction in the bottom action bar gets a
-miniature `PortraitFrame` (`size="sm"`) stacked above its button —
-`conversationStore.hasMet(npcId)` false shows the generic silhouette (the
-`character` icon, `PortraitFrame`'s `silhouette` prop), true shows that
-NPC's `portraits.neutral` (or the usual initials fallback if no art is
-authored yet). Dimmed the same way a locked interaction's button already is
-when `available` is false — met-ness and availability are independent axes.
-`inspect` interactions render bare, no portrait (docs/HUB_INTERACTION_PORTRAITS_SPEC.md).
+large, frameless `PortraitFrame` (`size="lg"`, explicit `width`/`height`
+preserving the art's native ~2:3 aspect instead of a square crop) floating
+above its button — positioned as a sibling via `bottom-full` rather than
+living inside the action-bar `Panel`, so the panel itself stays a thin strip
+and the portrait can rise above (and visually over) the grid viewport.
+`conversationStore.hasMet(npcId)` false shows a solid black silhouette (the
+`character` icon, fixed black rather than accent-tinted) and hides the NPC's
+name on the button itself (`…` in its place); true shows that NPC's
+`portraits.neutral` (or the usual initials fallback if no art is authored
+yet) and their real name. Dimmed the same way a locked interaction's button
+already is when `available` is false — met-ness and availability are
+independent axes. `inspect` interactions render bare, no portrait.
 
 **Locked doors:** a `HubDoor` (`{ id, position, unlockFlag, label,
 lockedReason }`) gates a `d` tile behind `casefileStore.hasFlag(unlockFlag)`
