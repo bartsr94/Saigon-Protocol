@@ -20,6 +20,8 @@ export type LocationId =
   | 'corporatePlaza'
   | 'turtleLakePlaza'
   | 'pasteurStreetTaproom'
+  | 'tuXuongClinic'
+  | 'undercanopy'
 
 export const LOCATION_IDS: LocationId[] = [
   'checkpoint',
@@ -35,6 +37,8 @@ export const LOCATION_IDS: LocationId[] = [
   'corporatePlaza',
   'turtleLakePlaza',
   'pasteurStreetTaproom',
+  'tuXuongClinic',
+  'undercanopy',
 ]
 
 export interface LocationDefinition {
@@ -154,5 +158,21 @@ export const LOCATIONS: Record<LocationId, LocationDefinition> = {
     blurb: 'A villa ground floor turned taproom, hand-brewed and human-run — the kind of authenticity a district with no trade wealth has to make a whole identity out of.',
     unlockedByDefault: true,
     ambienceIds: ['marketChatter'],
+  },
+  tuXuongClinic: {
+    id: 'tuXuongClinic',
+    districtId: 'district3',
+    name: 'Tú Xương Clinic',
+    blurb: 'A villa basement doing graft work Aveline wouldn\'t put its name on — no waiting list, no license, no questions past the ones the price actually depends on.',
+    unlockedByDefault: true,
+    ambienceIds: ['rain', 'filterStatic'],
+  },
+  undercanopy: {
+    id: 'undercanopy',
+    districtId: 'district3',
+    name: 'The Undercanopy',
+    blurb: 'An alley door, a flight of stairs down, and a bar that\'s a front as often as it\'s actually a bar — the district\'s informal economy runs out of a back booth here.',
+    unlockedByDefault: true,
+    ambienceIds: ['rain'],
   },
 }

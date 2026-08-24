@@ -153,14 +153,18 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
   district3: {
     id: 'district3',
     name: 'District 3 — the Canopy',
-    blurb: 'Tree-shaded streets over old villa gardens, no cargo throat and no trading floor to speak of — just Turtle Lake at one end and Pasteur Street\'s taproom light at the other.',
+    blurb: 'Tree-shaded streets over old villa gardens, no cargo throat and no trading floor to speak of — Turtle Lake and Pasteur Street\'s taproom light out front, a back-alley clinic and a fixer\'s bar a block off it.',
     backgroundId: null,
-    width: 9,
+    width: 13,
     height: 3,
-    // Same short-spur convention as District 5's street: two destinations,
-    // one branch off the main road is enough.
+    // Widened past the original two-destination spur to fit both new
+    // locations without disturbing Turtle Lake's/the Taproom's existing
+    // positions: one more spur (the Clinic, same up-then-capped shape as
+    // the Taproom's) plus one destination sitting directly on the road's
+    // far end (the Undercanopy — same on-road convention as District 1's
+    // Corporate Plaza), rather than a third spur this street doesn't need.
     entryTile: { x: 0, y: 2 },
-    layoutRows: ['     #   ', '     o   ', '.o.......'],
+    layoutRows: ['     #   #   ', '     o   o   ', '.o..........o'],
     pois: [
       {
         id: 'district3-turtle-lake-plaza',
@@ -175,6 +179,20 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
         locationId: 'pasteurStreetTaproom',
         label: 'Pasteur Street Taproom',
         description: 'A converted villa ground floor, hand-brewed beer, and a name that has outlived every company that\'s owned it.',
+      },
+      {
+        id: 'district3-tu-xuong-clinic',
+        position: { x: 9, y: 1 },
+        locationId: 'tuXuongClinic',
+        label: 'Tú Xương Clinic',
+        description: 'An unmarked basement door, one flight down, doing the graft work Aveline never has to price for a Xóm Chàm wage.',
+      },
+      {
+        id: 'district3-undercanopy',
+        position: { x: 12, y: 2 },
+        locationId: 'undercanopy',
+        label: 'The Undercanopy',
+        description: 'A door in the alley wall, no sign, and a room that\'s heard more of this district\'s actual business than any office ever has.',
       },
     ],
   },

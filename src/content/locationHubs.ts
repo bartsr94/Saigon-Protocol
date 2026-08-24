@@ -157,6 +157,8 @@ export const HUB_IDS: HubId[] = [
   'corporatePlaza',
   'turtleLakePlaza',
   'pasteurStreetTaproom',
+  'tuXuongClinic',
+  'undercanopy',
 ]
 
 export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
@@ -591,6 +593,104 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
               available: true,
               sceneKnot: 'diem_khuong_intro',
               topicsKnot: 'diem_khuong_topics',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  tuXuongClinic: {
+    id: 'tuXuongClinic',
+    name: 'Tú Xương Clinic',
+    blurb: 'A villa basement doing unlicensed graft work by loupe-light — no waiting list, no license, no questions past the ones the price depends on.',
+    backgroundId: 'tuXuongClinic',
+    layout: 'grid',
+    grid: {
+      width: 5,
+      height: 5,
+      // Same short-hall convention as Pasteur Street's grid — the waiver
+      // wall up one branch, Yến at her table on the other.
+      entryTile: { x: 0, y: 2 },
+      layoutRows: ['  #  ', '  o  ', '.....', '  o  ', '  #  '],
+      pois: [
+        {
+          id: 'tu-xuong-waiver-wall',
+          position: { x: 2, y: 1 },
+          interactions: [
+            {
+              id: 'tu-xuong-inspect-waiver-wall',
+              type: 'inspect',
+              label: 'Waiver Wall',
+              description: 'A pinboard of hand-signed waivers, sun-yellowed, none of them anything a licensed clinic would still be printing.',
+              storyLocationId: 'tuXuongClinic',
+              available: true,
+              sceneKnot: 'tu_xuong_waiver_wall',
+            },
+          ],
+        },
+        {
+          id: 'tu-xuong-yen-loc',
+          position: { x: 2, y: 3 },
+          interactions: [
+            {
+              id: 'tu-xuong-talk-yen-loc',
+              type: 'talk',
+              npcId: 'yenLoc',
+              label: 'Yến Lộc',
+              description: 'Works a soldering iron by loupe-light over someone\'s open arm, and clearly isn\'t interested in stopping to talk about her license.',
+              storyLocationId: 'tuXuongClinic',
+              available: true,
+              sceneKnot: 'yen_loc_intro',
+              topicsKnot: 'yen_loc_topics',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  undercanopy: {
+    id: 'undercanopy',
+    name: 'The Undercanopy',
+    blurb: 'A door in the alley wall, no sign — a bar that\'s a front as often as it\'s actually a bar, where the district\'s informal economy runs out of a back booth.',
+    backgroundId: 'undercanopy',
+    layout: 'grid',
+    grid: {
+      width: 5,
+      height: 5,
+      // Same short-hall convention as the other two District 3 venues —
+      // the courier cubbies up one branch, Cò's booth on the other.
+      entryTile: { x: 0, y: 2 },
+      layoutRows: ['  #  ', '  o  ', '.....', '  o  ', '  #  '],
+      pois: [
+        {
+          id: 'undercanopy-courier-cubbies',
+          position: { x: 2, y: 1 },
+          interactions: [
+            {
+              id: 'undercanopy-inspect-courier-cubbies',
+              type: 'inspect',
+              label: 'Courier Cubbies',
+              description: 'A wall of unlabeled numbered lockboxes, changing hands all night without a word passing at the bar.',
+              storyLocationId: 'undercanopy',
+              available: true,
+              sceneKnot: 'undercanopy_courier_cubbies',
+            },
+          ],
+        },
+        {
+          id: 'undercanopy-co-fixer',
+          position: { x: 2, y: 3 },
+          interactions: [
+            {
+              id: 'undercanopy-talk-co-fixer',
+              type: 'talk',
+              npcId: 'coFixer',
+              label: 'Cò',
+              description: 'Runs the district\'s actual business from a corner booth, and already knows you\'re not paying for information for free.',
+              storyLocationId: 'undercanopy',
+              available: true,
+              sceneKnot: 'co_fixer_intro',
+              topicsKnot: 'co_fixer_topics',
             },
           ],
         },

@@ -35,3 +35,6 @@ She's pulling a tap when you walk in, sleeve pushed up past a forearm of cosmeti
     "Once, maybe eight years back. A grandnephew of somebody, come to look at 'the family property' like he'd read about it in a file." She laughs, short and not entirely warm. "Stood in the doorway for ten minutes, took some pictures, left. Never heard from him again. I think we disappointed him." # speaker: npc:diemKhuong
     ~ adjust_affinity("diemKhuong", 1)
     -> diem_khuong_topics
++ [Let her get back to the taps.]
+    Diễm nods once and turns back to the row of glasses without waiting to see you go. # speaker: npc:diemKhuong
+    -> END
