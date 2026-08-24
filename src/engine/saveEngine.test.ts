@@ -50,6 +50,8 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       sarahMulligan: 0,
       diemKhuong: 0,
       lakshmiAvani: 3,
+      yenLoc: 0,
+      coFixer: 0,
     },
     conversation: {
       metNpcIds: ['meiHong'],

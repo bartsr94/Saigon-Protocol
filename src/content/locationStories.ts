@@ -9,6 +9,8 @@ import corporatePlazaJson from '../../content/ink/district1/corporatePlaza.json'
 import deltaSquatJson from '../../content/ink/district2/deltaSquat.json'
 import turtleLakePlazaJson from '../../content/ink/district3/turtleLakePlaza.json'
 import pasteurStreetTaproomJson from '../../content/ink/district3/pasteurStreetTaproom.json'
+import tuXuongClinicJson from '../../content/ink/district3/tuXuongClinic.json'
+import undercanopyJson from '../../content/ink/district3/undercanopy.json'
 import checkpointJson from '../../content/ink/district4/checkpoint.json'
 import publicIncidentSceneJson from '../../content/ink/district4/publicIncidentScene.json'
 import workerCanteenJson from '../../content/ink/district4/workerCanteen.json'
@@ -28,6 +30,8 @@ export const LOCATION_STORY_JSON: Record<LocationId, Record<string, unknown>> = 
   // district3
   turtleLakePlaza: turtleLakePlazaJson,
   pasteurStreetTaproom: pasteurStreetTaproomJson,
+  tuXuongClinic: tuXuongClinicJson,
+  undercanopy: undercanopyJson,
   // district4
   checkpoint: checkpointJson,
   publicIncidentScene: publicIncidentSceneJson,
