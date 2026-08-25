@@ -10,13 +10,13 @@
 // action in ConversationScreen; it never advances this knot.
 === mei_hong_topics ===
 Mei Hong gives you her attention again — patient, watchful, still deciding how much this room can afford to say out loud.
-* [Ask about her role here. # insight: ledger]
+* [Her role # insight: ledger] "What's your role here, exactly?"
     "Operations. I keep the lights on and the paperwork honest — most days." She doesn't quite meet your eyes on "honest."
     -> mei_hong_topics
-* [Ask about the checkpoint queue outside. # insight: hustle]
+* [Checkpoint queue # insight: hustle] "What's with the checkpoint queue outside?"
     "Corporate optics. Aveline wants to look careful without slowing anyone down who actually matters." A small, tired smile. "You noticed."
     -> mei_hong_topics
-* [Ask if she's worried about the investigation. # check: white]
+* [Worried? # check: white] "Are you worried about this investigation?"
     ~ temp worriedResult = roll_check("ledger", 6, "checkpoint-mei-hong-worried", "white")
     { worriedResult:
         Her composure slips half a second before she catches it. "Worried isn't the word I'd use. Careful, maybe."
@@ -24,16 +24,16 @@ Mei Hong gives you her attention again — patient, watchful, still deciding how
         "Worried?" A short laugh, too quick. "I don't have the luxury."
     }
     -> mei_hong_topics
-* { is_red_check_consumed("checkpoint-jump-queue") } [Ask about the guard at the gate. # insight: static]
+* { is_red_check_consumed("checkpoint-jump-queue") } [Gate guard # insight: static] "What's the deal with the guard at the gate?"
     "Him? He's not paid enough to care who's late." She glances toward the checkpoint. "Neither am I, most days."
     -> mei_hong_topics
-* { has_thought("company-man-doubt") } [Ask her what "handled" usually means, around here. # insight: ledger]
+* { has_thought("company-man-doubt") } ["Handled"? # insight: ledger] What does "handled" usually mean, around here?
     Mei Hong's expression doesn't change, but she takes a second longer to answer than she has for anything else. "It means someone decided it wasn't worth a second memo. That's all it ever means." # speaker: npc:meiHong
     -> mei_hong_topics
-* [Ask where the rest of the staff are. # insight: ledger]
+* [Rest of the staff # insight: ledger] "Where's the rest of the staff?"
     "The lounge, mostly." She nods toward it without quite looking. "Everyone off the floor is parked in there until your people finish. Some of them will talk to you. Most of them don't know enough to be careful about it yet." # speaker: npc:meiHong
     -> mei_hong_topics
-* { has_evidence("drone-log") and has_note("note-05") and not is_red_check_consumed("checkpoint-mei-hong-leverage") } [Press her with the drone log and Lakshmi's discrepancies. # insight: ledger # check: red]
+* { has_evidence("drone-log") and has_note("note-05") and not is_red_check_consumed("checkpoint-mei-hong-leverage") } [The drone log # insight: ledger # check: red] "The drone log doesn't match its own route. Neither do Lakshmi's notes. Explain that."
     ~ temp leverageResult = roll_check("ledger", 7, "checkpoint-mei-hong-leverage", "red")
     { leverageResult:
         You lay it out: a patrol log that doesn't match its own route, and a colleague's private notes on an anomaly somebody called "handled." Mei Hong's composure doesn't crack so much as fold, quietly, like she's been waiting for someone to make her stop pretending. "Fine." She doesn't look relieved. "I'll get you past the inner door. But whatever's back there — you didn't hear it from me." # speaker: npc:meiHong

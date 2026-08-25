@@ -1,6 +1,7 @@
 // Live topic editor (docs/LIVE_TOPIC_EDITOR_SPEC.md) — lets a dev
-// add/edit/remove/reorder an NPC's repeat-visit topics (the `* [choice]` /
-// response pairs inside their `topicsKnot` loop) straight from Conversation
+// add/edit/remove/reorder an NPC's repeat-visit topics (the `* [label] spoken
+// line` / response pairs inside their `topicsKnot` loop, GAME_GUIDE.md §5.2)
+// straight from Conversation
 // View. Writes back to whichever `.ink` file actually contains that knot —
 // `content/ink/<district>/<storyLocationId>.ink` itself, or one of its
 // INCLUDEd per-character files (e.g. content/ink/district4/aveline/) — resolved and
@@ -24,6 +25,7 @@ interface SimpleTopic {
   kind: 'simple'
   choiceText: string
   insightTag?: string
+  spokenText?: string
   responseText: string
   speakerNpcId?: string
 }
@@ -45,7 +47,7 @@ interface TopicEditorPanelProps {
 const INPUT_CLASS = 'w-full border border-white/20 bg-black/50 px-2 py-1 font-body text-xs text-white outline-none focus:border-chrome-secondary'
 
 function blankTopic(npcId: NpcId): SimpleTopic {
-  return { kind: 'simple', choiceText: '', insightTag: undefined, responseText: '', speakerNpcId: npcId }
+  return { kind: 'simple', choiceText: '', insightTag: undefined, spokenText: '', responseText: '', speakerNpcId: npcId }
 }
 
 async function fetchTopics(storyLocationId: string, knotName: string): Promise<{ topics?: TopicBlock[]; error?: string }> {
@@ -151,7 +153,7 @@ export function TopicEditorPanel({ storyLocationId, knotName, npcId, onClose }: 
                   <input
                     className={INPUT_CLASS}
                     value={topic.choiceText}
-                    placeholder="Choice text"
+                    placeholder="Topic label (short — this is the button text)"
                     onChange={(e) => updateSimpleTopic(index, { choiceText: e.target.value })}
                   />
                   <select
@@ -168,6 +170,12 @@ export function TopicEditorPanel({ storyLocationId, knotName, npcId, onClose }: 
                     ))}
                   </select>
                 </div>
+                <input
+                  className={INPUT_CLASS}
+                  value={topic.spokenText ?? ''}
+                  placeholder="Spoken line (optional — what the detective actually says, shown in the transcript when picked)"
+                  onChange={(e) => updateSimpleTopic(index, { spokenText: e.target.value || undefined })}
+                />
                 <textarea
                   className={INPUT_CLASS}
                   rows={3}

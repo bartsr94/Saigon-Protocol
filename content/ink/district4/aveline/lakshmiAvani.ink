@@ -59,11 +59,11 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
 { affinity_lakshmi_avani < -5:
     Lakshmi doesn't look up at all until you're standing right in front of her, and even then it's brief. "I've told you what I know." Her voice has gone flat, professional, closed. # speaker: npc:lakshmiAvani # portrait: guarded
 }
-* [Ask what she actually works on. # insight: graft]
+* [Her work # insight: graft] "What do you actually work on down here?"
     "Adaptive physiology — how far a body can be pushed to tolerate the outside before it stops being survivable. That's the polite version, anyway." She doesn't offer the impolite one. # speaker: npc:lakshmiAvani
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
-* [Ask if anything about the case has surprised her. # check: white]
+* [Surprised her? # check: white] "Has anything about this case surprised you?"
     ~ temp surprisedResult = roll_check("ledger", 6, "checkpoint-lakshmi-surprised", "white")
     { surprisedResult:
         Her hands go still on the roster. "I flagged an adaptation-stress reading a few weeks back. Filed it, followed up, was told it was handled." A beat. "I didn't ask what 'handled' meant. I should have." # speaker: npc:lakshmiAvani # portrait: guarded
@@ -74,11 +74,11 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
         "Surprised isn't the word." She goes back to the roster before she says more than that. # speaker: npc:lakshmiAvani
     }
     -> lakshmi_avani_topics
-* [Ask how morale is holding up. # insight: hustle]
+* [Morale # insight: hustle] "How's morale holding up in here?"
     "About how you'd expect. Half this room is deciding whether to update their resume tonight or wait for the weekend." A tired almost-smile. "I haven't decided either." # speaker: npc:lakshmiAvani
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
-* { has_thought("company-man-doubt") and not is_red_check_consumed("checkpoint-lakshmi-colleague") } [Push her on who else saw this coming. # insight: root # check: red]
+* { has_thought("company-man-doubt") and not is_red_check_consumed("checkpoint-lakshmi-colleague") } [Who else knew # insight: root # check: red] "Someone else saw this coming. Who?"
     ~ temp colleagueResult = roll_check("root", 7, "checkpoint-lakshmi-colleague", "red")
     { colleagueResult:
         She doesn't answer right away — long enough that the silence is the answer. "There's someone who flagged worse than I did, earlier than I did, and said so out loud instead of just filing it." Her jaw tightens. "I'm not giving you a name. Not like this. You'd need more than asking nicely." # speaker: npc:lakshmiAvani # portrait: guarded
@@ -88,26 +88,26 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
         ~ adjust_affinity("lakshmiAvani", -1)
     }
     -> lakshmi_avani_topics
-* { affinity_lakshmi_avani >= 3 } [Ask what she does when she's not down here. # insight: root]
+* { affinity_lakshmi_avani >= 3 } [Off the clock # insight: root] "What do you do when you're not down here?"
     "Same as everyone in a hab block, probably. I've got a window box that's somehow still growing something green, and a downstairs neighbor who thinks I don't know she borrows my hotplate." A real laugh, the first unguarded one you've heard from her. "It's not much. It's mine, though." # speaker: npc:lakshmiAvani # portrait: bright
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
-* { affinity_lakshmi_avani >= 5 } [Ask if she's ever thought about leaving Aveline. # insight: ledger]
+* { affinity_lakshmi_avani >= 5 } [Ever leave Aveline? # insight: ledger] "Have you ever thought about leaving Aveline?"
     She glances around the lounge before answering, voice dropping. "Sometimes. But where would I go? Terra Nova's always hiring, but their screening process... let's just say they're thorough about who they let off-world." A pause. "And honestly? I still believe in the work. Just not always the people running it." # speaker: npc:lakshmiAvani
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
-* { affinity_lakshmi_avani >= 5 } [Mention you've noticed she's been more open lately. # insight: static]
+* { affinity_lakshmi_avani >= 5 } [More open lately # insight: static] "You've been more open with me lately. I've noticed."
     "Have I?" She considers this, then nods slowly. "I suppose I have. It's... easier, talking to you. Feels less like I'm being assessed and more like I'm actually being heard." She gives a small, genuine smile. "That's rare around here." # speaker: npc:lakshmiAvani # portrait: bright
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
-+ { affinity_lakshmi_avani >= 5 } [Suggest going somewhere more private to talk. # insight: static]
++ { affinity_lakshmi_avani >= 5 } [Somewhere private? # insight: static] "Is there somewhere more private we could talk?"
     {Lakshmi's eyes widen slightly, then she glances around the lounge. After a moment, she nods. "There's a supply closet down the hall that's usually empty this time of day. Follow me." She leads you out of the lounge, her steps quick and quiet.|Lakshmi doesn't hesitate this time — just checks the hallway out of habit and tips her head toward the closet. "Same as before?" She's already moving before you answer.} # speaker: npc:lakshmiAvani # portrait: blush
     -> lakshmi_avani_private
-* { affinity_lakshmi_avani >= 6 } [Tell her you're glad the lounge has her in it. # insight: root]
+* { affinity_lakshmi_avani >= 6 } [Glad you're here # insight: root] "I'm glad the lounge has you in it."
     That actually gets a blush out of her — fast, and she covers it by pretending to fix the roster's crooked tape. "That's — " A beat. "You're allowed to say things like that to a witness?" She's smiling when she says it, though. # speaker: npc:lakshmiAvani # portrait: blush
     ~ adjust_affinity("lakshmiAvani", 1)
     -> lakshmi_avani_topics
-* { affinity_lakshmi_avani >= 10 and not has_case_flag("checkpoint-inner-wing-unlocked") } [Ask her to help you get into the inner wing. # insight: root]
+* { affinity_lakshmi_avani >= 10 and not has_case_flag("checkpoint-inner-wing-unlocked") } [The inner wing # insight: root] "I need to get into the inner wing. Can you help?"
     Lakshmi goes quiet for a second, the kind of quiet that means she's already decided and is just bracing for it. "My badge still opens that door. Nobody's revoked it, they just stopped expecting me to use it." She sets the roster down like it matters less than it did a minute ago. "Come on. I'll walk you back myself." # speaker: npc:lakshmiAvani # portrait: love
     ~ set_case_flag("checkpoint-inner-wing-unlocked")
     ~ adjust_affinity("lakshmiAvani", 1)

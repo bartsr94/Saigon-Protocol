@@ -280,6 +280,33 @@ inside the brackets:
 * { graft < 4 } [Force the panel open. # insight: graft # locked: GRAFT 4 required]
 ```
 
+**Topic-word convention (`topicsKnot` loops only)** — a repeat-visit topic
+list can run long (Lakshmi Avani's runs to 10), so `ConversationScreen`'s
+topic bar grids these into short, similarly-sized buttons rather than the
+wrapped variable-width sentence pills a first-encounter scene's `ChoiceRow`
+list uses. Write a short label in the bracket — 1-4 words, this is the
+literal button text — and put the full line the detective actually says
+*after* the closing bracket. Ink's own bracket/no-bracket split does the
+rest: `Choice.text` (what `ConversationScreen` renders as the button) is the
+bracket portion only, while the trailing text is added to the story output
+the moment the choice is taken, so it reads as the detective's own spoken
+line in the transcript, ahead of the NPC's response:
+
+```ink
+* [Sells online?] "What exactly do you sell online?" # insight: ledger
+* [Real name?] "Is Ophelia even your real name?" # insight: mask
+```
+
+This is additive, not a replacement for the plain bracket-only form —
+`* [Leave her to the crowd.]` with nothing after the bracket is still
+correct for a topic with no distinct spoken line (e.g. "leave"/"end
+conversation" style topics). A first-encounter scene's choices (no
+`topicsKnot` involved) keep using full-sentence bracket-only text as before;
+this convention is scoped to topic loops, where button-grid legibility is
+the actual constraint. `vite-plugins/inkTopicSerializer.ts`'s `SimpleTopic`
+models the trailing text as `spokenText`, editable from the live Topic
+Editor (`docs/archive/LIVE_TOPIC_EDITOR_SPEC.md`) alongside the label.
+
 ### 5.3 Checks
 
 A choice triggers a check by calling `roll_check(insight, targetNumber,

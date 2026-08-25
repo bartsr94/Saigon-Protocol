@@ -88,23 +88,23 @@ You take the spot beside her bench anyway. Across the square, a man with a takea
 - else:
     Ophelia tips her chin toward the empty space beside her without really looking at you. "Back again. Either you're bored or my life has officially become your new hobby." # speaker: npc:ophelia
 }
-* [Ask what exactly she sells online. # insight: ledger]
+* [Sells online? # insight: ledger] "What exactly do you sell online?"
     "Fantasy, at a markup nobody asks to itemize." She examines a nail like the question bores her more than it should. "Private messages. Paid one-on-one streams. A very convincing illusion that whoever's paying that month is the only one who's ever really seen me." A beat. "I'm good at it. That's rather the entire problem." # speaker: npc:ophelia
     ~ adjust_affinity("ophelia", 1)
     -> ophelia_topics
-* [Ask why she picked Saigon of all places. # insight: root]
+* [Why Saigon? # insight: root] "Why did you pick Saigon, of all places?"
     The brat drops for exactly one sentence. "Because nobody here was supposed to know my face." She recovers fast, like she's annoyed at herself for letting it show. "I built the account somewhere else, for people somewhere else. District 3 was the one place I was sure none of my actual audience would ever set foot in — no trade wealth, no off-world layover reason, nothing worth the airfare. I moved here to be nobody part-time. I did not account for one of them refusing to stay a paying stranger on a screen." # speaker: npc:ophelia # portrait: guarded
     ~ adjust_affinity("ophelia", 1)
     -> ophelia_topics
-* [Ask what the stalker knows that he should not. # insight: static]
+* [What he knows # insight: static] "What does the stalker know that he shouldn't?"
     "My walk home when I don't broadcast it. Which back stair at Pasteur Street staff actually uses. The tea stall I stop at when I'm too tired to perform still wanting bourbon." Her expression goes flat, all the brattiness burned off in one line. "Things a subscriber should only know if someone sold them to him, or if he did the tracing himself. I'd bet on the second one. He seems like the type who'd consider that romantic." # speaker: npc:ophelia # portrait: guarded
     ~ adjust_affinity("ophelia", 1)
     -> ophelia_topics
-* [Ask why she has not gone through official channels. # insight: hustle]
+* [Official channels? # insight: hustle] "Why haven't you gone through official channels?"
     "Because official channels hear 'minor feed girl with paying clients' and stop listening after the noun." She watches the crowd instead of you. "And a report is still a report, Detective. Names get written down, and some of my names very much cannot survive that. So, no. I would rather handle this myself, thank you, except apparently I can't, which is exactly the part I resent." # speaker: npc:ophelia # portrait: guarded
     ~ adjust_affinity("ophelia", 1)
     -> ophelia_topics
-* [Ask if Ophelia is her real name. # insight: mask]
+* [Real name? # insight: mask] "Is Ophelia even your real name?"
     "Real enough to get paid under. Real enough to be shouted across a bar by strangers who've never once bought me a drink." She finally looks at you properly, and for a second the brat drops entirely. "The name on record is for people I trust. You are not there. Try not to take it personally — nobody is." # speaker: npc:ophelia
     -> ophelia_topics
 + [Leave her to the crowd.]

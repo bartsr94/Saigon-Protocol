@@ -56,23 +56,23 @@ The bar's real business happens at a corner booth, not behind the counter — a 
 - else:
     Cò keeps his eyes on the room, not on you. "Still here. Make it worth the seat you're taking up." # speaker: npc:coFixer
 }
-* [Ask what he actually brokers. # insight: ledger]
+* [What he brokers # insight: ledger] "What do you actually broker?"
     "Rooms nobody official can rent you, mostly. A landlord's never coming back, a tenant needs somewhere to put a bed, I make sure the two arrangements never have to meet each other in person. Everybody pays. Nobody signs anything." # speaker: npc:coFixer
     ~ adjust_affinity("coFixer", 1)
     -> co_fixer_topics
-* [Ask what else moves through here besides rooms. # insight: hustle]
+* [What else moves # insight: hustle] "What else moves through here besides rooms?"
     "Whatever needs to move through a district nobody official is watching. Parts. Pharma nobody's filed a prescription for. Narco dust. Anti-rejection ampoules. Sometimes a wet-ice courier box nobody sensible opens on my table." He shrugs. "And sometimes people sell hours of themselves the same way they sell anything else — quietly, in cash, before rent comes due." # speaker: npc:coFixer # portrait: guarded
     ~ adjust_affinity("coFixer", 1)
     -> co_fixer_topics
-* [Ask if SEZAC's ever going to be a problem for this place. # insight: static]
+* [SEZAC a problem? # insight: static] "Is SEZAC ever going to be a problem for this place?"
     "SEZAC doesn't budget patrols for a district with no cargo throat and no research contract. That's not luck, Detective, that's the entire business model. The day this district starts mattering to somebody upstairs is the day I close this booth and open a different one." # speaker: npc:coFixer
     ~ adjust_affinity("coFixer", 1)
     -> co_fixer_topics
-* [Ask why everyone just calls him Cò. # insight: mask]
+* [Why "Cò"? # insight: mask] "Why does everyone just call you Cò?"
     "Because it's not a name, it's a job description, and jobs don't get subpoenaed." A thin smile. "The Mask already worked that out before you asked. I can see it on you." # speaker: npc:coFixer
     ~ adjust_affinity("coFixer", 2)
     -> co_fixer_topics
-* { archetype == "hustler" } [Ask him straight — how long before someone like you ends up running a booth like this.]
+* { archetype == "hustler" } [Ends up like him?] "How long before someone like me ends up running a booth like this?"
     Something in his face shifts, just slightly — recognition, not warmth. "You already know the answer, or you wouldn't have asked it that way." He lets that sit for a beat. "Long enough to hate it. Not long enough to find a cleaner trade." He doesn't say anything else on the subject, and you don't push it. # speaker: npc:coFixer
     ~ adjust_affinity("coFixer", 2)
     -> co_fixer_topics
