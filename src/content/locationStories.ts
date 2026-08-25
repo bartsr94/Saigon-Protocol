@@ -11,6 +11,7 @@ import turtleLakePlazaJson from '../../content/ink/district3/turtleLakePlaza.jso
 import pasteurStreetTaproomJson from '../../content/ink/district3/pasteurStreetTaproom.json'
 import tuXuongClinicJson from '../../content/ink/district3/tuXuongClinic.json'
 import undercanopyJson from '../../content/ink/district3/undercanopy.json'
+import opheliaApartmentJson from '../../content/ink/district3/opheliaApartment.json'
 import checkpointJson from '../../content/ink/district4/checkpoint.json'
 import publicIncidentSceneJson from '../../content/ink/district4/publicIncidentScene.json'
 import workerCanteenJson from '../../content/ink/district4/workerCanteen.json'
@@ -32,6 +33,7 @@ export const LOCATION_STORY_JSON: Record<LocationId, Record<string, unknown>> = 
   pasteurStreetTaproom: pasteurStreetTaproomJson,
   tuXuongClinic: tuXuongClinicJson,
   undercanopy: undercanopyJson,
+  opheliaApartment: opheliaApartmentJson,
   // district4
   checkpoint: checkpointJson,
   publicIncidentScene: publicIncidentSceneJson,

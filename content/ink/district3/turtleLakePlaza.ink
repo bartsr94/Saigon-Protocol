@@ -8,6 +8,10 @@
 EXTERNAL adjust_affinity(npcId, amount)
 EXTERNAL start_case(caseId)
 EXTERNAL complete_case_objective(caseId, objectiveId)
+EXTERNAL is_objective_complete(caseId, objectiveId)
+EXTERNAL set_case_flag(flag)
+EXTERNAL has_case_flag(flag)
+EXTERNAL unlock_note(noteId)
 
 VAR root = 0
 VAR graft = 0
@@ -83,6 +87,21 @@ You take the spot beside her bench anyway. Across the square, a man with a takea
 -> END
 
 === ophelia_topics ===
+// Gates checked in order, top to bottom, every time this knot is entered
+// (docs/OPHELIA_LIVESTREAM_ARC_SPEC.md): once she's agreed to the stream
+// favor she's relocated for good, so nothing below this point ever fires
+// again for her at Turtle Lake. Refusing keeps her here, so the secondhand
+// escalation beat fires here instead, once, before falling through to the
+// ordinary greeting/topic loop below.
+{ has_case_flag("ophelia-stream-agreed"):
+    -> ophelia_relocated
+}
+{ has_case_flag("ophelia-stream-refused") and not has_case_flag("ophelia-pattern-told"):
+    -> ophelia_pattern_secondhand
+}
+{ is_objective_complete("ophelia-stalker", "recognition") and affinity_ophelia >= 2 and not has_case_flag("ophelia-stream-asked"):
+    -> ophelia_stream_ask
+}
 { affinity_ophelia >= 3:
     Ophelia glances over as you approach, then lets the posture drop half an inch — not enough that anyone else at the fountain would clock it. "Detective. Good. You're almost interesting enough to justify the seat." # speaker: npc:ophelia
 - else:
@@ -110,3 +129,63 @@ You take the spot beside her bench anyway. Across the square, a man with a takea
 + [Leave her to the crowd.]
     "Try not to arrest any of my customers unless they deserve it," Ophelia says, already sounding like she owns the square again. "And eat something. You look like you skip meals for a hobby, and frankly it's distracting." # speaker: npc:ophelia
     -> END
+
+// The Ask (docs/OPHELIA_LIVESTREAM_ARC_SPEC.md, Scene 1) — a forced beat,
+// not a selectable topic, since she's the one bringing it up. Fires once
+// (gated by ophelia-stream-asked) once she's told the detective why she's
+// being followed and warmed up at least a little.
+=== ophelia_stream_ask ===
+Ophelia's already got her whole "casual" face on before you're within earshot — the loose posture people use to keep from asking for something they actually want. "Don't get comfortable. I need thirty seconds and mild cooperation, not a conversation." # speaker: npc:ophelia
+"There's a thing. A stream thing. You'd stand somewhere with decent lighting and look mysterious, which I'm told you have some natural aptitude for." A pause, like she's deciding how much of the actual ask to let show. "It's not a big deal." # speaker: npc:ophelia
+{ mask >= 3:
+    The Mask isn't buying "not a big deal" for a second — that's a rehearsed opener, the kind you use right before the real number comes out. # speaker: insight:mask
+- else:
+    Something about how carefully she's not making eye contact says there's more to this than she's letting on.
+}
+"Fine. It's a slightly bigger deal." The brat cracks half an inch. "Numbers are down. Badly. The kind of down where the maths on rent starts getting creative." She catches herself saying it out loud and visibly hates that she did. "I need something that reads as new. You, apparently, read as new." # speaker: npc:ophelia
+* [Ask what "helping" actually means. # insight: ledger]
+    "On camera. My camera, my script, my audience — you're the mystery guest, not the headline. Cop who won't say why he's there, off the record, all very noir." She shrugs like it's nothing. It is not nothing, and you both know it. # speaker: npc:ophelia
+    -> ophelia_stream_ask_decision
+* [Ask why she's asking you, specifically. # insight: root]
+    The brat drops for real this time. "Because I don't have a long list of people I'd trust to stand next to me on camera and not make it worse." She says it like it costs her something. "You're already the only cop who's treated this like it's actually happening to me. I'm not above using that." # speaker: npc:ophelia # portrait: guarded
+    -> ophelia_stream_ask_decision
+
+=== ophelia_stream_ask_decision ===
+* [Agree. # insight: hustle]
+    "Wonderful. Try to look like you have a personality." The relief under the sarcasm is almost visible. "My place. I'll send you the address once you're not standing in the middle of a public square." # speaker: npc:ophelia
+    ~ set_case_flag("ophelia-stream-agreed")
+    ~ set_case_flag("ophelia-stream-asked")
+    ~ adjust_affinity("ophelia", 1)
+    "Don't make this weird," she adds, already walking off before you can answer. "It's a favor. It is not a moment." # speaker: npc:ophelia
+    -> END
+* [Refuse, gently. # insight: root]
+    "Forget it. Obviously it was a stupid thing to ask a cop." She's already turning back to the crowd, voice gone brisk and final, the sadness under it flickering for exactly one second before she buries it. "I'll figure something else out. I always do." # speaker: npc:ophelia # portrait: guarded
+    ~ set_case_flag("ophelia-stream-refused")
+    ~ set_case_flag("ophelia-stream-asked")
+    -> ophelia_topics
+* [Refuse, and name what she's doing. # insight: mask]
+    "The sad act. I clocked it." She actually laughs, short and surprised, like she didn't expect you to say it out loud. "Fine. Guilty. Doesn't make the numbers less real, it just means you're annoyingly hard to work." She waves you off, more amused than stung. "No hard feelings, Detective. Mostly." # speaker: npc:ophelia
+    ~ set_case_flag("ophelia-stream-refused")
+    ~ set_case_flag("ophelia-stream-asked")
+    ~ adjust_affinity("ophelia", 1)
+    -> ophelia_topics
+
+// She's relocated for good once this fires — see the top-of-knot guard in
+// ophelia_topics above. No topic loop here anymore, just a pointer to
+// where she actually is now.
+=== ophelia_relocated ===
+Ophelia's bench by the fountain is somebody else's tonight — she's traded the crowd for four walls and a lock she controls, now that there's a reason to. If you need her, you know where to find her these days.
+-> END
+
+// Refused-path Pattern completion (Scene 3, secondhand variant) — fires
+// once, the first time the player returns after refusing, then falls
+// through into the ordinary greeting/topic loop above.
+=== ophelia_pattern_secondhand ===
+Ophelia's doing a passable impression of fine, right up until she isn't. "He sent something after the stream I did without you. Something that made it very clear he already knows there's a 'someone else' now, even though you were never anywhere near a camera." Her voice stays level in a way that costs her visible effort. "Coordinated. Real. Congratulations, you can stop pretending you weren't already sure." # speaker: npc:ophelia # portrait: guarded
+{ mask >= 3:
+    The Mask reads underneath the bitterness easily enough — she's not actually angry at you for saying no. She's furious that saying no didn't even buy her anything. # speaker: insight:mask
+}
+~ complete_case_objective("ophelia-stalker", "pattern")
+~ unlock_note("note-06")
+~ set_case_flag("ophelia-pattern-told")
+-> ophelia_topics

@@ -310,7 +310,10 @@ Ophelia works best as a three-stage optional thread:
    The detective meets her in District 3 under pressure.
 2. **Pattern**
    The detective helps establish that the attention is coordinated, repeated,
-   and real, not just "bad fans."
+   and real, not just "bad fans." See `OPHELIA_LIVESTREAM_ARC_SPEC.md` for
+   the connective scene that gets the player here: Ophelia talks the
+   detective into appearing in one of her streams, which is what draws the
+   stalker's escalation out into the open.
 3. **Choice**
    Ophelia decides whether to go public, go quiet, weaponize the audience,
    run, or let the detective draw the stalker out.

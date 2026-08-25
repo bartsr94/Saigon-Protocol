@@ -22,6 +22,7 @@ export type LocationId =
   | 'pasteurStreetTaproom'
   | 'tuXuongClinic'
   | 'undercanopy'
+  | 'opheliaApartment'
 
 export const LOCATION_IDS: LocationId[] = [
   'checkpoint',
@@ -39,6 +40,7 @@ export const LOCATION_IDS: LocationId[] = [
   'pasteurStreetTaproom',
   'tuXuongClinic',
   'undercanopy',
+  'opheliaApartment',
 ]
 
 export interface LocationDefinition {
@@ -49,6 +51,14 @@ export interface LocationDefinition {
   unlockedByDefault: boolean
   /** Locations unlocked once this location's scene is completed and the player leaves it. */
   unlocksOnComplete?: LocationId[]
+  /**
+   * Locations unlocked once this location's scene ends with the given
+   * caseStore flag set — same trigger point as `unlocksOnComplete`
+   * (`DialogueScreen.finalizeEndedScene`), but conditional rather than
+   * unconditional. First use: Ophelia relocating off Turtle Lake once the
+   * player agrees to help with her stream (`docs/OPHELIA_LIVESTREAM_ARC_SPEC.md`).
+   */
+  unlocksOnFlag?: { flag: string; locationId: LocationId }[]
   /** Baseline mood applied on entering the location (docs/GAME_GUIDE.md), independent of whatever its .ink content tags afterward. Absent means "leave whatever's playing alone." */
   musicId?: MusicId
   ambienceIds?: AmbienceId[]
@@ -149,7 +159,15 @@ export const LOCATIONS: Record<LocationId, LocationDefinition> = {
     name: 'Turtle Lake Plaza',
     blurb: 'Three regimes tried to make this fountain square mean something official, and gave up in turn. What\'s left is street food, live acoustic sets, girls and boys working the crowd for drink money, and enough quiet exchange to remind you that nightlife here is also how people survive.',
     unlockedByDefault: true,
+    unlocksOnFlag: [{ flag: 'ophelia-stream-agreed', locationId: 'opheliaApartment' }],
     ambienceIds: ['marketChatter'],
+  },
+  opheliaApartment: {
+    id: 'opheliaApartment',
+    districtId: 'district3',
+    name: "Ophelia's Apartment",
+    blurb: 'A small rented room she only started actually living out of once staying findable stopped being optional — four walls, a lock she controls, and a ring light doing double duty as income and cover story.',
+    unlockedByDefault: false,
   },
   pasteurStreetTaproom: {
     id: 'pasteurStreetTaproom',
