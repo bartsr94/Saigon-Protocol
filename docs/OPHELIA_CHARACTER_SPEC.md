@@ -316,18 +316,29 @@ Ophelia works best as a three-stage optional thread:
    stalker's escalation out into the open.
 3. **Choice**
    Ophelia decides whether to go public, go quiet, weaponize the audience,
-   run, or let the detective draw the stalker out.
+   run, or let the detective draw the stalker out. Built as the
+   `ophelia_choice_scene` finale in `content/ink/district3/opheliaApartment.ink`
+   (agreed path) and `content/ink/district3/turtleLakePlaza.ink` (refused
+   path), gated on the `pattern` objective and resolving the case via
+   `complete_case("ophelia-stalker")`.
 
-Potential ending shapes:
+Ending shapes, each its own `set_case_flag`:
 
-- the stalker is identified and neutralized quietly
-- the stalker is exposed publicly, but Ophelia's livelihood takes collateral
-  damage
-- Ophelia disappears from the feed by choice, trading visibility for safety
-- she stays visible, but on terms that make her colder, less open, more
-  controlled
+- `ophelia-ending-drawnout` — the stalker is identified and neutralized
+  quietly (one Red check, `roll_check("static", 7, "ophelia-choice-draw-out",
+  "red")`, governs tone/affinity, not whether it lands)
+- `ophelia-ending-public` — the stalker is exposed publicly, but Ophelia's
+  audience/livelihood takes collateral damage
+- `ophelia-ending-vanish` — Ophelia disappears from the feed by choice,
+  trading visibility (and income) for safety
+- `ophelia-ending-cold` — she stays visible, but on terms that make her
+  colder, less open, more controlled — the only branch with a negative
+  affinity delta, since this path also walls off the detective a little
 
-No ending should feel clean.
+No ending feels clean — every branch's payoff text carries a real cost even
+in its "best" outcome, per the guardrail below. Case note `note-07`
+(`content/cases.ts`) closes the case with wording generic enough to hold up
+under any of the four.
 
 ## Asset needs
 

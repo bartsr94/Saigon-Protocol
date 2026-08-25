@@ -13,6 +13,7 @@ EXTERNAL set_case_flag(flag)
 EXTERNAL has_case_flag(flag)
 EXTERNAL is_objective_complete(caseId, objectiveId)
 EXTERNAL complete_case_objective(caseId, objectiveId)
+EXTERNAL complete_case(caseId)
 EXTERNAL unlock_note(noteId)
 
 VAR mask = 0
@@ -32,10 +33,29 @@ VAR affinity_ophelia = 0
 { has_case_flag("ophelia-stream-scene-done") and not is_objective_complete("ophelia-stalker", "pattern"):
     -> ophelia_pattern_livestream
 }
-{ affinity_ophelia >= 3:
-    Ophelia doesn't bother with the performance the second you're through the door — this room only has one audience worth managing, and it isn't you. "You're early. Or I'm behind. Pick whichever makes me sound less disorganized." # speaker: npc:ophelia
+{ is_objective_complete("ophelia-stalker", "pattern") and not is_objective_complete("ophelia-stalker", "choice"):
+    -> ophelia_choice_scene
+}
+{ has_case_flag("ophelia-ending-vanish"):
+    Ophelia doesn't glance at a laptop that isn't open anymore. Without the account there's less to perform for, which means less performance, period — just her, in a room that's finally only hers. "Detective. Sit if you're staying. I'm re-learning what a day looks like without an audience in it, so bear with me." # speaker: npc:ophelia
 - else:
-    Ophelia glances up from whatever she's doing to the ring light's angle and waves you further in without really looking. "Door's unlocked because I was expecting you, not because I've gotten careless." # speaker: npc:ophelia
+    { has_case_flag("ophelia-ending-cold"):
+        Ophelia doesn't look up from whatever she's scheduling. The warmth is still there, technically, filed somewhere she can access it on purpose instead of by accident. "Detective. I've got a booking in twenty. Say what you need to say." # speaker: npc:ophelia # portrait: guarded
+    - else:
+        { has_case_flag("ophelia-ending-public"):
+            Ophelia's reading her own comments with the specific weariness of someone who won that fight and is still counting the cost of it. "Half my subscribers think I'm braver than I am. The other half think I'm insufferable now. Somehow both audiences are still paying, so." # speaker: npc:ophelia
+        - else:
+            { has_case_flag("ophelia-ending-drawnout"):
+                Ophelia looks up at the door out of habit more than fear now — the flinch is fading, slower than she'd like to admit. "Detective. You're allowed to just visit occasionally, you know. It doesn't all have to be a debrief." # speaker: npc:ophelia
+            - else:
+                { affinity_ophelia >= 3:
+                    Ophelia doesn't bother with the performance the second you're through the door — this room only has one audience worth managing, and it isn't you. "You're early. Or I'm behind. Pick whichever makes me sound less disorganized." # speaker: npc:ophelia
+                - else:
+                    Ophelia glances up from whatever she's doing to the ring light's angle and waves you further in without really looking. "Door's unlocked because I was expecting you, not because I've gotten careless." # speaker: npc:ophelia
+                }
+            }
+        }
+    }
 }
 * [The numbers, after # insight: ledger] "Did it actually help? The stream?"
     "Enough to matter. Not enough to fix anything permanently, which was never really the point, was it." She says it lightly, but doesn't quite meet your eyes doing it. "It bought me a month where I'm not doing the rent math at three in the morning. That's not nothing." # speaker: npc:ophelia
@@ -90,6 +110,56 @@ Ophelia's phone is already face-down on the counter when you walk in, which is i
 "He watched. Of course he watched." She doesn't bother with the brat voice this time. "And he didn't just watch — he wanted to know who you were. Specifically. By name, by rank, by whether I'd 'moved on' to a badge instead of him." She sets the phone down harder than it needs. "That's not a fan reacting to content, Detective. That's someone keeping a file." # speaker: npc:ophelia # portrait: guarded
 ~ complete_case_objective("ophelia-stalker", "pattern")
 ~ unlock_note("note-06")
+-> ophelia_apartment_topics
+
+// Scene 4 — Choice (docs/OPHELIA_CHARACTER_SPEC.md, "Story use" stage 3;
+// closes the ophelia-stalker case). Fires once, the first visit after
+// Pattern is confirmed, same forced-beat convention as ophelia_stream_ask.
+// Four endings, matching the character spec's "Potential ending shapes" in
+// order — no check gates which one the player picks, since this is a
+// values call, not a skill check; only the "draw him out" branch itself
+// carries a Red check, since that's the one branch that's actually
+// detective work rather than a judgment call.
+=== ophelia_choice_scene ===
+Ophelia's not performing when you walk in this time. The ring light's off, the laptop's shut, and she's just sitting with her knees pulled up like the apartment finally got too small for the person she usually plays in it. "He's not a bad fan. We both know that now." She doesn't look up right away. "So tell me what I actually do about it, Detective. Because I've been making that call alone since before you were part of my life, and for once I'd like to hear it out loud before I decide." # speaker: npc:ophelia # portrait: guarded
+{ mask >= 3:
+    The Mask reads past the calm easily enough — this isn't her asking permission. It's her needing to say the options out loud to someone before she can pick one and live with it. # speaker: insight:mask
+}
+* [Let me handle him. Quietly. # check: red]
+    "Handle him. Very reassuring, very specific." She doesn't stop you, though — that's the tell. "Fine. Do whatever it is cops do that isn't paperwork. Just don't make it worse than it already is." # speaker: npc:ophelia
+    ~ temp drawResult = roll_check("static", 7, "ophelia-choice-draw-out", "red")
+    { drawResult:
+        It takes two days and a favor you'll be paying off for months, but it works — cleanly enough that he never sees your hand in it, badly enough that you both know "cleanly" is doing a lot of work in that sentence. He goes quiet. Not caught, not charged, just gone, the way problems this city can't officially see are made to disappear. Ophelia doesn't ask what it cost you. She's smart enough not to want the answer. # speaker: npc:ophelia
+        ~ adjust_affinity("ophelia", 2)
+    - else:
+        You lean on the wrong lever, or the right one too hard, and instead of folding he goes dark — no more messages, no more sightings, nothing left to track, which should feel like a win and doesn't. Ophelia says thank you anyway, because you tried, but neither of you believes "gone quiet" and "gone" are the same thing. # speaker: npc:ophelia
+        ~ adjust_affinity("ophelia", 1)
+    }
+    ~ set_case_flag("ophelia-ending-drawnout")
+    -> ophelia_choice_resolved
+* [Go public. Burn him in front of everyone who's watching. # insight: hustle]
+    "Turn my own audience into a weapon." She says it slowly, testing the shape of it. "It could work. It could also cost me half of them — the ones who decide a woman with a stalker story is bad for the vibe." A short, humorless laugh. "Let's find out which half." # speaker: npc:ophelia
+    She posts it herself that night — careful, specific, naming the pattern without naming a name the platforms can't verify. It works exactly as well and as badly as she predicted: solidarity from strangers who've dealt with their own, a wave of quiet unsubscribes from people who liked her better decorative than real, and total, permanent silence from him. He doesn't vanish. He just can't risk being anywhere near this version of the story anymore. # speaker: npc:ophelia # portrait: guarded
+    ~ set_case_flag("ophelia-ending-public")
+    ~ adjust_affinity("ophelia", 1)
+    -> ophelia_choice_resolved
+* [Disappear. Shut the whole account down. # insight: root]
+    "Give it up." Not a question, just her turning the sentence over like it belongs to someone else. "The rent, the persona, four years of building an audience that only exists because I kept showing up for it. Just — stop." # speaker: npc:ophelia
+    She does it within the week, faster than either of you expects, like she'd already half-packed the decision and just needed someone to agree it was allowed. The account goes dark. The rent gets harder, not easier — safety costs money too, it turns out, just a different kind. But for the first time since the stalker found her, nobody on this earth knows where Ophelia actually is except you, and the handful of people she's decided to trust with it. # speaker: npc:ophelia # portrait: guarded
+    ~ set_case_flag("ophelia-ending-vanish")
+    ~ adjust_affinity("ophelia", 1)
+    -> ophelia_choice_resolved
+* [Stay visible. Just build the walls higher. # insight: ledger]
+    "Keep going. Just — smarter." She's already doing the math out loud: paid security for in-person bookings, a delay on anything that reveals a real location, no more "authentic" anything that isn't scripted three drafts in advance. "I liked being a little bit real online. I don't think I get to anymore." # speaker: npc:ophelia
+    It works, in the sense that the numbers hold and he never gets close again. It also means the Ophelia you first sat next to at the fountain — bratty, unguarded in the ways that mattered, capable of being talked into a favor — gets quietly retired along with the risk. What's left is very good at her job and a great deal harder to reach, you included. # speaker: npc:ophelia # portrait: guarded
+    ~ set_case_flag("ophelia-ending-cold")
+    ~ adjust_affinity("ophelia", -1)
+    -> ophelia_choice_resolved
+
+=== ophelia_choice_resolved ===
+~ complete_case_objective("ophelia-stalker", "choice")
+~ complete_case("ophelia-stalker")
+~ unlock_note("note-07")
 -> ophelia_apartment_topics
 
 === ophelia_apartment_corner ===

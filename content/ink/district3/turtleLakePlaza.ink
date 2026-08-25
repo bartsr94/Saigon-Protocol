@@ -8,10 +8,12 @@
 EXTERNAL adjust_affinity(npcId, amount)
 EXTERNAL start_case(caseId)
 EXTERNAL complete_case_objective(caseId, objectiveId)
+EXTERNAL complete_case(caseId)
 EXTERNAL is_objective_complete(caseId, objectiveId)
 EXTERNAL set_case_flag(flag)
 EXTERNAL has_case_flag(flag)
 EXTERNAL unlock_note(noteId)
+EXTERNAL roll_check(insight, targetNumber, checkId, risk)
 
 VAR root = 0
 VAR graft = 0
@@ -99,16 +101,39 @@ You take the spot beside her bench anyway. Across the square, a man with a takea
 { has_case_flag("ophelia-stream-refused") and not has_case_flag("ophelia-pattern-told"):
     -> ophelia_pattern_secondhand
 }
+{ is_objective_complete("ophelia-stalker", "pattern") and not is_objective_complete("ophelia-stalker", "choice"):
+    -> ophelia_choice_scene
+}
 { is_objective_complete("ophelia-stalker", "recognition") and affinity_ophelia >= 2 and not has_case_flag("ophelia-stream-asked"):
     -> ophelia_stream_ask
 }
-{ affinity_ophelia >= 3:
-    Ophelia glances over as you approach, then lets the posture drop half an inch — not enough that anyone else at the fountain would clock it. "Detective. Good. You're almost interesting enough to justify the seat." # speaker: npc:ophelia
+{ has_case_flag("ophelia-ending-vanish"):
+    Ophelia's here the way she always used to be before any of this started — just a woman at a fountain, nothing streaming, nobody watching. "Turns out I'm allowed to just be somewhere occasionally. Novel concept." # speaker: npc:ophelia
 - else:
-    Ophelia tips her chin toward the empty space beside her without really looking at you. "Back again. Either you're bored or my life has officially become your new hobby." # speaker: npc:ophelia
+    { has_case_flag("ophelia-ending-cold"):
+        Ophelia checks the square out of habit before she checks you — new reflex, the kind that doesn't turn off once you've needed it. "Detective. Make it quick, I've got a booking to prep for." # speaker: npc:ophelia # portrait: guarded
+    - else:
+        { has_case_flag("ophelia-ending-public"):
+            Ophelia's watching the crowd differently now — not for him specifically, just for anyone who might recognize her from a post that made the rounds further than she meant it to. "Half the district's read something about me they weren't supposed to know. Ask your questions before I decide that was a mistake." # speaker: npc:ophelia
+        - else:
+            { has_case_flag("ophelia-ending-drawnout"):
+                Ophelia still checks the corner by the food carts out of habit, even though there's nothing there to check for anymore. "Old reflex," she says, before you can ask. "Apparently those don't come with an off switch." # speaker: npc:ophelia
+            - else:
+                { affinity_ophelia >= 3:
+                    Ophelia glances over as you approach, then lets the posture drop half an inch — not enough that anyone else at the fountain would clock it. "Detective. Good. You're almost interesting enough to justify the seat." # speaker: npc:ophelia
+                - else:
+                    Ophelia tips her chin toward the empty space beside her without really looking at you. "Back again. Either you're bored or my life has officially become your new hobby." # speaker: npc:ophelia
+                }
+            }
+        }
+    }
 }
 * [Sells online? # insight: ledger] "What exactly do you sell online?"
-    "Fantasy, at a markup nobody asks to itemize." She examines a nail like the question bores her more than it should. "Private messages. Paid one-on-one streams. A very convincing illusion that whoever's paying that month is the only one who's ever really seen me." A beat. "I'm good at it. That's rather the entire problem." # speaker: npc:ophelia
+    { has_case_flag("ophelia-ending-vanish"):
+        "Nothing, anymore." A short, unreadable pause. "Turns out the fastest way to stop being findable was to stop being sellable. I don't recommend it as a business strategy. I recommend it as a safety one." # speaker: npc:ophelia
+    - else:
+        "Fantasy, at a markup nobody asks to itemize." She examines a nail like the question bores her more than it should. "Private messages. Paid one-on-one streams. A very convincing illusion that whoever's paying that month is the only one who's ever really seen me." A beat. "I'm good at it. That's rather the entire problem." # speaker: npc:ophelia
+    }
     ~ adjust_affinity("ophelia", 1)
     -> ophelia_topics
 * [Why Saigon? # insight: root] "Why did you pick Saigon, of all places?"
@@ -188,4 +213,47 @@ Ophelia's doing a passable impression of fine, right up until she isn't. "He sen
 ~ complete_case_objective("ophelia-stalker", "pattern")
 ~ unlock_note("note-06")
 ~ set_case_flag("ophelia-pattern-told")
+-> ophelia_topics
+
+// Scene 4 — Choice, refused-path variant (docs/OPHELIA_CHARACTER_SPEC.md,
+// "Story use" stage 3). Same four endings as opheliaApartment.ink's
+// version, but she never relocated, so this plays out in public, and the
+// trust between them is a notch more effortful — consistent with the
+// colder texture the refused path has carried since Scene 1.
+=== ophelia_choice_scene ===
+Ophelia doesn't wave you toward the bench this time so much as just not tell you to leave, which from her currently counts as an invitation. "He's not a bad fan. I don't need Mask to tell me that anymore, and neither do you." She watches the crowd instead of you, same as always. "So. Since you're apparently invested — what do I do about him, Detective? I'm asking because I've run out of good ideas, not because I owe you the question." # speaker: npc:ophelia # portrait: guarded
+* [Let me handle him. Quietly. # check: red]
+    "Handle him." She doesn't sound hopeful. She doesn't stop you either. "Do what you're going to do. I'll believe it when he's actually gone." # speaker: npc:ophelia
+    ~ temp drawResult = roll_check("static", 7, "ophelia-choice-draw-out", "red")
+    { drawResult:
+        It costs you a favor you'll be paying off for a while, but it lands clean enough — he goes quiet, not caught, not charged, just gone the way this city disappears problems it can't officially see. Ophelia doesn't ask what it cost you. She's had enough practice not wanting to know the price of things. # speaker: npc:ophelia
+        ~ adjust_affinity("ophelia", 2)
+    - else:
+        Whatever lever you pull, it's the wrong one, or too hard — he goes dark instead of gone, no more sightings, nothing left to track, which should feel like winning and doesn't. "Thank you for trying," Ophelia says, and means it, and doesn't sound reassured either. # speaker: npc:ophelia
+        ~ adjust_affinity("ophelia", 1)
+    }
+    ~ set_case_flag("ophelia-ending-drawnout")
+    -> ophelia_choice_resolved
+* [Go public. Burn him in front of everyone who's watching. # insight: hustle]
+    "Turn my own subscribers into a weapon." She turns the idea over slower than the others, more suspicious of it. "It'll cost me a chunk of the ones who liked me better decorative than real. Fine. Let's see which half actually stays." # speaker: npc:ophelia
+    She posts it that night, careful and specific, naming the pattern without naming anything the platforms can't verify. It costs her exactly what she guessed — a wave of quiet unsubscribes, a smaller wave of strangers who recognize the shape of their own story in hers — and it burns him completely. He can't risk being anywhere near this version of events. # speaker: npc:ophelia # portrait: guarded
+    ~ set_case_flag("ophelia-ending-public")
+    ~ adjust_affinity("ophelia", 1)
+    -> ophelia_choice_resolved
+* [Disappear. Shut the whole account down. # insight: root]
+    "Give up four years of work because one man couldn't stay on his side of a screen." Not really a question. She says it like she's checking whether it sounds as unfair out loud as it does in her head. It does. She does it anyway, within the week — faster than you expect, like she'd already half-packed the decision. The rent gets harder, not easier. But nobody on this earth knows where she actually lives except you now, and whoever else she's decided is worth the risk. # speaker: npc:ophelia # portrait: guarded
+    ~ set_case_flag("ophelia-ending-vanish")
+    ~ adjust_affinity("ophelia", 1)
+    -> ophelia_choice_resolved
+* [Stay visible. Just build the walls higher. # insight: ledger]
+    "Keep going. Smarter, this time." She lists it off like a budget line: paid security for anything in person, a delay on anything real, nothing "authentic" that isn't scripted three drafts in advance. "I don't think I get to be a little bit real online anymore. That's the actual cost, and it's not the one anyone's going to put in a headline." # speaker: npc:ophelia
+    It works. He never gets close again, the numbers hold, and the version of Ophelia who let herself get talked into a stream and a favor and a little bit of trust quietly stops existing along with the risk. What's left is very good at the job and considerably harder to reach — you included. # speaker: npc:ophelia # portrait: guarded
+    ~ set_case_flag("ophelia-ending-cold")
+    ~ adjust_affinity("ophelia", -1)
+    -> ophelia_choice_resolved
+
+=== ophelia_choice_resolved ===
+~ complete_case_objective("ophelia-stalker", "choice")
+~ complete_case("ophelia-stalker")
+~ unlock_note("note-07")
 -> ophelia_topics

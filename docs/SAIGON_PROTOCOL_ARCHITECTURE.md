@@ -1068,3 +1068,27 @@ authored against it.
   relocation notice) and she's met at the new location from then on — the
   first location in the codebase to relocate an NPC off a case-flag
   trigger rather than just gate new content in place.
+- **Ophelia's `choice` objective wired up, first `complete_case` call
+  (2026):** the `ophelia_choice_scene` finale — one forced beat, fired the
+  first visit after `pattern` completes, at whichever location Ophelia
+  currently occupies (`opheliaApartment.ink` on the agreed path,
+  `turtleLakePlaza.ink` on the refused path) — resolves
+  `OPHELIA_CHARACTER_SPEC.md`'s three-stage arc. Four player-chosen endings,
+  each its own `set_case_flag` (`ophelia-ending-drawnout`/`-public`/
+  `-vanish`/`-cold`); only the "draw him out" branch carries a check
+  (`roll_check("static", 7, "ophelia-choice-draw-out", "red")` — pass/fail
+  changes tone and affinity, not whether the ending lands, same philosophy
+  as the livestream arc's Red check). All four call
+  `complete_case_objective("ophelia-stalker", "choice")` then
+  `complete_case("ophelia-stalker")` — the first case in the codebase to
+  actually leave `active` and land in `completedCaseIds`, and
+  `content/cases.ts` gains `note-07` to close it out. The ending flag also
+  recolors the ongoing topic loop's greeting afterward (Ophelia stays
+  visitable/repeatable post-resolution, unlike a one-shot scene) — this
+  surfaced a real inkjs constraint worth flagging for future content: a
+  flat `{ condA: ... - condB: ... - else: ... }` chain (more than one
+  condition before the final `- else:`) fails to compile the moment any
+  condition in it is an EXTERNAL call like `has_case_flag`, even though the
+  same shape compiles fine with only var comparisons; nesting
+  (`{ condA: ... - else: { condB: ... - else: ... } }`) is the workaround —
+  see `docs/GAME_GUIDE.md` §5.4's new gotcha callout.
