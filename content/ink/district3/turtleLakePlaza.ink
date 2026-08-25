@@ -6,6 +6,8 @@
 // content/ink/district4/workerCanteen.ink), not real Case 1 content.
 
 EXTERNAL adjust_affinity(npcId, amount)
+EXTERNAL start_case(caseId)
+EXTERNAL complete_case_objective(caseId, objectiveId)
 
 VAR root = 0
 VAR graft = 0
@@ -71,34 +73,40 @@ A woman in black lace and a severe corset dress is pretending not to watch the c
 - else:
     She looks composed right up until you notice how often her eyes flick back to the same corner of the square.
 }
-"If you're actually CID," she says without looking at you, "either stand here and look useful or keep walking before he notices I've noticed him." # speaker: npc:ophelia
-You take the spot beside her bench. Across the square, a man with a takeaway cup and all the patience in the world decides not to come any closer. # background: turtleLakePlaza
-"Thank you," she says after a beat, like the phrase costs her. "That's already more than most of my audience has managed." # speaker: npc:ophelia
-"Ophelia. Which is the name people here know, before you ask whether it's the legal one." Her mouth twitches, not quite a smile. "He's been following me off-feed. Places I never tagged. Streets I never stream. Tonight's just the first night he's gotten brave about it." # speaker: npc:ophelia
+"If you're actually CID," she says without looking at you, "either stand here and look useful or keep walking before he notices I've noticed him. I don't have the bandwidth to train a badge tonight." # speaker: npc:ophelia
+You take the spot beside her bench anyway. Across the square, a man with a takeaway cup and all the patience in the world decides not to come any closer. # background: turtleLakePlaza
+"Thank you," she says after a beat, like the word costs her something she'd rather not spend on you specifically. "Don't get used to it. I say thank you to delivery drivers too." # speaker: npc:ophelia
+"Ophelia. Which is the name people here know, so it's the one you get." Her mouth twitches, not quite a smile. "I picked this exact swamp of a district specifically so nobody who pays to watch me would ever bother showing up in person. That was rather the whole plan. And now one of them has decided that money means he's owed the rest of me too — my street, my face, whatever's left of me that isn't already for sale." # speaker: npc:ophelia
 ~ adjust_affinity("ophelia", 1)
+~ start_case("ophelia-stalker")
+~ complete_case_objective("ophelia-stalker", "recognition")
 -> END
 
 === ophelia_topics ===
 { affinity_ophelia >= 3:
-    Ophelia glances over as you approach, then lets the posture drop half an inch. "Detective. Good. You look expensive enough to discourage amateurs." # speaker: npc:ophelia
+    Ophelia glances over as you approach, then lets the posture drop half an inch — not enough that anyone else at the fountain would clock it. "Detective. Good. You're almost interesting enough to justify the seat." # speaker: npc:ophelia
 - else:
-    Ophelia tips her chin toward the empty space beside her. "Back again. Either you're curious or my life has suddenly become your problem." # speaker: npc:ophelia
+    Ophelia tips her chin toward the empty space beside her without really looking at you. "Back again. Either you're bored or my life has officially become your new hobby." # speaker: npc:ophelia
 }
 * [Ask what exactly she sells online. # insight: ledger]
-    "Mood, mostly. Access. A version of District 3 people can subscribe to without ever sweating through it." She folds one lace sleeve back over her wrist. "Some private messages. Some paid streams. Some men with too much money paying to feel specially misunderstood." # speaker: npc:ophelia
+    "Fantasy, at a markup nobody asks to itemize." She examines a nail like the question bores her more than it should. "Private messages. Paid one-on-one streams. A very convincing illusion that whoever's paying that month is the only one who's ever really seen me." A beat. "I'm good at it. That's rather the entire problem." # speaker: npc:ophelia
+    ~ adjust_affinity("ophelia", 1)
+    -> ophelia_topics
+* [Ask why she picked Saigon of all places. # insight: root]
+    The brat drops for exactly one sentence. "Because nobody here was supposed to know my face." She recovers fast, like she's annoyed at herself for letting it show. "I built the account somewhere else, for people somewhere else. District 3 was the one place I was sure none of my actual audience would ever set foot in — no trade wealth, no off-world layover reason, nothing worth the airfare. I moved here to be nobody part-time. I did not account for one of them refusing to stay a paying stranger on a screen." # speaker: npc:ophelia # portrait: guarded
     ~ adjust_affinity("ophelia", 1)
     -> ophelia_topics
 * [Ask what the stalker knows that he should not. # insight: static]
-    "My walk home when I don't broadcast it. Which back stair at Pasteur Street staff actually uses. The tea stall I stop at when I'm too tired to pretend I still want bourbon." Her expression goes flat. "Things a follower should only know if someone sold them, or if he did the work himself." # speaker: npc:ophelia # portrait: guarded
+    "My walk home when I don't broadcast it. Which back stair at Pasteur Street staff actually uses. The tea stall I stop at when I'm too tired to perform still wanting bourbon." Her expression goes flat, all the brattiness burned off in one line. "Things a subscriber should only know if someone sold them to him, or if he did the tracing himself. I'd bet on the second one. He seems like the type who'd consider that romantic." # speaker: npc:ophelia # portrait: guarded
     ~ adjust_affinity("ophelia", 1)
     -> ophelia_topics
 * [Ask why she has not gone through official channels. # insight: hustle]
-    "Because official channels hear 'minor feed girl with paying clients' and stop listening after the noun." She watches the crowd instead of you. "And because a report is still a report, Detective. Names get written down. Some of mine can't afford that." # speaker: npc:ophelia # portrait: guarded
+    "Because official channels hear 'minor feed girl with paying clients' and stop listening after the noun." She watches the crowd instead of you. "And a report is still a report, Detective. Names get written down, and some of my names very much cannot survive that. So, no. I would rather handle this myself, thank you, except apparently I can't, which is exactly the part I resent." # speaker: npc:ophelia # portrait: guarded
     ~ adjust_affinity("ophelia", 1)
     -> ophelia_topics
 * [Ask if Ophelia is her real name. # insight: mask]
-    "Real enough to get paid under. Real enough to hear shouted across a room by strangers who think they know me." She finally looks at you properly. "The birth-certificate answer is for people I trust, and you're not there yet." # speaker: npc:ophelia
+    "Real enough to get paid under. Real enough to be shouted across a bar by strangers who've never once bought me a drink." She finally looks at you properly, and for a second the brat drops entirely. "The name on record is for people I trust. You are not there. Try not to take it personally — nobody is." # speaker: npc:ophelia
     -> ophelia_topics
 + [Leave her to the crowd.]
-    "Try not to arrest any of my customers unless they deserve it," Ophelia says, which in District 3 narrows absolutely nothing. # speaker: npc:ophelia
+    "Try not to arrest any of my customers unless they deserve it," Ophelia says, already sounding like she owns the square again. "And eat something. You look like you skip meals for a hobby, and frankly it's distracting." # speaker: npc:ophelia
     -> END

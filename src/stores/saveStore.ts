@@ -25,10 +25,10 @@ import {
   type SaveSlotMeta,
 } from '../engine/saveEngine'
 import { SAVE_FORMAT_VERSION } from '../engine/saveEngine'
-import { serializeCasefileState } from '../engine/casefileEngine'
+import { serializeCaseState } from '../engine/caseEngine'
 import { serializeConversationState } from '../engine/conversationEngine'
 import { serializeThoughtState } from '../engine/thoughtEngine'
-import { useCasefileStore } from './casefileStore'
+import { useCaseStore } from './caseStore'
 import { useConversationStore } from './conversationStore'
 import { useGameplayStore } from './gameplayStore'
 import { useInsightStore } from './insightStore'
@@ -81,7 +81,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
   if (!insight.archetype) return null // nothing to save before chargen commits an archetype
 
   const navigation = useNavigationStore.getState()
-  const casefile = useCasefileStore.getState()
+  const cases = useCaseStore.getState()
   const thought = useThoughtStore.getState()
   const relationship = useRelationshipStore.getState()
   const conversation = useConversationStore.getState()
@@ -123,7 +123,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
         Object.entries(gameplay.districtRevealedTiles).map(([districtId, tiles]) => [districtId, [...(tiles ?? [])]]),
       ),
     },
-    casefile: serializeCasefileState(casefile),
+    cases: serializeCaseState(cases),
     thought: serializeThoughtState(thought),
     relationship: { ...relationship.affinity },
     conversation: serializeConversationState(conversation),
@@ -180,7 +180,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
     useInsightStore.getState().hydrate(blob.insight)
     useNavigationStore.getState().hydrate(blob.navigation)
     useGameplayStore.getState().hydrate(blob.gameplay)
-    useCasefileStore.getState().hydrate(blob.casefile)
+    useCaseStore.getState().hydrate(blob.cases)
     useThoughtStore.getState().hydrate(blob.thought)
     useRelationshipStore.getState().hydrate(blob.relationship)
     useConversationStore.getState().hydrate(blob.conversation)

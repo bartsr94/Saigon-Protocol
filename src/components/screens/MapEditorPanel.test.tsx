@@ -56,6 +56,6 @@ describe('MapEditorPanel', () => {
 
     expect(screen.getByDisplayValue('door-checkpoint')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('unlockFlag (casefileStore flag id)')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('unlockFlag (caseStore flag id)')).toBeInTheDocument()
   })
 })

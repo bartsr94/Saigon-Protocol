@@ -99,10 +99,10 @@ export interface HubPoi {
 
 /**
  * A gate blocking off part of a hub's floor plan until `unlockFlag` is set
- * on casefileStore (`docs/LOCATION_GRID_EXPLORATION_SPEC.md`'s locked-door
+ * on caseStore (`docs/LOCATION_GRID_EXPLORATION_SPEC.md`'s locked-door
  * mechanic) — e.g. the Aveline Lab's inner containment wing, only reachable
  * once the investigation has earned enough leverage. Walkability is resolved
- * at the component layer (HubGridView reads `casefileStore.hasFlag`), not
+ * at the component layer (HubGridView reads `caseStore.hasFlag`), not
  * here — this is just the authored data, same separation `HubPoi`'s
  * `available`/`lockedReason` already draws for interactions.
  */
@@ -573,7 +573,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
               type: 'talk',
               npcId: 'ophelia',
               label: 'Ophelia',
-              description: 'A minor District 3 feed celebrity in funeral lace and black lipstick, trying very hard to look like the crowd is not getting under her skin.',
+              description: 'A minor feed celebrity in funeral lace and black lipstick who moved here banking on nobody recognizing her, trying very hard to look like the crowd is not getting under her skin.',
               storyLocationId: 'turtleLakePlaza',
               available: true,
               sceneKnot: 'ophelia_intro',

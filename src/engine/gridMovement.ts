@@ -78,7 +78,7 @@ interface GridLayoutWithEntry extends GridLayout {
  * otherwise open floor. Recomputed fresh on each call rather than cached:
  * hub/street grids are small (tens of tiles), so a full flood-fill per
  * keypress is cheap, and staying stateless means there's nothing to keep in
- * sync with casefileStore's unlock flags.
+ * sync with caseStore's unlock flags.
  */
 export function reachableTiles(
   grid: GridLayoutWithEntry,

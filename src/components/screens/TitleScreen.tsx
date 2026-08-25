@@ -10,7 +10,7 @@ import { useUiStore } from '../../stores/uiStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useStoryStore } from '../../stores/storyStore'
 import { useAudioStore } from '../../stores/audioStore'
-import { useCasefileStore } from '../../stores/casefileStore'
+import { useCaseStore } from '../../stores/caseStore'
 import { useConversationStore } from '../../stores/conversationStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useInsightStore } from '../../stores/insightStore'
@@ -38,7 +38,7 @@ export function TitleScreen() {
     useInsightStore.getState().reset()
     useNavigationStore.getState().reset()
     useGameplayStore.getState().reset()
-    useCasefileStore.getState().reset()
+    useCaseStore.getState().reset()
     useConversationStore.getState().reset()
     useThoughtStore.getState().reset()
     useRelationshipStore.getState().reset()

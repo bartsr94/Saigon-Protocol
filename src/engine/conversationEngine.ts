@@ -1,6 +1,6 @@
 // Pure save-blob shape and helpers for Conversation View's met/topic-state
 // tracking (UI_PASS_SPEC.md §4.3) — same pure/impure split as
-// casefileEngine.ts; conversationStore.ts is the reactive layer.
+// caseEngine.ts; conversationStore.ts is the reactive layer.
 
 import type { NpcId } from '../content/npcs'
 import type { StoryLine } from './storyEngine'

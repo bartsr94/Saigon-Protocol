@@ -3,7 +3,7 @@ import { useSaveStore } from './saveStore'
 import { useInsightStore } from './insightStore'
 import { useNavigationStore } from './navigationStore'
 import { useStoryStore } from './storyStore'
-import { useCasefileStore } from './casefileStore'
+import { useCaseStore } from './caseStore'
 import { useGameplayStore } from './gameplayStore'
 import { useThoughtStore } from './thoughtStore'
 import { useRelationshipStore } from './relationshipStore'
@@ -39,7 +39,7 @@ describe('saveStore', () => {
     useInsightStore.setState(useInsightStore.getInitialState(), true)
     useNavigationStore.setState(useNavigationStore.getInitialState(), true)
     useStoryStore.getState().reset()
-    useCasefileStore.setState(useCasefileStore.getInitialState(), true)
+    useCaseStore.setState(useCaseStore.getInitialState(), true)
     useGameplayStore.setState(useGameplayStore.getInitialState(), true)
     useThoughtStore.setState(useThoughtStore.getInitialState(), true)
     useRelationshipStore.setState(useRelationshipStore.getInitialState(), true)
@@ -88,8 +88,8 @@ describe('saveStore', () => {
     useInsightStore.getState().rollCheck('hustle', 6, 'snapshot-check', 'white') // partial XP progress
     useNavigationStore.getState().unlockLocation('noodleStall')
     useGameplayStore.getState().enterHub('checkpoint')
-    useCasefileStore.getState().addEvidence('drone-log')
-    useCasefileStore.getState().unlockNote('note-01')
+    useCaseStore.getState().addEvidence('drone-log')
+    useCaseStore.getState().unlockNote('note-01')
     useThoughtStore.getState().unlockThought('checkpoint-improviser')
     useThoughtStore.getState().enableThought('checkpoint-improviser')
     useRelationshipStore.getState().adjustAffinity('lakshmiAvani', 3)
@@ -100,8 +100,8 @@ describe('saveStore', () => {
     useInsightStore.getState().setPlayerName('Someone Else')
     useNavigationStore.getState().unlockLocation('deltaSquat')
     useGameplayStore.getState().enterHub('deltaSquat')
-    useCasefileStore.getState().addEvidence('water-sample')
-    useCasefileStore.getState().unlockNote('note-02')
+    useCaseStore.getState().addEvidence('water-sample')
+    useCaseStore.getState().unlockNote('note-02')
     useThoughtStore.getState().unlockThought('company-man-doubt')
     useThoughtStore.getState().enableThought('company-man-doubt')
     useThoughtStore.getState().disableThought('checkpoint-improviser')
@@ -113,10 +113,10 @@ describe('saveStore', () => {
     expect(useNavigationStore.getState().unlockedLocationIds.has('noodleStall')).toBe(true)
     expect(useNavigationStore.getState().unlockedLocationIds.has('deltaSquat')).toBe(false)
     expect(useGameplayStore.getState().currentHubId).toBe('checkpoint')
-    expect(useCasefileStore.getState().evidenceIds.has('drone-log')).toBe(true)
-    expect(useCasefileStore.getState().evidenceIds.has('water-sample')).toBe(false)
-    expect(useCasefileStore.getState().noteIds.has('note-01')).toBe(true)
-    expect(useCasefileStore.getState().noteIds.has('note-02')).toBe(false)
+    expect(useCaseStore.getState().evidenceIds.has('drone-log')).toBe(true)
+    expect(useCaseStore.getState().evidenceIds.has('water-sample')).toBe(false)
+    expect(useCaseStore.getState().noteIds.has('note-01')).toBe(true)
+    expect(useCaseStore.getState().noteIds.has('note-02')).toBe(false)
     expect(useThoughtStore.getState().isEnabled('checkpoint-improviser')).toBe(true)
     expect(useThoughtStore.getState().isUnlocked('company-man-doubt')).toBe(false)
     expect(useRelationshipStore.getState().affinity.lakshmiAvani).toBe(3)

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { Compiler } from 'inkjs/full'
 import type { Story } from 'inkjs'
 import {
-  bindCasefileFunctions,
+  bindCaseFunctions,
   bindCheckFunctions,
   bindRelationshipFunctions,
   bindThoughtFunctions,
@@ -126,7 +126,26 @@ Done.
   })
 })
 
-describe('bindCasefileFunctions', () => {
+/** Every `CaseHandlers` field bindCaseFunctions always binds, defaulted to a plain vi.fn() — tests override just the ones they care about. */
+function caseHandlerStubs(overrides: Partial<Record<string, ReturnType<typeof vi.fn>>> = {}) {
+  return {
+    gainEvidence: vi.fn(),
+    unlockNote: vi.fn(),
+    setCaseFlag: vi.fn(),
+    hasEvidence: vi.fn(),
+    hasNote: vi.fn(),
+    hasFlag: vi.fn(),
+    startCase: vi.fn(),
+    completeObjective: vi.fn(),
+    completeCase: vi.fn(),
+    isCaseActive: vi.fn(),
+    isCaseCompleted: vi.fn(),
+    isObjectiveComplete: vi.fn(),
+    ...overrides,
+  }
+}
+
+describe('bindCaseFunctions', () => {
   it('wires gain_evidence, unlock_note, and set_case_flag to the given handlers', () => {
     const story = compile(`
 EXTERNAL gain_evidence(id)
@@ -141,14 +160,7 @@ Done.
     const gainEvidence = vi.fn()
     const unlockNote = vi.fn()
     const setCaseFlag = vi.fn()
-    bindCasefileFunctions(story, {
-      gainEvidence,
-      unlockNote,
-      setCaseFlag,
-      hasEvidence: vi.fn(),
-      hasNote: vi.fn(),
-      hasFlag: vi.fn(),
-    })
+    bindCaseFunctions(story, caseHandlerStubs({ gainEvidence, unlockNote, setCaseFlag }))
 
     runToEnd(story)
 
@@ -163,14 +175,7 @@ EXTERNAL gain_evidence(id)
 ~ gain_evidence("not-a-real-item")
 -> END
 `)
-    bindCasefileFunctions(story, {
-      gainEvidence: vi.fn(),
-      unlockNote: vi.fn(),
-      setCaseFlag: vi.fn(),
-      hasEvidence: vi.fn(),
-      hasNote: vi.fn(),
-      hasFlag: vi.fn(),
-    })
+    bindCaseFunctions(story, caseHandlerStubs())
 
     expect(() => runToEnd(story)).toThrow(/unknown evidence id/)
   })
@@ -181,14 +186,7 @@ EXTERNAL unlock_note(id)
 ~ unlock_note("not-a-real-note")
 -> END
 `)
-    bindCasefileFunctions(story, {
-      gainEvidence: vi.fn(),
-      unlockNote: vi.fn(),
-      setCaseFlag: vi.fn(),
-      hasEvidence: vi.fn(),
-      hasNote: vi.fn(),
-      hasFlag: vi.fn(),
-    })
+    bindCaseFunctions(story, caseHandlerStubs())
 
     expect(() => runToEnd(story)).toThrow(/unknown note id/)
   })
@@ -200,14 +198,7 @@ EXTERNAL set_case_flag(flag)
 -> END
 `)
     const setCaseFlag = vi.fn()
-    bindCasefileFunctions(story, {
-      gainEvidence: vi.fn(),
-      unlockNote: vi.fn(),
-      setCaseFlag,
-      hasEvidence: vi.fn(),
-      hasNote: vi.fn(),
-      hasFlag: vi.fn(),
-    })
+    bindCaseFunctions(story, caseHandlerStubs({ setCaseFlag }))
 
     runToEnd(story)
 
@@ -224,14 +215,14 @@ EXTERNAL has_case_flag(flag)
 {has_case_flag("checkpoint-inner-wing-unlocked"): Flag.|No flag.}
 -> END
 `)
-    bindCasefileFunctions(story, {
-      gainEvidence: vi.fn(),
-      unlockNote: vi.fn(),
-      setCaseFlag: vi.fn(),
-      hasEvidence: vi.fn().mockReturnValue(true),
-      hasNote: vi.fn().mockReturnValue(true),
-      hasFlag: vi.fn().mockReturnValue(true),
-    })
+    bindCaseFunctions(
+      story,
+      caseHandlerStubs({
+        hasEvidence: vi.fn().mockReturnValue(true),
+        hasNote: vi.fn().mockReturnValue(true),
+        hasFlag: vi.fn().mockReturnValue(true),
+      }),
+    )
 
     const text = runToEnd(story)
 
@@ -246,14 +237,7 @@ EXTERNAL has_evidence(id)
 ~ temp result = has_evidence("not-a-real-item")
 -> END
 `)
-    bindCasefileFunctions(evidenceStory, {
-      gainEvidence: vi.fn(),
-      unlockNote: vi.fn(),
-      setCaseFlag: vi.fn(),
-      hasEvidence: vi.fn(),
-      hasNote: vi.fn(),
-      hasFlag: vi.fn(),
-    })
+    bindCaseFunctions(evidenceStory, caseHandlerStubs())
     expect(() => runToEnd(evidenceStory)).toThrow(/unknown evidence id/)
 
     const noteStory = compile(`
@@ -261,15 +245,79 @@ EXTERNAL has_note(id)
 ~ temp result = has_note("not-a-real-note")
 -> END
 `)
-    bindCasefileFunctions(noteStory, {
-      gainEvidence: vi.fn(),
-      unlockNote: vi.fn(),
-      setCaseFlag: vi.fn(),
-      hasEvidence: vi.fn(),
-      hasNote: vi.fn(),
-      hasFlag: vi.fn(),
-    })
+    bindCaseFunctions(noteStory, caseHandlerStubs())
     expect(() => runToEnd(noteStory)).toThrow(/unknown note id/)
+  })
+
+  it('wires start_case, complete_case_objective, and complete_case to the given handlers', () => {
+    const story = compile(`
+EXTERNAL start_case(caseId)
+EXTERNAL complete_case_objective(caseId, objectiveId)
+EXTERNAL complete_case(caseId)
+~ start_case("ophelia-stalker")
+~ complete_case_objective("ophelia-stalker", "recognition")
+~ complete_case("ophelia-stalker")
+Done.
+-> END
+`)
+    const startCase = vi.fn()
+    const completeObjective = vi.fn()
+    const completeCase = vi.fn()
+    bindCaseFunctions(story, caseHandlerStubs({ startCase, completeObjective, completeCase }))
+
+    runToEnd(story)
+
+    expect(startCase).toHaveBeenCalledWith('ophelia-stalker')
+    expect(completeObjective).toHaveBeenCalledWith('ophelia-stalker', 'recognition')
+    expect(completeCase).toHaveBeenCalledWith('ophelia-stalker')
+  })
+
+  it('throws when ink passes an unknown case id to start_case', () => {
+    const story = compile(`
+EXTERNAL start_case(caseId)
+~ start_case("not-a-real-case")
+-> END
+`)
+    bindCaseFunctions(story, caseHandlerStubs())
+
+    expect(() => runToEnd(story)).toThrow(/unknown case id/)
+  })
+
+  it("throws when ink passes an objective id that doesn't belong to the named case", () => {
+    const story = compile(`
+EXTERNAL complete_case_objective(caseId, objectiveId)
+~ complete_case_objective("case1", "not-a-real-objective")
+-> END
+`)
+    bindCaseFunctions(story, caseHandlerStubs())
+
+    expect(() => runToEnd(story)).toThrow(/unknown objective id/)
+  })
+
+  it('lets ink query is_case_active/is_case_completed/is_objective_complete directly inside a conditional', () => {
+    const story = compile(`
+EXTERNAL is_case_active(caseId)
+EXTERNAL is_case_completed(caseId)
+EXTERNAL is_objective_complete(caseId, objectiveId)
+{is_case_active("ophelia-stalker"): Active.|Not active.}
+{is_case_completed("case1"): Completed.|Not completed.}
+{is_objective_complete("ophelia-stalker", "recognition"): Done.|Not done.}
+-> END
+`)
+    bindCaseFunctions(
+      story,
+      caseHandlerStubs({
+        isCaseActive: vi.fn().mockReturnValue(true),
+        isCaseCompleted: vi.fn().mockReturnValue(true),
+        isObjectiveComplete: vi.fn().mockReturnValue(true),
+      }),
+    )
+
+    const text = runToEnd(story)
+
+    expect(text).toContain('Active.')
+    expect(text).toContain('Completed.')
+    expect(text).toContain('Done.')
   })
 })
 

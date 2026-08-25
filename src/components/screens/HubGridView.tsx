@@ -10,7 +10,7 @@ import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { GridHubDefinition, GridPosition, HubInteraction } from '../../content/locationHubs'
 import { NPCS, type NpcId } from '../../content/npcs'
 import { AMBIENT_FOG_RADIUS, doorAt, reachableTiles, tileKey, tileKindAt, tilesWithinRadius } from '../../engine/gridMovement'
-import { useCasefileStore } from '../../stores/casefileStore'
+import { useCaseStore } from '../../stores/caseStore'
 import { useConversationStore } from '../../stores/conversationStore'
 import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
@@ -93,22 +93,22 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
   const moveTo = useGameplayStore((s) => s.moveTo)
   const activeOverlay = useUiStore((s) => s.activeOverlay)
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
-  const casefileFlags = useCasefileStore((s) => s.flags)
+  const caseFlags = useCaseStore((s) => s.flags)
   const mapEditEnabled = useDebugMapEditStore((s) => s.enabled)
   const editingMap = useDebugMapEditStore((s) => s.editingMap)
   const openMapEditor = useDebugMapEditStore((s) => s.openMapEditor)
   const closeMapEditor = useDebugMapEditStore((s) => s.closeMapEditor)
 
-  // Resolves a door tile's lock state from casefileStore at the component
+  // Resolves a door tile's lock state from caseStore at the component
   // layer — gridMovement.ts stays store-agnostic (CLAUDE.md's simulation/UI
   // separation), so `step()` takes this as an injected predicate rather
   // than reaching for the store itself.
   const isDoorUnlocked = useCallback(
     (position: GridPosition) => {
       const door = doorAt(hub.grid, position)
-      return door ? casefileFlags.has(door.unlockFlag) : false
+      return door ? caseFlags.has(door.unlockFlag) : false
     },
-    [hub.grid, casefileFlags],
+    [hub.grid, caseFlags],
   )
 
   // Tiles actually reachable right now (locked doors block whatever's past

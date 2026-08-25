@@ -6,8 +6,8 @@ Production-planning document, not final canon.*
 
 ## Goal
 
-Same shape and same bounded scope as `docs/ATMOSPHERE_TIER1_SPEC.md` and
-`docs/GENETIC_MODIFICATION_TIER1_SPEC.md`'s passes: make the two new lore
+Same shape and same bounded scope as `docs/archive/ATMOSPHERE_TIER1_SPEC.md` and
+`docs/archive/GENETIC_MODIFICATION_TIER1_SPEC.md`'s passes: make the two new lore
 docs' central distinction — genetic modification as chosen-or-not bodily
 *survival*, cybernetics as *mandated infrastructure-substitution* nobody
 really chooses, purpose-built robotics as a cold labor-economics choice —
@@ -25,13 +25,13 @@ a deliberate future case hook rather than spent as incidental texture here.
 
 - **Source lore:** "Cybernetics — Saigon SEZ" and "Robotics & Automation —
   Saigon SEZ" (vault docs, not yet copied into this repo)
-- **Builds directly on:** `docs/GENETIC_MODIFICATION_TIER1_SPEC.md`
+- **Builds directly on:** `docs/archive/GENETIC_MODIFICATION_TIER1_SPEC.md`
   (already implemented — its `graft`-gated beats are live in
   `transitPlatform.ink`, `workerCanteen.ink`, `checkpoint.ink`,
   `sezacRecords.ink`, `cidOffice.ink`, `corporatePlaza.ink`,
   `noodleStall.ink`, and `deltaSquat.ink`). This pass edits several of those
   same lines rather than adding a parallel, disconnected layer.
-- **Sibling passes:** `docs/ATMOSPHERE_TIER1_SPEC.md` — same mechanism,
+- **Sibling passes:** `docs/archive/ATMOSPHERE_TIER1_SPEC.md` — same mechanism,
   same "texture the placeholders, don't rebuild them" philosophy
 - **Downstream, explicitly out of scope here:**
   `docs/CASE_1_IMPLEMENTATION_SPEC.md`, and any synth content (see Goal)

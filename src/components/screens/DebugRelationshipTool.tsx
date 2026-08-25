@@ -2,7 +2,7 @@
 // affinity via `adjust_affinity` once content calls it, but there's no
 // content doing that yet — this is the way to set/test a score directly,
 // same "cheat tool ahead of real content" role DebugFlagsTool plays for
-// casefile flags.
+// case flags.
 
 import { useState } from 'react'
 import { useRelationshipStore } from '../../stores/relationshipStore'

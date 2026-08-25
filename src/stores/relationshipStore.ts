@@ -1,6 +1,6 @@
 // Relationship System (SAIGON_PROTOCOL_ARCHITECTURE.md §14): per-NPC affinity
 // score. Same shape as thoughtStore.ts; a "full record, always defined"
-// store rather than the unlocked/enabled Set pattern casefile/thought use,
+// store rather than the unlocked/enabled Set pattern case/thought use,
 // since affinity isn't something an NPC has or doesn't have — it's always
 // at least 0/stranger.
 

@@ -1,4 +1,4 @@
-// Thought Cabinet overlay (Progression System plan). Mirrors CasefileOverlay's
+// Thought Cabinet overlay (Progression System plan). Mirrors CasesOverlay's
 // tab structure: "Unlocked" (owned, not currently enabled — Enable button,
 // disabled once THOUGHT_SLOT_CAPACITY is reached) and "Enabled" (currently
 // active — Disable button, shows the perception-shift text plus any Insight

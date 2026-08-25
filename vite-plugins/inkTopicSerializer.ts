@@ -3,7 +3,7 @@
 // response, and a self-divert back to the knot, the exact shape
 // `mei_hong_topics`/`lakshmi_avani_topics` (content/ink/district4/checkpoint.ink)
 // use. Anything else inside a topicsKnot (a roll_check call, a
-// conditional, a casefile grant, a precondition-gated choice) is a
+// conditional, a case grant, a precondition-gated choice) is a
 // "complex" topic: parsed as an opaque block and re-emitted byte-for-byte,
 // never re-derived from a data model — this tool never has to understand
 // ink control flow it wasn't built to edit. Backs debugTopicEditPlugin.ts's

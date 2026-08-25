@@ -43,7 +43,7 @@ export interface BuilderPoi {
   lockedReason: string
 }
 
-/** A gate blocking off part of the grid until `unlockFlag` is set on casefileStore — see locationHubs.ts's `HubDoor`. */
+/** A gate blocking off part of the grid until `unlockFlag` is set on caseStore — see locationHubs.ts's `HubDoor`. */
 export interface BuilderDoor {
   id: string
   x: number
@@ -541,7 +541,7 @@ export function MapEditorPanel({ initialMode = 'hub', allowModeSwitch = true, in
             <input
               value={selectedDoor.unlockFlag}
               onChange={(e) => updateDoor(selectedDoor.id, { unlockFlag: e.target.value })}
-              placeholder="unlockFlag (casefileStore flag id)"
+              placeholder="unlockFlag (caseStore flag id)"
               className={INPUT_CLASS}
             />
             <input

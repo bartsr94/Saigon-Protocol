@@ -45,7 +45,7 @@ export function NavRail({
           disabled={disabled || mapDisabled}
         />
       )}
-      {onCase && <RailButton label="CASE" title="Casefile" onClick={onCase} disabled={disabled} />}
+      {onCase && <RailButton label="CASES" title="Cases" onClick={onCase} disabled={disabled} />}
       {onThoughts && <RailButton label="MIND" title="Thought Cabinet" onClick={onThoughts} disabled={disabled} />}
       {onMenu && <RailButton label="MENU" title="Settings" onClick={onMenu} disabled={disabled} />}
     </div>

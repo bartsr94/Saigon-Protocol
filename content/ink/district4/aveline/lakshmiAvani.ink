@@ -21,7 +21,7 @@ The lounge smells like cold coffee and an overworked vending machine. A woman in
 -> END
 
 // Repeat-visit topic loop (same pattern as mei_hong_topics). Staged
-// by casefile/relationship progress rather than flat from the first visit
+// by case/relationship progress rather than flat from the first visit
 // (CASE_1_CAST_SPEC.md's Lakshmi entry) — the base three topics are always
 // available and nudge affinity_lakshmi_avani a little on pick
 // (Architecture §14, GAME_GUIDE.md §10); the last three only appear once

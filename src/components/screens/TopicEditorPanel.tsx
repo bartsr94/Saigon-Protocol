@@ -6,7 +6,7 @@
 // INCLUDEd per-character files (e.g. content/ink/district4/aveline/) — resolved and
 // recompiled in-process by vite-plugins/debugTopicEditPlugin.ts. Only "simple"
 // topics (inkTopicSerializer.ts's shape — no roll_check, no conditional, no
-// casefile grant) are editable; anything else is shown read-only and
+// case grant) are editable; anything else is shown read-only and
 // re-saved byte-for-byte untouched.
 //
 // Rendered as a `fixed inset-0 z-50` panel, same as MapEditorPanel's live
@@ -141,7 +141,7 @@ export function TopicEditorPanel({ storyLocationId, knotName, npcId, onClose }: 
             topic.kind === 'complex' ? (
               <div key={index} className="border border-white/10 bg-black/30 p-3">
                 <p className="mb-2 font-body text-xs text-white/40">
-                  Not editable here — check/casefile logic. Hand-edit the <code>{storyLocationId}</code> story's <code>.ink</code> source directly.
+                  Not editable here — check/case logic. Hand-edit the <code>{storyLocationId}</code> story's <code>.ink</code> source directly.
                 </p>
                 <pre className="whitespace-pre-wrap font-mono text-[11px] text-white/60">{topic.raw}</pre>
               </div>

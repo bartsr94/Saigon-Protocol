@@ -115,7 +115,7 @@ export function LocationHubScreen() {
         className="shrink-0 p-4"
         onChar={() => openOverlay('character')}
         onMap={handleReturnToMap}
-        onCase={() => openOverlay('casefile')}
+        onCase={() => openOverlay('cases')}
         onThoughts={() => openOverlay('thoughtCabinet')}
         onMenu={() => openOverlay('settings')}
         mapDisabled={!atEntry}

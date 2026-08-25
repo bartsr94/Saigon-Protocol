@@ -24,8 +24,8 @@ describe('uiStore', () => {
     useUiStore.getState().openOverlay('settings')
     expect(useUiStore.getState().activeOverlay).toBe('settings')
 
-    useUiStore.getState().openOverlay('casefile')
-    expect(useUiStore.getState().activeOverlay).toBe('casefile')
+    useUiStore.getState().openOverlay('cases')
+    expect(useUiStore.getState().activeOverlay).toBe('cases')
 
     useUiStore.getState().closeOverlay()
     expect(useUiStore.getState().activeOverlay).toBeNull()

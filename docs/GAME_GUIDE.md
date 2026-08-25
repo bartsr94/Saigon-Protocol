@@ -38,9 +38,9 @@ old files now just redirect here.*
 | **Dialogue / Scene** | Full screen | **The core loop** — narration, dialogue, choices, checks |
 | Overworld | Full screen | Clickable Saigon district map with district-panel destination selection |
 | Character (`character` overlay) | Overlay | Portrait, name, archetype + backstory, all seven Insights with pips/tagline/strength-weakness tag |
-| Casefile (`casefile` overlay) | Overlay | Evidence/Items grid + Case Notes log |
+| Cases (`cases` overlay) | Overlay | Multi-case quest log — case list (main/side, active/completed) + selected case's objectives checklist and Evidence/Items grid + Case Notes log |
 | Settings (`settings` overlay) | Overlay | Audio, text speed, accessibility, save/load — also serves as the pause/system menu (there's no separate Pause screen) |
-| Debug Console (`debug` overlay, dev-only) | Overlay | `import.meta.env.DEV`-gated corner button → Map Builder (grid/POI/door authoring, exports JSON) and Flags (`casefileStore` flag toggle for testing) |
+| Debug Console (`debug` overlay, dev-only) | Overlay | `import.meta.env.DEV`-gated corner button → Map Builder (grid/POI/door authoring, exports JSON) and Flags (`caseStore` flag toggle for testing) |
 
 Overlays render via `OverlayHost` on top of whatever full screen is
 active; `uiStore.activeOverlay` drives which one shows.
@@ -149,7 +149,7 @@ One parameterized `clip-path` pattern at three scales (`--cut-sm`/`--cut-md`/
 |---|---|---|
 | `cut-sm` | ~10px | Pips, small tag/badge chips |
 | `cut-md` | ~20–25px | Choice rows, nav-rail buttons, section panels |
-| `cut-lg` | ~40px | Full modal panels (`Panel size="lg"`): dialogue panel, Settings, Casefile |
+| `cut-lg` | ~40px | Full modal panels (`Panel size="lg"`): dialogue panel, Settings, Cases |
 
 Standard chrome: 1px border in the panel's chrome color at ~30–40% opacity,
 `rgba(5,5,5,0.75)`-ish background with backdrop-blur, matching outer+inset
@@ -435,7 +435,7 @@ already is when `available` is false — met-ness and availability are
 independent axes. `inspect` interactions render bare, no portrait.
 
 **Locked doors:** a `HubDoor` (`{ id, position, unlockFlag, label,
-lockedReason }`) gates a `d` tile behind `casefileStore.hasFlag(unlockFlag)`
+lockedReason }`) gates a `d` tile behind `caseStore.hasFlag(unlockFlag)`
 — but the door tile itself can always be walked onto and read up close;
 it's only stepping *past* it into the gated area that stays blocked until
 the flag is set (walking back out the way you came always works). A POI
@@ -562,33 +562,64 @@ you want to change, no need to cross-reference `content/sfx.ts`.
 4. Tag it in `.ink` content (`music:`/`ambience:`/`voice:`) or as a
    location's baseline mood, then `npm run compile:ink`.
 
-## 9. Casefile / Evidence
+## 9. Cases / Evidence
 
-`content/casefile.ts` — `EVIDENCE: Record<EvidenceId, EvidenceDefinition>`
-with a three-tier `EvidenceTier` (`flavor`/`clue`/`key`, mapped to a
-color-tier system for at-a-glance importance) and `CASE_NOTES:
-Record<CaseNoteId, CaseNoteDefinition>` — define the authored content.
-Ownership/unlock state is tracked separately, in `stores/casefileStore.ts`
-(`evidenceIds`/`noteIds`/`flags`, save-integrated — Architecture §13);
-`CasefileOverlay` renders only what's owned, never the full list.
+`content/cases.ts` defines two layers of authored content:
 
-Both content records are still static, flavor-light placeholders — real
-Case 1-canonical evidence/notes haven't been authored yet — but the
-ink↔TS boundary can now grant them. Three EXTERNALs, bound in
-`storyEngine.ts`'s `bindCasefileFunctions` the same way `bindCheckFunctions`
-binds check calls: `gain_evidence(id)` and `unlock_note(id)`, each validated
-against `content/casefile.ts`'s `EVIDENCE_IDS`/`CASE_NOTE_IDS` (an unknown
-id throws, same as an unknown insight name in `roll_check`), and
-`set_case_flag(flag)`, which takes any non-empty string — flags aren't a
-closed content set, so there's nothing to validate against. Declare only
-the ones a scene actually calls, same convention as check/wellbeing
-EXTERNALs (§5.3). `checkpoint.ink` calls all three today (`gain_evidence`/
-`unlock_note` on its Red-check success path); how much of Case Notes should
-auto-populate from play vs. be hand-authored per scene is still an open
+- **Cases themselves** — `CASES: Record<CaseId, CaseDefinition>`. Each case
+  has an `id`, `title`, `category` (`'main'` or `'side'`), a `summary`, and
+  an ordered `objectives: CaseObjectiveDefinition[]` (each just `{ id,
+  label, description }`). The main investigation and every optional
+  sidequest (e.g. Ophelia's stalker thread) are each just another entry
+  here — there's no separate "main quest" mechanism, only a `category` tag
+  the Cases overlay sorts on.
+- **Evidence/notes** — `EVIDENCE: Record<EvidenceId, EvidenceDefinition>`
+  with a three-tier `EvidenceTier` (`flavor`/`clue`/`key`, mapped to a
+  color-tier system for at-a-glance importance) and `CASE_NOTES:
+  Record<CaseNoteId, CaseNoteDefinition>`. Both now carry a required
+  `caseId: CaseId` so the overlay can file them under the right case.
+
+Ownership/progress state is tracked separately, in `stores/caseStore.ts`
+(`evidenceIds`/`noteIds`/`flags` plus `activeCaseIds`/`completedCaseIds`/
+`completedObjectiveIds`, save-integrated — Architecture §13); `CasesOverlay`
+renders only cases that have actually been started (`isCaseActive` or
+`isCaseCompleted`), and within a selected case only the evidence/notes
+actually owned — never the full authored list. Objective completion is
+tracked as a composite `${caseId}::${objectiveId}` string, since an
+objective id is only unique within its own case's `objectives` array, not
+globally.
+
+Nine EXTERNALs, bound in `storyEngine.ts`'s `bindCaseFunctions` the same
+way `bindCheckFunctions` binds check calls: `gain_evidence(id)` and
+`unlock_note(id)`, each validated against `content/cases.ts`'s
+`EVIDENCE_IDS`/`CASE_NOTE_IDS` (an unknown id throws, same as an unknown
+insight name in `roll_check`); `set_case_flag(flag)`, which takes any
+non-empty string — flags aren't a closed content set, so there's nothing to
+validate against; and the quest-tracking trio `start_case(caseId)` /
+`complete_case_objective(caseId, objectiveId)` / `complete_case(caseId)` —
+`caseId` validated against `CASE_IDS`, `objectiveId` validated against that
+specific case's own authored `objectives` (so a typo'd objective id fails
+loudly even though ids aren't globally unique). Each write EXTERNAL has a
+read counterpart (`has_evidence`/`has_note`/`has_case_flag`/`is_case_active`/
+`is_case_completed`/`is_objective_complete`), the same "call an EXTERNAL
+inside an ink conditional" pattern `has_thought`/`is_red_check_consumed`
+already use. Declare only the ones a scene actually calls, same convention
+as check/wellbeing EXTERNALs (§5.3).
+
+A case only shows up in the Cases overlay once some scene calls
+`start_case` on it — `content/ink/intro.ink` does this for `case1` in its
+very first lines (paired with `complete_case_objective` on its one
+placeholder objective, since Case 1 doesn't have real authored quest stages
+yet); `turtleLakePlaza.ink`'s `ophelia_intro` knot does the same for
+`ophelia-stalker`'s `recognition` objective the moment the player meets her.
+A case's later objectives (Ophelia's `pattern`/`choice`) are free to sit
+unauthored/pending — that's the intended look for a sidequest that's been
+started but not resolved yet, not a bug. How much of Case Notes should
+auto-populate from play vs. be hand-authored per scene remains an open
 design question, not something this wiring answers. `flags` also gates
 Location Hub locked doors (§6.2) — the Debug Console's Flags tool
-(`casefileStore.setFlag`/`clearFlag`) remains available for testing, but
-ink content can set them directly now too.
+(`caseStore.setFlag`/`clearFlag`) remains available for testing, but ink
+content can set them directly now too.
 
 ## 10. Relationship / Affinity
 
@@ -600,7 +631,7 @@ through what an NPC says or does, or a Thought that names it (§4/§9-style
 unlock), never a visible number.
 
 Ink content nudges it with one `EXTERNAL`, declared and called the same
-way as the wellbeing/casefile calls above:
+way as the wellbeing/case calls above:
 
 ```ink
 ~ adjust_affinity("lakshmiAvani", 1)

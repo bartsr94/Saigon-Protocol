@@ -6,7 +6,7 @@
 import { ARCHETYPES, type ArchetypeId } from '../content/archetypes'
 import type { PortraitId } from '../content/portraits'
 import type { GridPosition, HubId } from '../content/locationHubs'
-import type { SerializedCasefileState } from './casefileEngine'
+import type { SerializedCaseState } from './caseEngine'
 import type { SerializedConversationState } from './conversationEngine'
 import type { SerializedThoughtState } from './thoughtEngine'
 import type { SerializedRelationshipState } from './relationshipEngine'
@@ -74,7 +74,7 @@ export interface SaveBlob {
   insight: SerializedInsightState
   navigation: SerializedNavigationState
   gameplay: SerializedGameplayState
-  casefile: SerializedCasefileState
+  cases: SerializedCaseState
   /** Progression System's unlocked/enabled thought-cabinet state. */
   thought: SerializedThoughtState
   /** Relationship System's per-NPC affinity scores (SAIGON_PROTOCOL_ARCHITECTURE.md §14). */

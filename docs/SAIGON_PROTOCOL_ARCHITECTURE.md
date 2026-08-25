@@ -61,7 +61,7 @@ pure module's functions to other stores:
 | `engine/contentTags.ts` | (consumed by `storyStore.ts`) |
 | `engine/saveEngine.ts` | `stores/saveStore.ts` |
 | `engine/audioEngine.ts` | `stores/audioStore.ts` |
-| `engine/casefileEngine.ts` | `stores/casefileStore.ts` |
+| `engine/caseEngine.ts` | `stores/caseStore.ts` |
 
 **Zustand stores** (all module-scoped singletons, `create<State>(...)`,
 cross-store reads via `getState()`):
@@ -298,10 +298,10 @@ rectangle.
 
 **Locked doors:** a `HubDoor` (`{ id, position, unlockFlag, label,
 lockedReason }`) gates part of a hub's floor plan behind a
-`casefileStore.hasFlag(unlockFlag)` check — `gridMovement.ts` stays
+`caseStore.hasFlag(unlockFlag)` check — `gridMovement.ts` stays
 store-agnostic, so `reachableTiles` takes an injected `isDoorUnlocked`
 predicate rather than reading the store directly; `HubGridView`/
-`DistrictStreetView` build that predicate from `useCasefileStore` and pass
+`DistrictStreetView` build that predicate from `useCaseStore` and pass
 it through. `isWalkable` treats a door tile as walkable regardless of lock
 state — a locked door can always be stepped onto and read up close — and
 it's `reachableTiles` (a flood-fill from `grid.entryTile` that stops
@@ -443,7 +443,7 @@ store imports (`Panel`, `CyberButton`, `PipTrack`, `InsightChip`,
 `PortraitFrame`). `src/components/screens/` holds the real screens/overlays
 built on top of them (`TitleScreen`, `CharacterCreationScreen` +
 `ChargenArchetypeStep`/`ChargenFreePointsStep`/`ChargenConfirmStep`,
-`OverworldScreen`, `DialogueScreen`, `SettingsOverlay`, `CasefileOverlay`,
+`OverworldScreen`, `DialogueScreen`, `SettingsOverlay`, `CasesOverlay`,
 `CharacterOverlay`, `NavRail`, `OverlayHost`, `FailStateOverlay`).
 
 `NavRail`'s `RailButton` and `CyberButton` are the one deliberate exception
@@ -484,7 +484,7 @@ remember.
 
 Static content modules (`src/content/*.ts`) — `insights.ts`,
 `archetypes.ts`, `wellbeing.ts`, `locations.ts`, `npcs.ts`, `backgrounds.ts`,
-`music.ts`, `ambience.ts`, `voiceClips.ts`, `sfx.ts`, `casefile.ts` — are
+`music.ts`, `ambience.ts`, `voiceClips.ts`, `sfx.ts`, `cases.ts` — are
 all plain exported `Record<Id, Definition>` objects keyed by a
 string-literal ID type, with a companion `_IDS` array for iteration. New
 content modules should follow this shape rather than inventing a new
@@ -512,39 +512,68 @@ behavior and real browser audio/playback are verified by manual passes
 instead, which is why the pure/impure split above matters: it keeps the
 untested surface area to browser-only mechanics, not decision logic.
 
-## 13. Casefile / Investigation Progression Layer
+## 13. Cases / Investigation & Quest Progression Layer
 
-`content/casefile.ts` defines static evidence/note content —
-`EVIDENCE: Record<EvidenceId, EvidenceDefinition>` (three-tier
-`EvidenceTier`: `flavor`/`clue`/`key`) and `CASE_NOTES: Record<CaseNoteId,
-CaseNoteDefinition>` — while ownership/unlock state lives in
-`stores/casefileStore.ts`: `evidenceIds`/`noteIds`/`flags` as `Set`s, with
-idempotent `addEvidence`/`unlockNote`/`setFlag`/`clearFlag` plus
-`hasEvidence`/`hasNote`/`hasFlag` queries (`clearFlag` exists for the debug
+`content/cases.ts` defines two layers of static content. **Cases** —
+`CASES: Record<CaseId, CaseDefinition>`, each an `id`/`title`/`category`
+(`'main'` or `'side'`)/`summary` plus an ordered `objectives:
+CaseObjectiveDefinition[]` — model however many concurrent quest-lines the
+game wants tracked at once: the main Case 1 investigation and any number of
+optional sidequests (Ophelia's stalker thread being the first), each fully
+independent. **Evidence/notes** — `EVIDENCE: Record<EvidenceId,
+EvidenceDefinition>` (three-tier `EvidenceTier`: `flavor`/`clue`/`key`) and
+`CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition>` — carry a required
+`caseId: CaseId` so they file under the right case in the overlay. This
+replaced the original single-investigation `casefile.ts` (2026), which had
+no notion of separate quest-lines — see the running log.
+
+Ownership/progress state lives in `stores/caseStore.ts`:
+`evidenceIds`/`noteIds`/`flags` as `Set`s (idempotent
+`addEvidence`/`unlockNote`/`setFlag`/`clearFlag` plus
+`hasEvidence`/`hasNote`/`hasFlag` queries — `clearFlag` exists for the debug
 console's flag toggle, below — production content only ever sets flags
-forward). `engine/casefileEngine.ts` holds the pure
-`hydrateCasefileState` the store's `hydrate()` uses. Hidden `flags` are
-never rendered in `CasefileOverlay` — reserved for story-gating logic that
-doesn't belong in front of the player.
+forward), plus `activeCaseIds`/`completedCaseIds`/`completedObjectiveIds`
+for quest tracking (idempotent `startCase`/`completeObjective`/
+`completeCase` plus `isCaseActive`/`isCaseCompleted`/`isObjectiveComplete`
+queries). `completedObjectiveIds` keys on a composite
+`` `${caseId}::${objectiveId}` `` string, since an objective id is only
+unique within its own case's `objectives` array, not globally.
+`engine/caseEngine.ts` holds the pure `hydrateCaseState`/`serializeCaseState`
+the store's `hydrate()`/save capture use — `hydrateCaseState` defaults the
+three case-tracking fields to `[]` so a pre-rework save still loads. Hidden
+`flags` are never rendered in `CasesOverlay` — reserved for story-gating
+logic that doesn't belong in front of the player. `CasesOverlay` itself only
+lists a case once `isCaseActive`/`isCaseCompleted` is true for it — an
+unstarted case never appears, same "content drives what's visible" rule
+evidence/notes already followed.
 
-Casefile state is captured/restored as part of the `SaveBlob`
-(`SerializedCasefileState`), the same as Insight/navigation/gameplay state.
+Case state is captured/restored as part of the `SaveBlob`
+(`SerializedCaseState`, field name `cases`), the same as Insight/navigation/
+gameplay state.
 
-**Ink↔TS grant hooks:** `storyEngine.ts`'s `bindCasefileFunctions` binds
-three write `EXTERNAL`s ink content can call directly — `gain_evidence(id)`
-and `unlock_note(id)` (each validated against `content/casefile.ts`'s
+**Ink↔TS grant hooks:** `storyEngine.ts`'s `bindCaseFunctions` binds nine
+write `EXTERNAL`s ink content can call directly — `gain_evidence(id)` and
+`unlock_note(id)` (each validated against `content/cases.ts`'s
 `EVIDENCE_IDS`/`CASE_NOTE_IDS`, throwing on an unknown id the same way
-`roll_check` throws on an unknown insight name) and `set_case_flag(flag)`
-(any non-empty string — flags aren't a closed content set) — plus three
-paired read `EXTERNAL`s added alongside them (2026): `has_evidence(id)`,
-`has_note(id)`, `has_case_flag(flag)`, the same "call an EXTERNAL inside an
-ink conditional" shape `has_thought`/`is_red_check_consumed` already use.
-`storyStore.ts`'s `loadStory` wires all six to `casefileStore`'s
-`addEvidence`/`unlockNote`/`setFlag`/`hasEvidence`/`hasNote`/`hasFlag`, the
-same binding pass as `bindCheckFunctions`/`bindWellbeingFunctions`.
-`content/casefile.ts`'s five evidence items and two of its notes are still
-flavor-light placeholders, not Case 1-canonical content. The Debug
-Console's Flags tool (`components/screens/DebugFlagsTool.tsx`,
+`roll_check` throws on an unknown insight name), `set_case_flag(flag)` (any
+non-empty string — flags aren't a closed content set), and the quest-tracking
+trio `start_case(caseId)` / `complete_case_objective(caseId, objectiveId)` /
+`complete_case(caseId)` (`caseId` validated against `CASE_IDS`; `objectiveId`
+validated against that specific case's own authored `objectives`, since ids
+are only unique per-case) — plus six paired read `EXTERNAL`s:
+`has_evidence(id)`, `has_note(id)`, `has_case_flag(flag)`,
+`is_case_active(caseId)`, `is_case_completed(caseId)`,
+`is_objective_complete(caseId, objectiveId)`, the same "call an EXTERNAL
+inside an ink conditional" shape `has_thought`/`is_red_check_consumed`
+already use. `storyStore.ts`'s `loadStory` wires all twelve to
+`caseStore`'s matching methods, the same binding pass as
+`bindCheckFunctions`/`bindWellbeingFunctions`. `content/ink/intro.ink` calls
+`start_case`/`complete_case_objective` on `case1` in its first lines (its one
+objective is a placeholder — Case 1 has no real authored quest stages yet);
+`turtleLakePlaza.ink`'s `ophelia_intro` knot does the same for
+`ophelia-stalker`'s `recognition` objective. `content/cases.ts`'s evidence
+items and notes are still flavor-light placeholders, not Case 1-canonical
+content. The Debug Console's Flags tool (`components/screens/DebugFlagsTool.tsx`,
 dev-build-only) still exists alongside this for ad-hoc testing.
 
 **Checkpoint's inner-wing door unlock (2026):** the first content to use
@@ -575,7 +604,7 @@ couple of these at once. Today: **Map Builder**
 (`components/screens/MapBuilderTool.tsx`), a grid-authoring UI that paints
 `layoutRows`/`pois`/`doors` and exports JSON matching `HubGridDefinition`/
 `DistrictStreetDefinition` for hand-integration into content files;
-**Flags** (`DebugFlagsTool.tsx`), the `casefileStore.setFlag`/`clearFlag`
+**Flags** (`DebugFlagsTool.tsx`), the `caseStore.setFlag`/`clearFlag`
 toggle above; and **Relationship** (`DebugRelationshipTool.tsx`, §14), a
 per-NPC affinity adjuster. All three are plain component state / direct
 store calls — no new persisted state, no save-format changes of their own.
@@ -586,15 +615,15 @@ store calls — no new persisted state, no save-format changes of their own.
 `clampAffinity` — a per-`NpcId` **affinity score**, `-10` (sworn rival) to
 `+10` (love of your life), defaulting to `0` (stranger/neutral).
 `stores/relationshipStore.ts` holds it as a full `Record<NpcId, number>`
-(every NPC always has an entry — unlike Casefile's Set-based
+(every NPC always has an entry — unlike Cases' Set-based
 unlocked/not-unlocked shape, affinity isn't something an NPC "has," it's
 always at least defined) with an idempotent `adjustAffinity(npcId, delta)`
 that clamps the result. The score is never rendered anywhere in the UI —
 it's TS-owned simulation state, expressed only through what ink content
 does with it (narration, Thought Cabinet unlocks), not a visible meter.
 
-**Ink↔TS binding — one-way mutation, two-way read.** Unlike Casefile
-(mutation-only) or Insight sync (read-only from ink's perspective), this
+**Ink↔TS binding — one-way mutation, two-way read.** Unlike evidence/notes
+grants (mutation-only) or Insight sync (read-only from ink's perspective), this
 system combines both directions for the same value.
 `storyEngine.ts`'s `bindRelationshipFunctions` binds one `EXTERNAL`,
 `adjust_affinity(npcId, amount)` — ink declares a delta, the same
@@ -905,16 +934,20 @@ authored against it.
 - In-play Insight leveling (XP, investigation rewards) — doesn't exist;
   the chargen sheet is fixed for the run.
 - Combat/tactical exploration — explicitly out of scope, distant future.
-- Casefile *content* (§13) — the store/save layer and the ink↔TS grant
-  hooks (`gain_evidence`/`unlock_note`/`set_case_flag`/`has_evidence`/
-  `has_note`/`has_case_flag`) are both built now, but `content/casefile.ts`'s
-  five evidence items are still placeholder, not Case 1-canonical; two of
-  its three notes are too. The third (`note-03`, unlocked from Lakshmi
-  Avani's Faculty Lounge topics loop) is real Case 1 cast content, per
-  `CASE_1_CAST_SPEC.md`. `checkpoint`'s locked inner-wing door (§7) now has
-  a real in-fiction unlock trigger (§13's "Checkpoint's inner-wing door
-  unlock" entry) — the Debug Console's Flags tool is no longer the only way
-  to open it.
+- Case *content* (§13) — the store/save layer, the multi-case quest-tracking
+  model, and the full ink↔TS grant hooks (`gain_evidence`/`unlock_note`/
+  `set_case_flag`/`start_case`/`complete_case_objective`/`complete_case` +
+  their `has_*`/`is_*` reads) are all built now, but `content/cases.ts`'s
+  evidence items are still placeholder, not Case 1-canonical; most of its
+  notes are too. `note-03` (unlocked from Lakshmi Avani's Faculty Lounge
+  topics loop) is real Case 1 cast content, per `CASE_1_CAST_SPEC.md`.
+  `checkpoint`'s locked inner-wing door (§7) now has a real in-fiction
+  unlock trigger (§13's "Checkpoint's inner-wing door unlock" entry) — the
+  Debug Console's Flags tool is no longer the only way to open it. Case 1
+  itself has only one placeholder objective (no real authored quest
+  stages yet); Ophelia's sidequest has real objectives authored
+  (`content/cases.ts`) but only its first (`recognition`) has actual scene
+  content — `pattern`/`choice` are unauthored.
 - The Inner Containment Wing itself (§7's locked-door example) is a
   placeholder room with one generic inspect POI — `CASE_1_LOCATION_MATRIX.md`'s
   actual forensic-reveal scene for that location isn't authored yet.
@@ -983,3 +1016,31 @@ authored against it.
   to 10. No ink content calls `adjust_affinity` yet; the Debug Console's
   new Relationship tool is the only way to move a score today, ahead of
   Lakshmi's staged topics being authored against it.
+- **Casefile reworked into Cases, a multi-quest-line system (2026):**
+  `content/casefile.ts`/`stores/casefileStore.ts`/`engine/casefileEngine.ts`/
+  `CasefileOverlay.tsx` renamed to `cases.ts`/`caseStore.ts`/`caseEngine.ts`/
+  `CasesOverlay.tsx` and extended with real quest tracking — the old system
+  modeled exactly one flat investigation (evidence/notes/flags); it had no
+  way to represent a second, independent, optional thread running alongside
+  it. `CaseDefinition` (`id`/`title`/`category: 'main' | 'side'`/`summary`/
+  ordered `objectives`) lets any number of cases exist side by side;
+  `caseStore` tracks `activeCaseIds`/`completedCaseIds`/
+  `completedObjectiveIds` (composite `` `${caseId}::${objectiveId}` `` keys,
+  since objective ids are only unique per-case) alongside the pre-existing
+  evidence/notes/flags, which gained a required `caseId` so they file under
+  the right case. Three new write EXTERNALs
+  (`start_case`/`complete_case_objective`/`complete_case`) plus their three
+  read counterparts join the pre-existing six in `bindCaseFunctions`. Full
+  detail in §13. First content: Case 1 (the main investigation, one
+  placeholder objective — no real quest stages authored yet) starts from
+  `intro.ink`; Ophelia's stalker sidequest (`ophelia-stalker`, `category:
+  'side'`, three objectives — Recognition/Pattern/Choice, per
+  `OPHELIA_CHARACTER_SPEC.md`) starts from `turtleLakePlaza.ink`'s
+  `ophelia_intro`, which also completes its `recognition` objective;
+  `pattern`/`choice` are authored as content but have no scene wiring yet,
+  so they show pending in the Cases overlay — the intended look for a
+  started-but-unresolved sidequest. `SaveBlob`'s field renamed
+  `casefile` → `cases` (`SerializedCaseState`); `hydrateCaseState` defaults
+  the three new fields to `[]` so a pre-rework save still loads.
+  `NavRail`'s "CASE" button and the `casefile` `OverlayId` both renamed to
+  "CASES"/`cases` to match.
