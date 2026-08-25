@@ -32,10 +32,13 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       districtPlayerPosition: { x: 0, y: 1 },
       districtRevealedTiles: { district4: ['0,1'] },
     },
-    casefile: {
+    cases: {
       evidenceIds: ['drone-log'],
       noteIds: ['note-01'],
       flags: ['saw-breach'],
+      activeCaseIds: ['case1'],
+      completedCaseIds: [],
+      completedObjectiveIds: ['case1::investigate'],
     },
     thought: {
       unlockedThoughtIds: ['checkpoint-improviser'],

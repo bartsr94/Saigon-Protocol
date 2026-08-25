@@ -6,7 +6,7 @@
 import type { Story } from 'inkjs'
 import { INSIGHT_IDS, type InsightId } from '../content/insights'
 import type { ArchetypeId } from '../content/archetypes'
-import { CASE_NOTE_IDS, EVIDENCE_IDS, type CaseNoteId, type EvidenceId } from '../content/casefile'
+import { CASES, CASE_IDS, CASE_NOTE_IDS, EVIDENCE_IDS, type CaseId, type CaseNoteId, type EvidenceId } from '../content/cases'
 import { THOUGHT_IDS, type ThoughtId } from '../content/thoughts'
 import { NPC_IDS, type NpcId } from '../content/npcs'
 import type { CheckResult } from './checkResolution'
@@ -56,16 +56,25 @@ export interface WellbeingHandlers {
   healComposure: (amount: number) => void
 }
 
-/** Architecture §13 — ink grants casefile progress, TS owns ownership/unlock state. */
-export interface CasefileHandlers {
+/** Architecture §13 — ink grants case progress, TS owns ownership/unlock state. */
+export interface CaseHandlers {
   gainEvidence: (id: EvidenceId) => void
   unlockNote: (id: CaseNoteId) => void
   /** Flags are free-form strings (also gate Location Hub locked doors) — no ID union to validate against. */
   setCaseFlag: (flag: string) => void
-  /** Read-side counterparts, letting ink gate content on casefile state already granted (same shape as `has_thought`). */
+  /** Read-side counterparts, letting ink gate content on case state already granted (same shape as `has_thought`). */
   hasEvidence: (id: EvidenceId) => boolean
   hasNote: (id: CaseNoteId) => boolean
   hasFlag: (flag: string) => boolean
+  /** Marks a case (`content/cases.ts`'s `CaseId`) Active — the Cases overlay only ever shows started cases. */
+  startCase: (id: CaseId) => void
+  /** Marks one of that case's authored objectives done. Does not itself complete the case. */
+  completeObjective: (caseId: CaseId, objectiveId: string) => void
+  /** Moves a case from Active to Completed. */
+  completeCase: (id: CaseId) => void
+  isCaseActive: (id: CaseId) => boolean
+  isCaseCompleted: (id: CaseId) => boolean
+  isObjectiveComplete: (caseId: CaseId, objectiveId: string) => boolean
 }
 
 function assertInsightId(value: unknown): InsightId {
@@ -108,6 +117,21 @@ function assertFlagName(value: unknown): string {
   throw new Error(`set_case_flag called with an invalid flag name "${String(value)}"`)
 }
 
+function assertCaseId(value: unknown): CaseId {
+  if (typeof value === 'string' && (CASE_IDS as string[]).includes(value)) {
+    return value as CaseId
+  }
+  throw new Error(`case function called with unknown case id "${String(value)}"`)
+}
+
+/** Validated against the named case's own authored objectives — an objective id is only unique within its case, not globally. */
+function assertObjectiveId(caseId: CaseId, value: unknown): string {
+  if (typeof value === 'string' && CASES[caseId].objectives.some((o) => o.id === value)) {
+    return value
+  }
+  throw new Error(`complete_case_objective called with unknown objective id "${String(value)}" for case "${caseId}"`)
+}
+
 function assertCheckRisk(value: unknown): CheckRisk {
   if (value === 'white' || value === 'red') return value
   throw new Error(`roll_check called with unknown risk "${String(value)}"`)
@@ -140,25 +164,45 @@ export function bindWellbeingFunctions(story: Story, handlers: WellbeingHandlers
 }
 
 /**
- * Binds the three casefile EXTERNALs ink calls to grant investigation
- * progress (Architecture §13): `gain_evidence(evidenceId)` and
- * `unlock_note(noteId)` are validated against `content/casefile.ts`'s
- * `EVIDENCE_IDS`/`CASE_NOTE_IDS` the same way `roll_check` validates insight
- * names, so a typo'd id fails loudly at the ink call site rather than
- * silently no-opping. `set_case_flag(flag)` takes any non-empty string —
- * flags aren't a closed content set (Location Hub locked doors key off
- * them too). `has_evidence`/`has_note`/`has_case_flag` are the read-side
- * counterparts, letting ink gate a choice on casefile state it already
- * granted — same "call an EXTERNAL inside an ink conditional" pattern
- * `has_thought`/`is_red_check_consumed` already use.
+ * Binds the case EXTERNALs ink calls to grant investigation/quest progress
+ * (Architecture §13): `gain_evidence(evidenceId)` and `unlock_note(noteId)`
+ * are validated against `content/cases.ts`'s `EVIDENCE_IDS`/`CASE_NOTE_IDS`
+ * the same way `roll_check` validates insight names, so a typo'd id fails
+ * loudly at the ink call site rather than silently no-opping.
+ * `set_case_flag(flag)` takes any non-empty string — flags aren't a closed
+ * content set (Location Hub locked doors key off them too).
+ * `has_evidence`/`has_note`/`has_case_flag` are the read-side counterparts,
+ * letting ink gate a choice on case state it already granted — same "call
+ * an EXTERNAL inside an ink conditional" pattern `has_thought`/
+ * `is_red_check_consumed` already use.
+ *
+ * `start_case(caseId)`/`complete_case_objective(caseId, objectiveId)`/
+ * `complete_case(caseId)` are the quest-tracking half (multiple concurrent
+ * `CaseId`s, each with its own authored `objectives` — content/cases.ts):
+ * a case only ever shows up in the Cases overlay once some scene calls
+ * `start_case` on it, same "content drives state" convention as everything
+ * else on this boundary. `is_case_active`/`is_case_completed`/
+ * `is_objective_complete` are their read-side counterparts.
  */
-export function bindCasefileFunctions(story: Story, handlers: CasefileHandlers): void {
+export function bindCaseFunctions(story: Story, handlers: CaseHandlers): void {
   story.BindExternalFunction('gain_evidence', (id: string) => handlers.gainEvidence(assertEvidenceId(id)))
   story.BindExternalFunction('unlock_note', (id: string) => handlers.unlockNote(assertCaseNoteId(id)))
   story.BindExternalFunction('set_case_flag', (flag: string) => handlers.setCaseFlag(assertFlagName(flag)))
   story.BindExternalFunction('has_evidence', (id: string) => handlers.hasEvidence(assertEvidenceId(id)))
   story.BindExternalFunction('has_note', (id: string) => handlers.hasNote(assertCaseNoteId(id)))
   story.BindExternalFunction('has_case_flag', (flag: string) => handlers.hasFlag(assertFlagName(flag)))
+  story.BindExternalFunction('start_case', (caseId: string) => handlers.startCase(assertCaseId(caseId)))
+  story.BindExternalFunction('complete_case_objective', (caseId: string, objectiveId: string) => {
+    const id = assertCaseId(caseId)
+    handlers.completeObjective(id, assertObjectiveId(id, objectiveId))
+  })
+  story.BindExternalFunction('complete_case', (caseId: string) => handlers.completeCase(assertCaseId(caseId)))
+  story.BindExternalFunction('is_case_active', (caseId: string) => handlers.isCaseActive(assertCaseId(caseId)))
+  story.BindExternalFunction('is_case_completed', (caseId: string) => handlers.isCaseCompleted(assertCaseId(caseId)))
+  story.BindExternalFunction('is_objective_complete', (caseId: string, objectiveId: string) => {
+    const id = assertCaseId(caseId)
+    return handlers.isObjectiveComplete(id, assertObjectiveId(id, objectiveId))
+  })
 }
 
 /** Progression System plan — thought cabinet EXTERNALs. */

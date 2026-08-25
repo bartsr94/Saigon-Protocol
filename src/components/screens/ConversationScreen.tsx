@@ -90,7 +90,7 @@ export function ConversationScreen() {
         className="shrink-0 p-4"
         onChar={() => openOverlay('character')}
         onMap={handleLeaveConversation}
-        onCase={() => openOverlay('casefile')}
+        onCase={() => openOverlay('cases')}
         onThoughts={() => openOverlay('thoughtCabinet')}
         onMenu={() => openOverlay('settings')}
         mapTitle="Leave the conversation"

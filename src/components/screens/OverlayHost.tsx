@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { useUiStore } from '../../stores/uiStore'
 import { useAudioStore } from '../../stores/audioStore'
 import { SettingsOverlay } from './SettingsOverlay'
-import { CasefileOverlay } from './CasefileOverlay'
+import { CasesOverlay } from './CasesOverlay'
 import { CharacterOverlay } from './CharacterOverlay'
 import { ThoughtCabinetOverlay } from './ThoughtCabinetOverlay'
 import { DebugOverlay } from './DebugOverlay'
@@ -27,7 +27,7 @@ export function OverlayHost() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={closeOverlay}>
       {activeOverlay === 'settings' && <SettingsOverlay />}
-      {activeOverlay === 'casefile' && <CasefileOverlay />}
+      {activeOverlay === 'cases' && <CasesOverlay />}
       {activeOverlay === 'character' && <CharacterOverlay />}
       {activeOverlay === 'thoughtCabinet' && <ThoughtCabinetOverlay />}
       {activeOverlay === 'debug' && <DebugOverlay />}

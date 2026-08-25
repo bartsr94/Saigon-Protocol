@@ -23,14 +23,25 @@ This spec is focused on:
 
 ## Core read
 
-Ophelia is a minor local feed celebrity in District 3: recognizable enough
-that people in the Canopy know the face and the look, not famous enough that
-any formal institution actually protects her.
+Ophelia's celebrity is not a Saigon story. Her actual audience — the people
+who pay her — built up somewhere else, before she ever set foot in the SEZ.
+District 3 is where she landed *after*, specifically because she gambled
+that nobody in a district this unglamorous would ever be one of her
+subscribers in person. That gamble is most of why she can walk through the
+Canopy at all: locals know her as a striking, sharp-tongued regular who's
+carved out a corner of Turtle Lake and Pasteur Street for herself, not as
+the face on anyone's feed. The persona and the person got to stay separate,
+which is the only reason she has anything resembling a normal life.
 
 She sells a persona of curated decadence: severe goth styling, black lipstick,
-lace, filtered intimacy, "authentic" District 3 nocturne melancholy. Some of
-that persona is performance, some of it is taste, and some of it is the only
-form of labor that has ever paid her better than hourly service work.
+lace, filtered intimacy, "authentic" District 3 nocturne melancholy — paid
+access to her, packaged as paid access to a mood. This is not lifestyle
+content. It is adult, parasocial, intimacy-for-hire work: private messages,
+paid one-on-one streams, a manufactured sense of being personally chosen by
+her, sold at a price point that assumes the buyer wants to feel like the
+exception. Some of that persona is performance, some of it is taste, and some
+of it is the only form of labor that has ever paid her better than hourly
+service work.
 
 The important tension is this:
 
@@ -38,28 +49,39 @@ The important tension is this:
 - in person, she is precarious, overexposed, and one bad night from disaster
 
 She is not lying about who she is so much as monetizing the most survivable
-version of herself.
+version of herself. And underneath the persona is a second, quieter lie she
+tells herself: that moving somewhere her audience would never physically
+follow her was the same thing as being safe.
 
 ## Role in the city
 
-- **District tie:** District 3, especially Pasteur Street and Turtle Lake
+- **District tie:** District 3, especially Pasteur Street and Turtle Lake —
+  chosen as a hideout, not a hometown
 - **Function in story:** recurring optional city character; introduces the
   detective to a stalking problem rooted in feed culture, entitlement, and
   the lack of real protection for women selling persona-based intimacy
 - **Public presentation:** stylish, sardonic, highly self-aware, impossible
-  to embarrass on first impression
+  to embarrass on first impression, and reflexively bratty as a first line
+  of defense
 - **Core truth:** the persona that made her visible is the same thing making
-  her easy to target
+  her easy to target — and the city she picked to disappear into stopped
+  working the moment it did
 
 ## Public persona
 
-Ophelia's feed presence sells a particular fantasy:
+Ophelia's feed presence sells a particular fantasy, and it is explicitly
+adult work — paid intimacy and companionship-for-hire, not a lifestyle vlog
+with a moody filter. She is a subscription/cam-style creator whose whole
+brand is "you, specifically, get to be close to me," monetized through
+private messages and one-on-one paid streams:
 
-- late-night District 3 glamour
+- late-night District 3 glamour as the backdrop for something far more
+  personal than a livestream
 - hand-brewed beer, live sets, filtered cigarette haze, villa decay
-- intimate monologues delivered like confessions
+- intimate monologues delivered like confessions, sold as if unscripted
 - controlled melancholy marketed as authenticity
-- selective access to "the real Canopy" for paying followers
+- selective, paid-tier access to "the real her" for whoever's paying enough
+  that month
 
 Her audience should feel mixed rather than niche-pure:
 
@@ -93,6 +115,33 @@ to push her side arc:
 My recommendation is option 2 first, with 3 as later escalation:
 contractual exploitation keeps the problem human-scale before it becomes
 flight.
+
+## Why Saigon
+
+Ophelia did not build her audience here, and she is not famous here. She
+built the account, the persona, and the paying following somewhere else
+entirely — a city or platform scene her actual subscribers still think of as
+"where she's from." She picked District 3 specifically *because* it was the
+last place any of them would think to look: a SEZ backwater with no trade
+wealth and no reason to draw off-world money in person, populated by people
+who have never subscribed to anything she sells.
+
+That calculation worked, for a while. It let her be a face nightlife regulars
+in the Canopy recognize — a striking, sharp-mouthed presence at Turtle Lake
+and the Taproom — without any of them connecting that face to the one on her
+feed. She got to be a person and a persona in two different places at once,
+which is the closest thing to a normal life she's had since the account
+started paying real money.
+
+The stalker breaks that arrangement at its foundation. He did not find her
+through a local tip or a District 3 rumor; he found her by refusing to stay
+on the correct side of the screen — cross-referencing feed metadata,
+background details, anything that let him trace the persona back to a real
+address in a real city she'd chosen precisely because it wasn't supposed to
+be findable. That is what makes this violation different from an ordinary
+stalking case: he didn't just find a woman. He unmade the one piece of
+infrastructure that let her be two people, and now she is one person,
+everywhere, all the time.
 
 ## The stalking problem
 
@@ -181,9 +230,15 @@ Ophelia should be easy to like, but not easy to simplify.
 ### Surface
 
 - quick, dry, stylish, contemptuous of fake concern
-- understands exactly what effect she has on a room
-- reflexively turns pain into wit before anyone else can touch it
-- hates being read as helpless
+- genuinely bratty: petulant put-downs, mock-imperious demands, treats
+  attention as tribute she's owed rather than something she has to earn —
+  a performed entitlement that reads as spoiled, not as confidence
+- understands exactly what effect she has on a room, and uses that as a
+  weapon before anyone else can use it on her
+- reflexively turns pain into wit — or into a demand, or a sulk — before
+  anyone else can touch it
+- hates being read as helpless, which makes the brattiness worse the more
+  frightened she actually is underneath it
 
 ### Underneath
 
@@ -293,6 +348,9 @@ No ending should feel clean.
   paid intimacy, entitlement, police indifference, audience capture.
 - Preserve her wit. If she loses all sharpness the moment she is scared, she
   stops feeling like herself.
+- The brattiness is armor, not a character flaw to be corrected. Let it
+  crack under real pressure rather than writing it as something the
+  detective needs to fix or forgive.
 
 ## Open questions
 
@@ -300,8 +358,10 @@ No ending should feel clean.
   over the one she was born with?
 - Does she primarily monetize through feed subscriptions, private bookings,
   venue presence, or a mix of all three?
-- Does the stalker come from District 1 money, off-world audience culture,
-  or District 3 itself?
+- Where did her audience/persona actually originate — a specific off-world
+  platform scene, a different Earth city, a prior life she's cagier about
+  than District 3 itself? (The stalker is confirmed to be part of that
+  original audience, not a local — see "Why Saigon" above.)
 - Who around her is trustworthy enough to recur: bartender, runner, former
   lover, flatmate, manager, another girl?
 - Does her thread ever cross into the main case, or should it stay cleanly

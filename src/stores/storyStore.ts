@@ -7,7 +7,7 @@ import { create } from 'zustand'
 import { Story } from 'inkjs'
 import type { Choice } from 'inkjs/engine/Choice'
 import {
-  bindCasefileFunctions,
+  bindCaseFunctions,
   bindCheckFunctions,
   bindRelationshipFunctions,
   bindThoughtFunctions,
@@ -27,7 +27,7 @@ import {
 import type { CheckResult } from '../engine/checkResolution'
 import type { NpcId } from '../content/npcs'
 import { useInsightStore } from './insightStore'
-import { useCasefileStore } from './casefileStore'
+import { useCaseStore } from './caseStore'
 import { useThoughtStore } from './thoughtStore'
 import { useRelationshipStore } from './relationshipStore'
 
@@ -213,13 +213,19 @@ export const useStoryStore = create<StoryState>((set, get) => ({
       damageComposure: (amount) => useInsightStore.getState().damageComposure(amount),
       healComposure: (amount) => useInsightStore.getState().healComposure(amount),
     })
-    bindCasefileFunctions(story, {
-      gainEvidence: (id) => useCasefileStore.getState().addEvidence(id),
-      unlockNote: (id) => useCasefileStore.getState().unlockNote(id),
-      setCaseFlag: (flag) => useCasefileStore.getState().setFlag(flag),
-      hasEvidence: (id) => useCasefileStore.getState().hasEvidence(id),
-      hasNote: (id) => useCasefileStore.getState().hasNote(id),
-      hasFlag: (flag) => useCasefileStore.getState().hasFlag(flag),
+    bindCaseFunctions(story, {
+      gainEvidence: (id) => useCaseStore.getState().addEvidence(id),
+      unlockNote: (id) => useCaseStore.getState().unlockNote(id),
+      setCaseFlag: (flag) => useCaseStore.getState().setFlag(flag),
+      hasEvidence: (id) => useCaseStore.getState().hasEvidence(id),
+      hasNote: (id) => useCaseStore.getState().hasNote(id),
+      hasFlag: (flag) => useCaseStore.getState().hasFlag(flag),
+      startCase: (id) => useCaseStore.getState().startCase(id),
+      completeObjective: (caseId, objectiveId) => useCaseStore.getState().completeObjective(caseId, objectiveId),
+      completeCase: (id) => useCaseStore.getState().completeCase(id),
+      isCaseActive: (id) => useCaseStore.getState().isCaseActive(id),
+      isCaseCompleted: (id) => useCaseStore.getState().isCaseCompleted(id),
+      isObjectiveComplete: (caseId, objectiveId) => useCaseStore.getState().isObjectiveComplete(caseId, objectiveId),
     })
     bindThoughtFunctions(story, {
       unlockThought: (id) => useThoughtStore.getState().unlockThought(id),

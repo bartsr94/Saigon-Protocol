@@ -1,20 +1,20 @@
-// Dev-only casefileStore flag toggler (DebugOverlay). Ink has no wiring yet
+// Dev-only caseStore flag toggler (DebugOverlay). Ink has no wiring yet
 // to set flags itself, so this is the way to flip one for testing —
 // e.g. checkpoint's `checkpoint-inner-wing-unlocked` locked-door flag
 // (content/locationHubs.ts) — without waiting on a real unlock trigger to
 // be authored.
 
 import { useState } from 'react'
-import { useCasefileStore } from '../../stores/casefileStore'
+import { useCaseStore } from '../../stores/caseStore'
 import { CyberButton } from '../ui'
 
 const INPUT_CLASS =
   'flex-1 border border-white/20 bg-black/50 px-2 py-1 font-body text-xs text-white outline-none focus:border-chrome-secondary'
 
 export function DebugFlagsTool() {
-  const flags = useCasefileStore((s) => s.flags)
-  const setFlag = useCasefileStore((s) => s.setFlag)
-  const clearFlag = useCasefileStore((s) => s.clearFlag)
+  const flags = useCaseStore((s) => s.flags)
+  const setFlag = useCaseStore((s) => s.setFlag)
+  const clearFlag = useCaseStore((s) => s.clearFlag)
   const [flagInput, setFlagInput] = useState('')
 
   const sortedFlags = [...flags].sort()

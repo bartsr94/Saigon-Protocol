@@ -12,6 +12,12 @@ VAR root = 0
 VAR static = 0
 VAR hustle = 0
 
+EXTERNAL start_case(caseId)
+EXTERNAL complete_case_objective(caseId, objectiveId)
+
+~ start_case("case1")
+~ complete_case_objective("case1", "investigate")
+
 The squad car pulls out of Cholon's press of noodle-stall steam and shopfront signage, three scripts deep on every storefront, and noses south toward District 4. # background: cholonMarket # music: introTheme # ambience: +engineIdle # ambience: +marketChatter
 { root >= 3:
     Something in you eases and aches at once, watching it go — Cantonese call-and-response over a mahjong table, a grandmother arguing produce prices in Vietnamese two stalls down. Home, or close enough to it that the difference doesn't matter today. # speaker: insight:root

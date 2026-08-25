@@ -12,7 +12,7 @@ import type { BackgroundDefinition } from '../../content/backgrounds'
 import type { DistrictStreetDefinition } from '../../content/districtStreets'
 import type { GridPosition } from '../../content/locationHubs'
 import { AMBIENT_FOG_RADIUS, doorAt, reachableTiles, tileKey, tileKindAt, tilesWithinRadius } from '../../engine/gridMovement'
-import { useCasefileStore } from '../../stores/casefileStore'
+import { useCaseStore } from '../../stores/caseStore'
 import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useNavigationStore } from '../../stores/navigationStore'
@@ -58,7 +58,7 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
   const unlockedLocationIds = useNavigationStore((s) => s.unlockedLocationIds)
   const activeOverlay = useUiStore((s) => s.activeOverlay)
   const reduceMotion = useSettingsStore((s) => s.reduceMotion)
-  const casefileFlags = useCasefileStore((s) => s.flags)
+  const caseFlags = useCaseStore((s) => s.flags)
   const mapEditEnabled = useDebugMapEditStore((s) => s.enabled)
   const editingMap = useDebugMapEditStore((s) => s.editingMap)
   const openMapEditor = useDebugMapEditStore((s) => s.openMapEditor)
@@ -69,9 +69,9 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
   const isDoorUnlocked = useCallback(
     (position: GridPosition) => {
       const door = doorAt(street, position)
-      return door ? casefileFlags.has(door.unlockFlag) : false
+      return door ? caseFlags.has(door.unlockFlag) : false
     },
-    [street, casefileFlags],
+    [street, caseFlags],
   )
 
   // Same reachability gate as HubGridView's — a locked door can be seen

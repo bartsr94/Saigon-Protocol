@@ -1,7 +1,7 @@
 // Thought Cabinet content definitions (Progression System plan). Ownership and
 // enabled state live in thoughtStore.ts; this module only defines the authored
 // thought metadata the UI can render and the numeric/perception effects an
-// enabled thought grants. Same shape as content/casefile.ts's evidence/notes.
+// enabled thought grants. Same shape as content/cases.ts's evidence/notes.
 
 import type { InsightId } from './insights'
 

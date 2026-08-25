@@ -1,8 +1,73 @@
-// Casefile content definitions (docs/GAME_GUIDE.md §9). Ownership and unlock
-// state live in casefileStore.ts; this module only defines the authored
-// evidence/note metadata the UI can render once unlocked.
+// Case content definitions (docs/GAME_GUIDE.md §9). Ownership/progress state
+// lives in caseStore.ts; this module only defines the authored
+// case/objective/evidence/note metadata the Cases overlay renders once
+// unlocked. Replaces the old single-investigation `casefile.ts` — the game
+// can now track several concurrent quest-lines (the main Case 1
+// investigation plus optional sidequests) instead of one flat pool.
 
 import type { DistrictId, LocationId } from './locations'
+
+export type CaseId = 'case1' | 'ophelia-stalker'
+export const CASE_IDS: CaseId[] = ['case1', 'ophelia-stalker']
+
+export type CaseCategory = 'main' | 'side'
+
+export interface CaseObjectiveDefinition {
+  /** Unique within this case's `objectives` array, not globally — caseStore keys progress as `${caseId}::${objectiveId}`. */
+  id: string
+  label: string
+  description: string
+}
+
+export interface CaseDefinition {
+  id: CaseId
+  title: string
+  category: CaseCategory
+  summary: string
+  /** Authoring order is display order — not necessarily completion order. */
+  objectives: CaseObjectiveDefinition[]
+}
+
+export const CASES: Record<CaseId, CaseDefinition> = {
+  case1: {
+    id: 'case1',
+    title: 'Case 1 — Aveline Breakout',
+    category: 'main',
+    summary:
+      "Officially, a burglary at an Aveline Biogenetics lab in District 4. Actually, a covered-up containment breach — an escaped experimental subject, a corporation buying itself time to search the city before the truth becomes impossible to manage.",
+    objectives: [
+      {
+        id: 'investigate',
+        label: 'Find out what really happened at the Aveline lab',
+        description: "The official story is a theft. Keep pulling the thread until it stops being one.",
+      },
+    ],
+  },
+  'ophelia-stalker': {
+    id: 'ophelia-stalker',
+    title: "Ophelia's Shadow",
+    category: 'side',
+    summary:
+      'A District 3 feed performer who moved to Saigon specifically to be unrecognizable is being followed by someone who refused to stay a paying stranger on a screen.',
+    objectives: [
+      {
+        id: 'recognition',
+        label: 'Learn why she thinks she is being followed',
+        description: 'Ophelia has just clocked her stalker in the crowd at Turtle Lake Plaza and is trying very hard not to panic publicly.',
+      },
+      {
+        id: 'pattern',
+        label: 'Establish that the pattern is real, not just bad fans',
+        description: 'He knows things about her routine a stranger should not. Confirm this is coordinated, repeated, and escalating.',
+      },
+      {
+        id: 'choice',
+        label: 'Help her decide what to do about him',
+        description: 'Go public, go quiet, run, or let the detective draw him out — no ending here is clean.',
+      },
+    ],
+  },
+}
 
 export type EvidenceTier = 'flavor' | 'clue' | 'key'
 
@@ -14,6 +79,8 @@ export interface EvidenceDefinition {
   name: string
   tier: EvidenceTier
   description: string
+  /** Which case's Cases-overlay tab this evidence is filed under. */
+  caseId: CaseId
   districtId?: DistrictId
   sourceLocationId?: LocationId
   tags?: string[]
@@ -25,6 +92,7 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
     name: 'Checkpoint Drone Log',
     tier: 'clue',
     description: "A pulled maintenance log from the checkpoint drone. Timestamps don't match its patrol route.",
+    caseId: 'case1',
     districtId: 'district4',
     sourceLocationId: 'checkpoint',
     tags: ['surveillance', 'placeholder'],
@@ -34,6 +102,7 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
     name: 'Torn Receipt',
     tier: 'flavor',
     description: 'Half a receipt from a noodle stall. The other half would probably matter.',
+    caseId: 'case1',
     districtId: 'district5',
     sourceLocationId: 'noodleStall',
     tags: ['paper', 'placeholder'],
@@ -44,6 +113,7 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
     tier: 'clue',
     description:
       'A carbon-copy intake slip from Y Duoc, logged under a false patient code but still carrying dosage shorthand for tolerance suppressants and adaptation-stress follow-up.',
+    caseId: 'case1',
     districtId: 'district5',
     sourceLocationId: 'yDuocInstitute',
     tags: ['medical', 'paper', 'case1'],
@@ -53,6 +123,7 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
     name: 'Water Sample',
     tier: 'key',
     description: "Brackish water from the drowned Delta district. Reads wrong for seawater — someone's dumping upstream.",
+    caseId: 'case1',
     districtId: 'district2',
     sourceLocationId: 'deltaSquat',
     tags: ['environment', 'placeholder'],
@@ -62,6 +133,7 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
     name: 'Burner Phone',
     tier: 'clue',
     description: 'No SIM, no contacts. One number dialed, over and over, never answered.',
+    caseId: 'case1',
     tags: ['communications', 'placeholder'],
   },
   'union-pin': {
@@ -69,6 +141,7 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
     name: 'Dockworkers Union Pin',
     tier: 'flavor',
     description: "A faded union pin, decades out of date. Sentimental, probably. Probably.",
+    caseId: 'case1',
     tags: ['personal-effect', 'placeholder'],
   },
 }
@@ -80,6 +153,8 @@ export interface CaseNoteDefinition {
   id: CaseNoteId
   heading: string
   body: string
+  /** Which case's Cases-overlay tab this note is filed under. */
+  caseId: CaseId
   districtId?: DistrictId
   tags?: string[]
 }
@@ -89,6 +164,7 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
     id: 'note-01',
     heading: 'The Checkpoint',
     body: "Someone flagged my watchlist entry manually. Corporate security doesn't usually bother.",
+    caseId: 'case1',
     districtId: 'district4',
     tags: ['investigation', 'placeholder'],
   },
@@ -96,6 +172,7 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
     id: 'note-02',
     heading: "The Delta's Water",
     body: "Whatever's upstream of the Drowned Delta isn't natural runoff. Worth a second look.",
+    caseId: 'case1',
     districtId: 'district2',
     tags: ['environment', 'placeholder'],
   },
@@ -103,6 +180,7 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
     id: 'note-03',
     heading: 'A Flagged Result',
     body: "Lakshmi Avani flagged an adaptation-stress anomaly on HN-12 weeks before the breach. Filed it, followed up, was told it was handled. Never asked what 'handled' meant.",
+    caseId: 'case1',
     districtId: 'district4',
     tags: ['investigation', 'staff-testimony'],
   },
@@ -111,6 +189,7 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
     heading: 'Off-Book Aftercare',
     body:
       "Y Duoc's public intake is real enough. So is the quieter stream behind it: unofficial follow-up care for bodies that look less like ordinary patients and more like something Aveline or its contractors wanted stabilized without leaving the cleanest possible trail.",
+    caseId: 'case1',
     districtId: 'district5',
     tags: ['investigation', 'medical', 'case1'],
   },
@@ -118,6 +197,7 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
     id: 'note-05',
     heading: "Lakshmi's Discrepancies",
     body: "Lakshmi Avani has been privately compiling adaptation-log entries that don't add up — kept off the record, away from whoever she doesn't trust with them yet. She offered to show them, carefully.",
+    caseId: 'case1',
     districtId: 'district4',
     tags: ['investigation', 'staff-testimony', 'case1'],
   },
