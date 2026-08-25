@@ -3,12 +3,12 @@
 // Location Hub, sitting between the Overworld district map and a Hub like
 // `checkpoint`. POIs here don't hold talk/inspect interactions like Hub
 // POIs do — each just names a `locationId`, and walking onto it is what
-// transitions into that Location Hub (gameplayStore.enterHub). Shares the
-// exact ASCII tile vocabulary and pure engine (engine/gridMovement.ts) that
-// Location Hub grids use — see content/locationHubs.ts's `HubLayoutRows`
+// transitions into that Location Hub (`gameplayStore.enterHub`). Shares the
+// exact ASCII tile vocabulary and pure engine (`engine/gridMovement.ts`) that
+// Location Hub grids use — see `content/locationHubs.ts`'s `HubLayoutRows`
 // doc comment for the '.'/'#'/'o'/' ' marker legend.
 //
-// Only districts that have earned a street map appear in DISTRICT_STREETS
+// Only districts that have earned a street map appear in `DISTRICT_STREETS`
 // (same phased-rollout precedent as `checkpoint` being the only
 // `layout: 'grid'` Hub today) — District 2 has no real destinations yet,
 // so it stays on the Overworld's plain district-panel presentation until
@@ -46,7 +46,7 @@ export interface DistrictStreetDefinition {
   entryTile: GridPosition
   layoutRows: HubLayoutRows
   pois: DistrictStreetPoi[]
-  /** Locked doors gating parts of this street's floor plan (locationHubs.ts's `HubDoor` — same shape, shared engine). Defaults to none. */
+  /** Locked doors gating parts of this street's floor plan (`locationHubs.ts`'s `HubDoor` — same shape, shared engine). Defaults to none. */
   doors?: HubDoor[]
   /** Tiles revealed around the player's position on move. Defaults to 1 (a "+" shape) when omitted. */
   visionRadius?: number
@@ -56,7 +56,7 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
   district4: {
     id: 'district4',
     name: 'District 4 — Flood Wall',
-    blurb: 'Service roads, hard rain, and haze that never quite clears along the sealed edge of the SEZ — a transit stub, a night canteen, and a cordoned-off block, all pretending not to watch Aveline.',
+    blurb: 'Khánh Hội Causeway — the platform road built directly over the old, drowned Khánh Hội street level, the same buried grid Aveline\'s lab now sits above. Service roads, hard rain, and haze that never quite clears along the sealed edge of the SEZ — a transit stub, a night canteen, and a cordoned-off block, all pretending not to watch Aveline.',
     backgroundId: 'district4FloodWall',
     width: 11,
     height: 8,
@@ -86,28 +86,28 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
         locationId: 'publicIncidentScene',
         label: 'District 4 Public Incident Scene',
         description: 'Tape across the street and a perimeter nobody has explained yet.',
-        lockedReason: 'CID hasn’t been called out here yet.',
+        lockedReason: "CID hasn't been called out here yet.",
       },
       {
         id: 'district4-worker-canteen',
         position: { x: 7, y: 5 },
         locationId: 'workerCanteen',
         label: 'Quán Bà Châu',
-        description: 'Bà Châu’s counter — Xóm Chàm’s canteen, a few doors down from the lab.',
+        description: "Bà Châu's counter — Xóm Chàm's canteen, a few doors down the Causeway from the lab.",
       },
       {
         id: 'district4-aveline-lab',
         position: { x: 10, y: 3 },
         locationId: 'checkpoint',
         label: 'Aveline District 4 Laboratory',
-        description: 'The lab everyone on this street is pretending not to watch, past a recruitment screen at the gate cycling the same lunar wage numbers on loop.',
+        description: 'Khánh Hội Causeway\'s dead end — the lab everyone on this street is pretending not to watch, past a recruitment screen at the gate cycling the same lunar wage numbers on loop.',
       },
       {
         id: 'district4-mosque',
         position: { x: 8, y: 0 },
         locationId: 'mosque',
         label: 'Musholla Al-Falah',
-        description: 'A converted room up a side stair — the Kampung’s prayer house, quieter than everything around it.',
+        description: "A converted room up a side stair — the Kampung's prayer house, quieter than everything around it.",
       },
     ],
   },
@@ -153,7 +153,7 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
   district3: {
     id: 'district3',
     name: 'District 3 — the Canopy',
-    blurb: 'Tree-shaded streets over old villa gardens, no cargo throat and no trading floor to speak of — Turtle Lake and Pasteur Street\'s taproom light out front, a back-alley clinic and a fixer\'s bar a block off it.',
+    blurb: "Tree-shaded streets over old villa gardens, no cargo throat and no trading floor to speak of — Turtle Lake's music out front, the taproom's back stair traffic, an off-book clinic, and a fixer's bar where the district's vice economy keeps the rent paid.",
     backgroundId: null,
     width: 13,
     height: 3,
@@ -171,35 +171,35 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
         position: { x: 1, y: 2 },
         locationId: 'turtleLakePlaza',
         label: 'Turtle Lake Plaza',
-        description: 'Street food, live acoustic sets, and a fountain square three regimes have already tried and failed to own the meaning of.',
+        description: "Street food, live acoustic sets, and a crowd dense enough to hide couriers, quiet deals, and people working the benches for the night's rent.",
       },
       {
         id: 'district3-pasteur-street-taproom',
         position: { x: 5, y: 1 },
         locationId: 'pasteurStreetTaproom',
         label: 'Pasteur Street Taproom',
-        description: 'A converted villa ground floor, hand-brewed beer, and a name that has outlived every company that\'s owned it.',
+        description: 'A converted villa ground floor, hand-brewed beer, and the respectable face of a nightlife strip that survives on what the upstairs rooms bring in.',
       },
       {
         id: 'district3-tu-xuong-clinic',
         position: { x: 9, y: 1 },
         locationId: 'tuXuongClinic',
         label: 'Tú Xương Clinic',
-        description: 'An unmarked basement door, one flight down, doing the graft work Aveline never has to price for a Xóm Chàm wage.',
+        description: "An unmarked basement door, one flight down, doing the graft work Aveline never has to price for a Xóm Chàm wage — and patching up whatever the night's business leaves behind.",
       },
       {
         id: 'district3-undercanopy',
         position: { x: 12, y: 2 },
         locationId: 'undercanopy',
         label: 'The Undercanopy',
-        description: 'A door in the alley wall, no sign, and a room that\'s heard more of this district\'s actual business than any office ever has.',
+        description: "A door in the alley wall, no sign, and a room that's heard more of this district's narcotics, body-part, and desperation trades than any office ever has.",
       },
     ],
   },
   district5: {
     id: 'district5',
     name: 'District 5 — Cholon',
-    blurb: 'Steam off the noodle stalls, a queue for the tram, and Y Duoc’s intake doors half a block down — Cholon keeps its business quiet and its market loud.',
+    blurb: "Steam off the noodle stalls, a queue for the tram, and Y Duoc's intake doors half a block down — Cholon keeps its business quiet and its market loud.",
     backgroundId: null,
     width: 9,
     height: 3,

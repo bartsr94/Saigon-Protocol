@@ -14,6 +14,7 @@ import { EditableText } from '../debug/EditableText'
 interface HubCardListViewProps {
   hub: CardListHubDefinition
   background: BackgroundDefinition | null
+  onEnterCharacter: (presence: HubCharacterPresence) => void
   onEnterStory: (id: LocationId) => void
   onReturnToMap: () => void
 }
@@ -28,7 +29,7 @@ type CardEntry =
 // silently clipped by this screen's overflow-hidden backdrop wrapper.
 const ENTRIES_PAGE_SIZE = 6
 
-export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }: HubCardListViewProps) {
+export function HubCardListView({ hub, background, onEnterCharacter, onEnterStory, onReturnToMap }: HubCardListViewProps) {
   const groupedInteractions = useMemo(
     () => ({
       talk: hub.characters,
@@ -94,7 +95,7 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
                   key={`${presence.label}-anchor`}
                   type="button"
                   disabled={!presence.available}
-                  onClick={() => presence.available && onEnterStory(presence.storyLocationId)}
+                  onClick={() => presence.available && onEnterCharacter(presence)}
                   className={`w-52 text-left transition-transform ${
                     presence.available ? 'cursor-pointer hover:scale-[1.03]' : 'cursor-not-allowed opacity-70'
                   }`}
@@ -138,7 +139,7 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
                   const npc = NPCS[presence.npcId]
                   if (available) {
                     return (
-                      <button key={presence.label} type="button" onClick={() => onEnterStory(presence.storyLocationId)} className="text-left">
+                      <button key={presence.label} type="button" onClick={() => onEnterCharacter(presence)} className="text-left">
                         <Panel size="md" className="h-full p-4 transition-colors hover:!border-chrome-secondary hover:shadow-[0_0_18px_var(--color-chrome-secondary)]">
                           <div className="flex items-start gap-3">
                             <PortraitFrame src={npc.portraits?.neutral} alt={npc.name} fallbackText={npc.name.slice(0, 2).toUpperCase()} size="sm" />
@@ -211,7 +212,7 @@ export function HubCardListView({ hub, background, onEnterStory, onReturnToMap }
                   const { presence, available } = entry
                   if (available) {
                     return (
-                      <CyberButton key={`${presence.label}-fallback`} onClick={() => onEnterStory(presence.storyLocationId)} tag="Talk">
+                      <CyberButton key={`${presence.label}-fallback`} onClick={() => onEnterCharacter(presence)} tag="Talk">
                         {presence.label}
                       </CyberButton>
                     )

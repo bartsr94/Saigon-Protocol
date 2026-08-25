@@ -12,6 +12,8 @@ EXTERNAL adjust_affinity(npcId, amount)
 VAR ledger = 0
 VAR root = 0
 VAR mask = 0
+VAR graft = 0
+VAR hustle = 0
 
 === pasteur_street_family_wall ===
 Framed photographs climb the wall behind the bar in no particular order — villa portraits going back well past the SEZ, past the Compact, past whatever government was performing legitimacy the century a given photo was taken. The faces thin out noticeably somewhere around the last two generations. # background: pasteurStreetTaproom
@@ -25,11 +27,13 @@ Framed photographs climb the wall behind the bar in no particular order — vill
 - else:
     Just an old house with fewer people in it than the walls were built for.
 }
+The back stair never stays empty for long. Some people heading up are laughing too hard. Some aren't pretending at all.
 { mask >= 3:
-    The newest photo on the wall isn't a portrait at all — it's the taproom's opening night, a room full of faces that don't share a bloodline with anyone else on the wall. The Mask reads it as a household that quietly stopped being about family and started being about whoever actually shows up. # speaker: insight:mask
+    The Mask reads the upstairs traffic for what it is almost immediately — spillover hookups, hourly rooms, quiet paid company, and at least one arrangement that looks more like debt service than desire. The house makes money whichever story a guest wants to tell about it. # speaker: insight:mask
 - else:
-    The newest photo is just the bar on a busy night, same as any other place would hang behind the counter.
+    Whatever's happening upstairs, the bar has decided not to comment on it.
 }
+The newest photo on the wall isn't a portrait at all — it's the taproom's opening night, a room full of faces that don't share a bloodline with anyone else on the wall.
 
 * [Take it in and get back to the bar.]
     -> pasteur_street_family_wall_done
