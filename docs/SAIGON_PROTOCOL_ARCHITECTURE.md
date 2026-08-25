@@ -240,10 +240,16 @@ knowledge of `storyStore`/inkjs** — the handoff to the Story Engine
 via the shared `enterLocationHub()` helper
 (`components/screens/enterLocationHub.ts`), not inside either store.
 
-`unlockLocation(id)` exists on the store but nothing in production code
-currently calls it outside of `unlocksOnComplete` wiring on the checkpoint
-→ noodleStall → deltaSquat chain — see `GAME_GUIDE.md`'s content pipeline
-section for the current location list and what triggers an unlock.
+`unlockLocation(id)` exists on the store and is called from two triggers on
+`LocationDefinition`, both read in `DialogueScreen.finalizeEndedScene` the
+moment a scene ends: the unconditional `unlocksOnComplete` (checkpoint →
+noodleStall → deltaSquat chain) and the conditional `unlocksOnFlag: {
+flag, locationId }[]` (checked via `useCaseStore.getState().hasFlag`),
+added for `turtleLakePlaza` → `opheliaApartment`
+(`OPHELIA_LIVESTREAM_ARC_SPEC.md`) — the first overworld location to
+unlock off a case flag rather than unconditionally on scene completion. See
+`GAME_GUIDE.md`'s content pipeline section for the current location list
+and what triggers an unlock.
 
 Rendered today as a clickable district map rather than a plain card grid.
 `content/mapRegions.ts` owns the district hotspot geometry/labels, while
@@ -261,11 +267,11 @@ before a specific encounter is chosen. `HubDefinition` is a discriminated
 union on `layout`: `'cardList'` (the original shape — `characters:
 HubCharacterPresence[]` + `actions: HubActionDefinition[]`, rendered as
 clickable cards by `HubCardListView`) or `'grid'` (a walkable fog-of-war
-tile grid, rendered by `HubGridView`). Only `checkpoint` (Aveline Lab) uses
-`'grid'` today; `noodleStall`/`deltaSquat` stay `'cardList'` until they
-have enough authored content to be worth gridding — both shapes coexist on
-the same content module and screen, no engine-level reason to migrate a hub
-before it's ready.
+tile grid, rendered by `HubGridView`). `checkpoint` (Aveline Lab) and `opheliaApartment` use `'grid'` today;
+`noodleStall`/`deltaSquat` stay `'cardList'` until they have enough
+authored content to be worth gridding — both shapes coexist on the same
+content module and screen, no engine-level reason to migrate a hub before
+it's ready.
 
 A grid hub's `HubGridDefinition` authors its floor plan as `layoutRows`
 (one string per row, `'.'` floor / `'#'` wall / `'o'` POI / `'d'` door /
@@ -1044,3 +1050,21 @@ authored against it.
   the three new fields to `[]` so a pre-rework save still loads.
   `NavRail`'s "CASE" button and the `casefile` `OverlayId` both renamed to
   "CASES"/`cases` to match.
+- **Ophelia's `pattern` objective wired up, first `unlocksOnFlag` location
+  (2026):** `OPHELIA_LIVESTREAM_ARC_SPEC.md`'s three-scene arc — Ophelia
+  talks the detective into a stream at Turtle Lake ("The Ask"), a Red-check
+  scene at a new location, then the stalker's escalation resolves
+  `complete_case_objective("ophelia-stalker", "pattern")` — the objective
+  the Cases rework entry above left "authored as content but have no scene
+  wiring yet." Both the agreed and refused branches converge on the same
+  outcome and the same new `note-06`, just reached differently (lived
+  through at the new location vs. told about it secondhand back at Turtle
+  Lake), per the spec's "no ending should feel clean" guardrail. Adds
+  `LocationDefinition.unlocksOnFlag: { flag, locationId }[]` (§7) — a new
+  `opheliaApartment` `LocationId`/District 3 street POI/`'grid'`
+  `HubGridDefinition` stays locked until `turtleLakePlaza.ink` sets
+  `ophelia-stream-agreed`, at which point Turtle Lake's own topic loop
+  stops offering Ophelia (a top-of-knot guard redirects to a one-line
+  relocation notice) and she's met at the new location from then on — the
+  first location in the codebase to relocate an NPC off a case-flag
+  trigger rather than just gate new content in place.

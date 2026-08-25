@@ -146,8 +146,8 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
   },
 }
 
-export type CaseNoteId = 'note-01' | 'note-02' | 'note-03' | 'note-04' | 'note-05'
-export const CASE_NOTE_IDS: CaseNoteId[] = ['note-01', 'note-02', 'note-03', 'note-04', 'note-05']
+export type CaseNoteId = 'note-01' | 'note-02' | 'note-03' | 'note-04' | 'note-05' | 'note-06'
+export const CASE_NOTE_IDS: CaseNoteId[] = ['note-01', 'note-02', 'note-03', 'note-04', 'note-05', 'note-06']
 
 export interface CaseNoteDefinition {
   id: CaseNoteId
@@ -200,5 +200,13 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
     caseId: 'case1',
     districtId: 'district4',
     tags: ['investigation', 'staff-testimony', 'case1'],
+  },
+  'note-06': {
+    id: 'note-06',
+    heading: "Ophelia's Shadow, Confirmed",
+    body: "He reacted almost the moment the stream went up — not fan enthusiasm, something closer to a man cross-checking a file he already keeps. He wanted to know who else was around her now. That is not how a bad fan behaves. That is how someone tracks a rival.",
+    caseId: 'ophelia-stalker',
+    districtId: 'district3',
+    tags: ['stalking', 'ophelia'],
   },
 }

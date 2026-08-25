@@ -584,6 +584,54 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
       ],
     },
   },
+  opheliaApartment: {
+    id: 'opheliaApartment',
+    name: "Ophelia's Apartment",
+    blurb: 'A small rented room she only started actually living out of once staying findable stopped being optional — locked on the Overworld until she asks the detective to help with a stream (docs/OPHELIA_LIVESTREAM_ARC_SPEC.md).',
+    backgroundId: 'opheliaApartment',
+    layout: 'grid',
+    grid: {
+      width: 5,
+      height: 5,
+      // Same short-hall convention as turtleLakePlaza/yDuocInstitute — the
+      // ring-light corner up one branch, Ophelia on the other.
+      entryTile: { x: 0, y: 2 },
+      layoutRows: ['  #  ', '  o  ', '.....', '  o  ', '  #  '],
+      pois: [
+        {
+          id: 'ophelia-apartment-corner',
+          position: { x: 2, y: 1 },
+          interactions: [
+            {
+              id: 'ophelia-apartment-inspect-corner',
+              type: 'inspect',
+              label: 'The Ring Light Corner',
+              description: 'A backdrop, a ring light, and whatever else it takes to make four cheap walls read as somewhere worth paying to see.',
+              storyLocationId: 'opheliaApartment',
+              available: true,
+              sceneKnot: 'ophelia_apartment_corner',
+            },
+          ],
+        },
+        {
+          id: 'ophelia-apartment-ophelia',
+          position: { x: 2, y: 3 },
+          interactions: [
+            {
+              id: 'ophelia-apartment-talk-ophelia',
+              type: 'talk',
+              npcId: 'ophelia',
+              label: 'Ophelia',
+              description: 'Off the fountain bench and out of the crowd — the version of her that only exists behind a lock she controls.',
+              storyLocationId: 'opheliaApartment',
+              available: true,
+              topicsKnot: 'ophelia_apartment_topics',
+            },
+          ],
+        },
+      ],
+    },
+  },
   pasteurStreetTaproom: {
     id: 'pasteurStreetTaproom',
     name: 'Pasteur Street Taproom',

@@ -155,16 +155,17 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
     name: 'District 3 — the Canopy',
     blurb: "Tree-shaded streets over old villa gardens, no cargo throat and no trading floor to speak of — Turtle Lake's music out front, the taproom's back stair traffic, an off-book clinic, and a fixer's bar where the district's vice economy keeps the rent paid.",
     backgroundId: null,
-    width: 13,
+    width: 15,
     height: 3,
-    // Widened past the original two-destination spur to fit both new
-    // locations without disturbing Turtle Lake's/the Taproom's existing
-    // positions: one more spur (the Clinic, same up-then-capped shape as
-    // the Taproom's) plus one destination sitting directly on the road's
-    // far end (the Undercanopy — same on-road convention as District 1's
-    // Corporate Plaza), rather than a third spur this street doesn't need.
+    // Widened again past the three-destination layout to fit a fourth spur
+    // (Ophelia's Apartment, same up-then-capped shape as the Taproom's/the
+    // Clinic's, docs/OPHELIA_LIVESTREAM_ARC_SPEC.md) between the Clinic and
+    // the Undercanopy — the Undercanopy shifts two tiles further out (still
+    // the road's on-road far end, same convention as District 1's
+    // Corporate Plaza) to make room rather than disturbing anyone else's
+    // existing position.
     entryTile: { x: 0, y: 2 },
-    layoutRows: ['     #   #   ', '     o   o   ', '.o..........o'],
+    layoutRows: ['     #   #  #  ', '     o   o  o  ', '.o............o'],
     pois: [
       {
         id: 'district3-turtle-lake-plaza',
@@ -188,8 +189,16 @@ export const DISTRICT_STREETS: Partial<Record<DistrictId, DistrictStreetDefiniti
         description: "An unmarked basement door, one flight down, doing the graft work Aveline never has to price for a Xóm Chàm wage — and patching up whatever the night's business leaves behind.",
       },
       {
+        id: 'district3-ophelia-apartment',
+        position: { x: 12, y: 1 },
+        locationId: 'opheliaApartment',
+        label: "Ophelia's Apartment",
+        description: 'A narrow stairwell up to a rented room above the street — the first place she\'s let anyone find her on purpose.',
+        lockedReason: "Not somewhere she's ever invited a cop to. Not yet.",
+      },
+      {
         id: 'district3-undercanopy',
-        position: { x: 12, y: 2 },
+        position: { x: 14, y: 2 },
         locationId: 'undercanopy',
         label: 'The Undercanopy',
         description: "A door in the alley wall, no sign, and a room that's heard more of this district's narcotics, body-part, and desperation trades than any office ever has.",

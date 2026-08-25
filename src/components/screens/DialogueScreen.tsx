@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react'
 import { useInsightStore } from '../../stores/insightStore'
 import { useStoryStore, type StoryLine } from '../../stores/storyStore'
 import { useConversationStore } from '../../stores/conversationStore'
+import { useCaseStore } from '../../stores/caseStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useAudioStore } from '../../stores/audioStore'
@@ -107,6 +108,10 @@ export function DialogueScreen() {
     if (selectedLocationId && ended) {
       for (const unlockedId of LOCATIONS[selectedLocationId].unlocksOnComplete ?? []) {
         unlockLocation(unlockedId)
+      }
+      const hasFlag = useCaseStore.getState().hasFlag
+      for (const { flag, locationId } of LOCATIONS[selectedLocationId].unlocksOnFlag ?? []) {
+        if (hasFlag(flag)) unlockLocation(locationId)
       }
     }
     // A "Talk" scene that names an NPC (LocationHubScreen threads this
