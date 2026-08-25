@@ -17,14 +17,14 @@ VAR archetype = ""
 VAR affinity_co_fixer = 0
 
 === undercanopy_courier_cubbies ===
-A wall of numbered lockboxes runs the length of the back hall, no two the same make, none of them labeled with anything a stranger could read. People come in, check a number against something on their sleeve, open one, take something out or put something in, and leave without a word to anyone at the bar. # background: undercanopy
+A wall of numbered lockboxes runs the length of the back hall, no two the same make, none of them labeled with anything a stranger could read. People come in, check a number against something on their sleeve, open one, take something out or put something in, and leave without a word to anyone at the bar. One runner palms off a strip of stim tabs before he hits the stairs. Another carries an insulated case against his chest like it matters more than he does. # background: undercanopy
 { ledger >= 3:
-    The Ledger doesn't need to see what's inside any of them to read the system — a consignment economy running on numbers instead of names, so nobody involved ever has to know who else is involved. # speaker: insight:ledger
+    The Ledger doesn't need to see what's inside any of them to read the system — a consignment economy running on numbers instead of names, so nobody involved ever has to know who else is involved. Pills, graft parts, off-book cash, maybe cooled organs if the fees clear high enough. Every vice in the district likes anonymous inventory. # speaker: insight:ledger
 - else:
     Some kind of drop-box system. You don't follow exactly how it works.
 }
 { hustle >= 3:
-    Hustle reads the traffic pattern before anything else — steady, unhurried, nobody checking over a shoulder on the way out. Whatever moves through this wall, it's been moving through it long enough that fear stopped being part of the routine. # speaker: insight:hustle
+    Hustle reads the traffic pattern before anything else — steady, unhurried, nobody checking over a shoulder on the way out. Whatever moves through this wall, it's been moving through it long enough that fear stopped being part of the routine. That's what bad things look like once a neighborhood has had time to normalize them. # speaker: insight:hustle
 - else:
     Nobody seems especially nervous about any of this.
 }
@@ -34,7 +34,7 @@ A wall of numbered lockboxes runs the length of the back hall, no two the same m
     The boxes look ordinary enough. You don't clock anything unusual about them.
 }
 { root >= 3:
-    Root doesn't read the system, it reads what's underneath it — how many of these transactions are somebody's rent, somebody's medicine, somebody's only way to get paid for work that was never going to show up on a payslip. This isn't crime for its own sake. It's a district doing the math on how to survive a landlord who's never coming home. # speaker: insight:root
+    Root doesn't read the system, it reads what's underneath it — how many of these transactions are somebody's rent, somebody's medicine, somebody's only way to get paid for work that was never going to show up on a payslip, somebody's body sold off a piece at a time because the district stopped offering better options years ago. This isn't crime for its own sake. It's a district doing the math on how to survive a landlord who's never coming home. # speaker: insight:root
 - else:
     Whatever's changing hands, it's not your business to guess at.
 }
@@ -61,7 +61,7 @@ The bar's real business happens at a corner booth, not behind the counter — a 
     ~ adjust_affinity("coFixer", 1)
     -> co_fixer_topics
 * [Ask what else moves through here besides rooms. # insight: hustle]
-    "Whatever needs to move through a district nobody official is watching. Parts. Pharma nobody's filed a prescription for. I don't ask what a package is for, and I'd strongly suggest you stop asking too." # speaker: npc:coFixer # portrait: guarded
+    "Whatever needs to move through a district nobody official is watching. Parts. Pharma nobody's filed a prescription for. Narco dust. Anti-rejection ampoules. Sometimes a wet-ice courier box nobody sensible opens on my table." He shrugs. "And sometimes people sell hours of themselves the same way they sell anything else — quietly, in cash, before rent comes due." # speaker: npc:coFixer # portrait: guarded
     ~ adjust_affinity("coFixer", 1)
     -> co_fixer_topics
 * [Ask if SEZAC's ever going to be a problem for this place. # insight: static]
@@ -73,7 +73,7 @@ The bar's real business happens at a corner booth, not behind the counter — a 
     ~ adjust_affinity("coFixer", 2)
     -> co_fixer_topics
 * { archetype == "hustler" } [Ask him straight — how long before someone like you ends up running a booth like this.]
-    Something in his face shifts, just slightly — recognition, not warmth. "You already know the answer, or you wouldn't have asked it that way." He doesn't say anything else on the subject, and you don't push it. # speaker: npc:coFixer
+    Something in his face shifts, just slightly — recognition, not warmth. "You already know the answer, or you wouldn't have asked it that way." He lets that sit for a beat. "Long enough to hate it. Not long enough to find a cleaner trade." He doesn't say anything else on the subject, and you don't push it. # speaker: npc:coFixer
     ~ adjust_affinity("coFixer", 2)
     -> co_fixer_topics
 + [Leave the booth.]

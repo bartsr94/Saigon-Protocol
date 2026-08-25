@@ -4,7 +4,7 @@
 // haven't earned one yet.
 
 import { BACKGROUNDS } from '../../content/backgrounds'
-import { LOCATION_HUBS, type HubInteraction } from '../../content/locationHubs'
+import { LOCATION_HUBS, type HubCharacterPresence, type HubInteraction } from '../../content/locationHubs'
 import { LOCATIONS, type LocationId } from '../../content/locations'
 import { useAudioStore } from '../../stores/audioStore'
 import { useConversationStore } from '../../stores/conversationStore'
@@ -79,6 +79,21 @@ export function LocationHubScreen() {
     useSaveStore.getState().autosave()
   }
 
+  function enterCardCharacter(presence: HubCharacterPresence) {
+    enterHubInteraction({
+      id: `${presence.storyLocationId}-${presence.npcId}`,
+      type: 'talk',
+      npcId: presence.npcId,
+      label: presence.label,
+      description: presence.description,
+      storyLocationId: presence.storyLocationId,
+      available: presence.available,
+      lockedReason: presence.lockedReason,
+      topicsKnot: presence.topicsKnot,
+      sceneKnot: presence.sceneKnot,
+    })
+  }
+
   // "Map" pops one layer at a time (Architecture §7's District Street
   // Layer): a Hub entered from within a district street
   // (currentDistrictId still set) returns to that street, not all the way
@@ -111,7 +126,7 @@ export function LocationHubScreen() {
       {hub.layout === 'grid' ? (
         <HubGridView hub={hub} background={background} onEnterInteraction={enterHubInteraction} onReturnToMap={handleReturnToMap} atEntry={atEntry} />
       ) : (
-        <HubCardListView hub={hub} background={background} onEnterStory={enterStory} onReturnToMap={handleReturnToMap} />
+        <HubCardListView hub={hub} background={background} onEnterCharacter={enterCardCharacter} onEnterStory={enterStory} onReturnToMap={handleReturnToMap} />
       )}
     </div>
   )

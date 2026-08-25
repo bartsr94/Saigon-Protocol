@@ -7,9 +7,9 @@
 VAR affinity_diem_khuong = 0
 
 === diem_khuong_intro ===
-She's pulling a tap when you walk in, sleeve pushed up past a forearm of cosmetic bio-luminescent grafting — decorative, deliberate, nothing about it built for labor. # speaker: npc:diemKhuong # background: pasteurStreetTaproom
+She's pulling a tap when you walk in, sleeve pushed up past a forearm of cosmetic bio-luminescent grafting — decorative, deliberate, nothing about it built for labor. A back stair door clicks shut somewhere behind you, followed by laughter that sounds more tired than drunk. # speaker: npc:diemKhuong # background: pasteurStreetTaproom
 "Badge or no badge, you're drinking or you're in the way." She doesn't look up from the glass. # speaker: npc:diemKhuong
-"Diễm. I run this floor. Whatever you're here about, it's not going to be the interesting part of my night." # speaker: npc:diemKhuong
+"Diễm. I run this floor. The upstairs mostly runs itself, which is another way of saying I don't ask what people need a locked room for if they can pay in advance." # speaker: npc:diemKhuong
 -> END
 
 === diem_khuong_topics ===
@@ -33,6 +33,10 @@ She's pulling a tap when you walk in, sleeve pushed up past a forearm of cosmeti
     -> diem_khuong_topics
 * [Ask if the absentee landlords ever come collecting. # insight: hustle]
     "Once, maybe eight years back. A grandnephew of somebody, come to look at 'the family property' like he'd read about it in a file." She laughs, short and not entirely warm. "Stood in the doorway for ten minutes, took some pictures, left. Never heard from him again. I think we disappointed him." # speaker: npc:diemKhuong
+    ~ adjust_affinity("diemKhuong", 1)
+    -> diem_khuong_topics
+* [Ask what the upstairs rooms are usually for. # insight: mask]
+    She gives you a look over the rim of the glass. "Depends who's asking and how polite they need the answer to sound. Lovers. Off-worlders trying to buy something they can pretend wasn't bought. Girls, boys, and everyone in between making rent one hour at a time." Her mouth tightens. "Sometimes it's just a room. Sometimes that's the lie everybody needs." # speaker: npc:diemKhuong # portrait: guarded
     ~ adjust_affinity("diemKhuong", 1)
     -> diem_khuong_topics
 + [Let her get back to the taps.]

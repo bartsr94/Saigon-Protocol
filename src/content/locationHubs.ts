@@ -18,6 +18,10 @@ export interface HubCharacterPresence {
   storyLocationId: LocationId
   available: boolean
   lockedReason?: string
+  /** Optional, same behavior as HubInteraction.topicsKnot for grid hubs. */
+  topicsKnot?: string
+  /** Optional, same behavior as HubInteraction.sceneKnot for grid hubs. */
+  sceneKnot?: string
 }
 
 export interface HubActionDefinition {
@@ -537,18 +541,48 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
     name: 'Turtle Lake Plaza',
     blurb: 'Fountain, food stalls, and whoever\'s playing acoustic tonight — the one square in the SEZ nobody\'s ever managed to keep official.',
     backgroundId: 'turtleLakePlaza',
-    layout: 'cardList',
-    characters: [],
-    actions: [
-      {
-        id: 'turtle-lake-plaza-scene',
-        type: 'inspect',
-        label: 'Sit by the water',
-        description: 'Take a seat at the fountain\'s edge and see what a district with nothing anyone upstairs wants is actually like after dark.',
-        storyLocationId: 'turtleLakePlaza',
-        available: true,
-      },
-    ],
+    layout: 'grid',
+    grid: {
+      width: 5,
+      height: 5,
+      // Same short-hall convention as the other District 3 venues — the
+      // fountain's edge up one branch, Ophelia on the other.
+      entryTile: { x: 0, y: 2 },
+      layoutRows: ['  #  ', '  o  ', '.....', '  o  ', '  #  '],
+      pois: [
+        {
+          id: 'turtle-lake-plaza-water',
+          position: { x: 2, y: 1 },
+          interactions: [
+            {
+              id: 'turtle-lake-plaza-inspect-water',
+              type: 'inspect',
+              label: 'Sit by the Water',
+              description: 'Take a seat at the fountain\'s edge and see what a district with nothing anyone upstairs wants is actually like after dark.',
+              storyLocationId: 'turtleLakePlaza',
+              available: true,
+            },
+          ],
+        },
+        {
+          id: 'turtle-lake-plaza-ophelia',
+          position: { x: 2, y: 3 },
+          interactions: [
+            {
+              id: 'turtle-lake-plaza-talk-ophelia',
+              type: 'talk',
+              npcId: 'ophelia',
+              label: 'Ophelia',
+              description: 'A minor District 3 feed celebrity in funeral lace and black lipstick, trying very hard to look like the crowd is not getting under her skin.',
+              storyLocationId: 'turtleLakePlaza',
+              available: true,
+              sceneKnot: 'ophelia_intro',
+              topicsKnot: 'ophelia_topics',
+            },
+          ],
+        },
+      ],
+    },
   },
   pasteurStreetTaproom: {
     id: 'pasteurStreetTaproom',
