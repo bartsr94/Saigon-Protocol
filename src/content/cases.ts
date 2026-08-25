@@ -146,8 +146,8 @@ export const EVIDENCE: Record<EvidenceId, EvidenceDefinition> = {
   },
 }
 
-export type CaseNoteId = 'note-01' | 'note-02' | 'note-03' | 'note-04' | 'note-05' | 'note-06'
-export const CASE_NOTE_IDS: CaseNoteId[] = ['note-01', 'note-02', 'note-03', 'note-04', 'note-05', 'note-06']
+export type CaseNoteId = 'note-01' | 'note-02' | 'note-03' | 'note-04' | 'note-05' | 'note-06' | 'note-07'
+export const CASE_NOTE_IDS: CaseNoteId[] = ['note-01', 'note-02', 'note-03', 'note-04', 'note-05', 'note-06', 'note-07']
 
 export interface CaseNoteDefinition {
   id: CaseNoteId
@@ -205,6 +205,14 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
     id: 'note-06',
     heading: "Ophelia's Shadow, Confirmed",
     body: "He reacted almost the moment the stream went up — not fan enthusiasm, something closer to a man cross-checking a file he already keeps. He wanted to know who else was around her now. That is not how a bad fan behaves. That is how someone tracks a rival.",
+    caseId: 'ophelia-stalker',
+    districtId: 'district3',
+    tags: ['stalking', 'ophelia'],
+  },
+  'note-07': {
+    id: 'note-07',
+    heading: "Ophelia's Shadow, Closed",
+    body: "Quiet removal, public exposure, a full disappearance, or just tighter walls — whichever way it went, Ophelia is the one who decided how this ends, not the department, and not him. No version of it left her exactly where she started.",
     caseId: 'ophelia-stalker',
     districtId: 'district3',
     tags: ['stalking', 'ophelia'],

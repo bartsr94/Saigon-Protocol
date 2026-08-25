@@ -351,6 +351,19 @@ just silently is or isn't there, the same way an Insight-gated *choice*
 `workerCanteen.ink`'s Hustler-only beat on the counter's "two ways of being
 Xóm Chàm" paragraph is the first real example.
 
+**Gotcha — multi-branch conditionals and EXTERNAL calls.** The chained
+`{ condA: ... - condB: ... - else: ... }` form (more than one condition
+before the final `- else:`) compiles fine when every condition is a plain
+var comparison, but inkjs's compiler fails with "Expected an '- else:'
+clause here rather than an extra condition" the moment *any* condition in
+the chain — first, middle, or last before `else` — is an EXTERNAL function
+call like `has_case_flag(...)` or `is_objective_complete(...)`. This bit
+`opheliaApartment.ink`/`turtleLakePlaza.ink`'s ending-flag greeting
+branches (Ophelia's Choice finale). The fix is to nest instead of chain:
+`{ condA: ... - else: { condB: ... - else: { condC: ... - else: ... } } }`
+— verified to compile cleanly with any mix of EXTERNAL and var conditions.
+Two-branch `{ cond: ... - else: ... }` is unaffected either way.
+
 ### 5.5 Worked example (the intro scene's pattern)
 
 `content/ink/intro.ink` is a good template for a no-stakes narrative scene:
@@ -639,9 +652,15 @@ very first lines (paired with `complete_case_objective` on its one
 placeholder objective, since Case 1 doesn't have real authored quest stages
 yet); `turtleLakePlaza.ink`'s `ophelia_intro` knot does the same for
 `ophelia-stalker`'s `recognition` objective the moment the player meets her.
-A case's later objectives (Ophelia's `pattern`/`choice`) are free to sit
-unauthored/pending — that's the intended look for a sidequest that's been
-started but not resolved yet, not a bug. How much of Case Notes should
+A case's later objectives are free to sit unauthored/pending for a while —
+that's the intended look for a sidequest that's been started but not
+resolved yet, not a bug. Ophelia's `ophelia-stalker` case is a full worked
+example of a case reaching every stage: `recognition` (`ophelia_intro`),
+`pattern` (`OPHELIA_LIVESTREAM_ARC_SPEC.md`'s stream scene), and `choice`
+(the `ophelia_choice_scene` finale in `opheliaApartment.ink`/
+`turtleLakePlaza.ink`, which also calls `complete_case` — the first content
+to actually close a case out rather than leaving it `active` indefinitely).
+How much of Case Notes should
 auto-populate from play vs. be hand-authored per scene remains an open
 design question, not something this wiring answers. `flags` also gates
 Location Hub locked doors (§6.2) — the Debug Console's Flags tool
