@@ -17,14 +17,14 @@ She's leaning against the intake counter in a white coat two sizes too crisp for
 - else:
     Sarah barely glances up from the tablet. "Back again? Try not to slow down the real work." # speaker: npc:sarahMulligan
 }
-* [Ask what an Erasmus student is doing all the way out here. # insight: hustle]
+* [Why Cholon? # insight: hustle] "What's an Erasmus student doing all the way out here?"
     "Prestige, mostly." She shrugs like admitting it costs her nothing. "Half my program picked Geneva. I picked the place with an actual case volume — Cholon doesn't sanitize its data before it hands it to you." # speaker: npc:sarahMulligan
     ~ adjust_affinity("sarahMulligan", 1)
     -> sarah_mulligan_topics
-* [Ask her opinion of the local staff. # insight: mask]
+* [The local staff # insight: mask] "What's your honest opinion of the local staff?"
     "Overworked, underpaid, and better than half my attendings back home, if you want the honest answer." She says it like a concession she resents making. "Don't tell them I said that." # speaker: npc:sarahMulligan
     -> sarah_mulligan_topics
-* [Push on whether she's noticed anything unusual on the intake floor. # check: white]
+* [Anything unusual? # check: white] "Have you noticed anything unusual on the intake floor?"
     ~ temp noticedResult = roll_check("root", 6, "y-duoc-sarah-noticed", "white")
     { noticedResult:
         Her tablet stops scrolling. "There's a referral pattern I flagged for my supervisor and got told to stop asking about. That's — not nothing." She's choosing her words like she already regrets how many she's given you. # speaker: npc:sarahMulligan # portrait: guarded
@@ -33,7 +33,7 @@ She's leaning against the intake counter in a white coat two sizes too crisp for
         "Unusual is the entire premise of this hospital, Detective. Be specific, or I'm going back to my chart." # speaker: npc:sarahMulligan
     }
     -> sarah_mulligan_topics
-* [Ask if she misses home. # insight: root]
+* [Miss home? # insight: root] "Do you miss home?"
     "Missing it would require admitting it was better, and it wasn't." A pause, just long enough to notice. "Ask me again once I've had worse days here." # speaker: npc:sarahMulligan # portrait: guarded
     ~ adjust_affinity("sarahMulligan", 1)
     -> sarah_mulligan_topics

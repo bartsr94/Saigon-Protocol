@@ -18,24 +18,24 @@ She's pulling a tap when you walk in, sleeve pushed up past a forearm of cosmeti
 - else:
     Diễm keeps working the taps, half an eye on you. "Still here. Try not to clear the room." # speaker: npc:diemKhuong
 }
-* [Ask who actually owns this building. # insight: ledger]
+* [Who owns this? # insight: ledger] "Who actually owns this building?"
     "On paper? A holding company with a mailing address on a platform I've never seen a shuttle actually land on." She shrugs, wiping a glass that's already clean. "Grandmother's sister took the offer three generations back. Kept the deed instead of selling, because why wouldn't you — free money sitting on ground nobody was using." # speaker: npc:diemKhuong
     ~ adjust_affinity("diemKhuong", 1)
     -> diem_khuong_topics
-* [Ask why she stayed instead of following the rest of the family up. # insight: root]
+* [Why stay? # insight: root] "Why'd you stay, instead of following the rest of your family up?"
     Her hands slow on the glass, just for a second. "Somebody had to. And I like it here more than I like the idea of a platform with better air and worse ground." A pause. "That's not the whole answer. It's the one I give people I've known for five minutes." # speaker: npc:diemKhuong # portrait: guarded
     ~ adjust_affinity("diemKhuong", 2)
     -> diem_khuong_topics
-* [Ask about the graft work on her arm. # insight: graft]
+* [Her arm graft # insight: graft] "What's the story behind the graft work on your arm?"
     "This?" She turns it toward the light on purpose, lets it catch. "Purely cosmetic. No tolerance rating, no labor certification, does exactly nothing except look good under bad lighting." # speaker: npc:diemKhuong
     Graft clocks the difference instantly — nothing about the work reads like District 4's survival grafts, and she knows it exactly as well as you do. Down at the port, work like this gets asked what it's rated for. Up here, nobody asks anything but where she got it done. # speaker: insight:graft
     ~ adjust_affinity("diemKhuong", 1)
     -> diem_khuong_topics
-* [Ask if the absentee landlords ever come collecting. # insight: hustle]
+* [The landlords # insight: hustle] "Do the absentee landlords ever come collecting?"
     "Once, maybe eight years back. A grandnephew of somebody, come to look at 'the family property' like he'd read about it in a file." She laughs, short and not entirely warm. "Stood in the doorway for ten minutes, took some pictures, left. Never heard from him again. I think we disappointed him." # speaker: npc:diemKhuong
     ~ adjust_affinity("diemKhuong", 1)
     -> diem_khuong_topics
-* [Ask what the upstairs rooms are usually for. # insight: mask]
+* [Upstairs rooms # insight: mask] "What are the upstairs rooms usually for?"
     She gives you a look over the rim of the glass. "Depends who's asking and how polite they need the answer to sound. Lovers. Off-worlders trying to buy something they can pretend wasn't bought. Girls, boys, and everyone in between making rent one hour at a time." Her mouth tightens. "Sometimes it's just a room. Sometimes that's the lie everybody needs." # speaker: npc:diemKhuong # portrait: guarded
     ~ adjust_affinity("diemKhuong", 1)
     -> diem_khuong_topics

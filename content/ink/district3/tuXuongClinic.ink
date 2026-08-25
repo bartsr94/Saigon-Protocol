@@ -55,23 +55,23 @@ A beat later the iron lifts, the loupe flips up, and she actually looks at you �
 - else:
     Yến keeps her eyes on the tray of tools between her and the table. "Still here. I'm listening, I'm just not stopping." # speaker: npc:yenLoc
 }
-* [Ask why she does this instead of getting properly certified. # insight: ledger]
+* [Why not certified? # insight: ledger] "Why do this instead of getting properly certified?"
     "Certified costs a licensing fee I'd need three good years to save for, on top of an Aveline apprenticeship that doesn't take anyone without a sponsor. I did the math a long time ago. This math works faster." # speaker: npc:yenLoc
     ~ adjust_affinity("yenLoc", 1)
     -> yen_loc_topics
-* [Ask about the risk to whoever's on that table. # insight: graft]
+* [The risk # insight: graft] "What's the risk to whoever's on that table?"
     "Real. I tell every one of them exactly how real, which is more than the price tag usually gets you anywhere else." She nods at the pinboard through the doorway. "Every signature out there is somebody who heard the risk and decided their reasons were bigger than it. I don't get to decide that part for them." # speaker: npc:yenLoc # portrait: guarded
     ~ adjust_affinity("yenLoc", 2)
     -> yen_loc_topics
-* [Ask what happened to her actual license. # insight: root]
+* [Her license # insight: root] "What happened to your actual license?"
     Her hands go still on the tool tray, just for a second. "Worked triage in a Xóm Chàm clinic during a bad flood season. Treated more people than the ration allowed supplies for, used what I had, kept people alive who weren't on anybody's approved list. Aveline called it a compliance violation. I call it Tuesday." A pause. "That's the short version. The long one doesn't end any better for anybody who still has a license to lose telling it." # speaker: npc:yenLoc
     ~ adjust_affinity("yenLoc", 2)
     -> yen_loc_topics
-* [Ask if SEZAC or Aveline ever comes looking for this place. # insight: hustle]
+* [SEZAC or Aveline? # insight: hustle] "Does SEZAC or Aveline ever come looking for this place?"
     "Not yet. This district doesn't rate a patrol budget, and the parts I run don't come through any manifest anyone official reads." A short, humorless laugh. "Ask me again after word gets out I'm talking to a detective." # speaker: npc:yenLoc
     ~ adjust_affinity("yenLoc", 1)
     -> yen_loc_topics
-* [Ask where the parts actually come from. # insight: static]
+* [The parts # insight: static] "Where do the parts actually come from?"
     "Same place everything in this district that isn't nailed down comes from eventually — a broker who doesn't put his name on the invoice, because there isn't one." She doesn't elaborate further, and doesn't need to. # speaker: npc:yenLoc
     ~ adjust_affinity("yenLoc", 1)
     -> yen_loc_topics

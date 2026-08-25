@@ -131,34 +131,48 @@ export function ConversationScreen() {
 
         {/* Dedicated topic bar — the same bottom-action-bar Panel HubGridView
             uses for a POI's Talk/Inspect interactions, reused here for ink's
-            gated currentChoices instead of a hub interaction list. */}
-        <div className="min-h-[6rem] shrink-0 px-[10px] pb-4">
-          <Panel size="md" className="flex flex-wrap gap-3 p-4">
-            {isTypingDone &&
-              currentChoices.map((choice) => {
-                const tagInfo = parseChoiceTags(choice.tags)
-                const insight = tagInfo.insightId ? INSIGHTS[tagInfo.insightId] : null
-                const locked = tagInfo.variant === 'locked'
-                return (
-                  <CyberButton
-                    key={choice.index}
-                    disabled={locked}
-                    title={locked ? tagInfo.lockedReason : undefined}
-                    tag={locked ? 'Locked' : (insight?.name ?? (tagInfo.variant === 'white-check' || tagInfo.variant === 'red-check' ? 'Check' : 'Topic'))}
-                    onClick={() => !locked && choose(choice.index)}
-                  >
-                    {choice.text}
-                  </CyberButton>
-                )
-              })}
-            {import.meta.env.DEV && activeTopicsKnot && (
-              <CyberButton className="!border-white/30 !text-white/50" onClick={() => setEditingTopics(true)}>
-                Edit Topics
+            gated currentChoices instead of a hub interaction list. Capped at
+            max-h-64 (unlike HubGridView's uncapped version, whose POI
+            interaction lists never run past a handful) since an NPC's
+            topicsKnot can hold far more entries (e.g. Lakshmi Avani's 10) —
+            short topic-word choices (docs/GAME_GUIDE.md §5.2) grid into neat
+            rows instead of wrapping as variable-width sentence pills, and the
+            grid scrolls internally so a long topic list can never grow this
+            bar tall enough to push the center-stage portrait's head out of
+            frame. Leave/Edit Topics sit outside the scroll area so they're
+            always reachable. */}
+        <div className="shrink-0 px-[10px] pb-4">
+          <Panel size="md" className="flex max-h-64 flex-col gap-3 p-4">
+            <div className="auto-hide-scrollbar grid grid-cols-2 content-start gap-3 overflow-y-auto pr-1 lg:grid-cols-3 xl:grid-cols-4">
+              {isTypingDone &&
+                currentChoices.map((choice) => {
+                  const tagInfo = parseChoiceTags(choice.tags)
+                  const insight = tagInfo.insightId ? INSIGHTS[tagInfo.insightId] : null
+                  const locked = tagInfo.variant === 'locked'
+                  return (
+                    <CyberButton
+                      key={choice.index}
+                      className="w-full"
+                      disabled={locked}
+                      title={locked ? tagInfo.lockedReason : undefined}
+                      tag={locked ? 'Locked' : (insight?.name ?? (tagInfo.variant === 'white-check' || tagInfo.variant === 'red-check' ? 'Check' : 'Topic'))}
+                      onClick={() => !locked && choose(choice.index)}
+                    >
+                      {choice.text}
+                    </CyberButton>
+                  )
+                })}
+            </div>
+            <div className="flex shrink-0 items-center justify-end gap-3 border-t border-white/10 pt-3">
+              {import.meta.env.DEV && activeTopicsKnot && (
+                <CyberButton className="!border-white/30 !text-white/50" onClick={() => setEditingTopics(true)}>
+                  Edit Topics
+                </CyberButton>
+              )}
+              <CyberButton className="!border-chrome-secondary !text-chrome-secondary" onClick={handleLeaveConversation}>
+                Leave Conversation
               </CyberButton>
-            )}
-            <CyberButton className="!border-chrome-secondary !text-chrome-secondary" onClick={handleLeaveConversation}>
-              Leave Conversation
-            </CyberButton>
+            </div>
           </Panel>
         </div>
       </div>

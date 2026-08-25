@@ -14,8 +14,9 @@ describe('parseTopicsKnot', () => {
     const parsed = parseTopicsKnot(meiHongInk, 'mei_hong_topics')
     const first = parsed.topics[0] as SimpleTopic
     expect(first.kind).toBe('simple')
-    expect(first.choiceText).toBe('Ask about her role here.')
+    expect(first.choiceText).toBe('Her role')
     expect(first.insightTag).toBe('ledger')
+    expect(first.spokenText).toBe("\"What's your role here, exactly?\"")
     expect(first.responseText).toContain('Operations.')
     expect(first.speakerNpcId).toBeUndefined()
   })
@@ -61,6 +62,50 @@ describe('parseTopicsKnot', () => {
   })
 })
 
+describe('spokenText (topic-word convention)', () => {
+  const ink = [
+    '=== spoken_text_topics ===',
+    'Test preamble.',
+    '* [Sells online? # insight: ledger] "What exactly do you sell online?"',
+    '    "Curated decadence," she says. # speaker: npc:ophelia',
+    '    -> spoken_text_topics',
+    '* [Leave.]',
+    '    You step back.',
+    '    -> spoken_text_topics',
+    '-> END',
+  ].join('\n')
+
+  it('captures spokenText from the text after the closing bracket', () => {
+    const parsed = parseTopicsKnot(ink, 'spoken_text_topics')
+    const first = parsed.topics[0] as SimpleTopic
+    expect(first.kind).toBe('simple')
+    expect(first.choiceText).toBe('Sells online?')
+    expect(first.insightTag).toBe('ledger')
+    expect(first.spokenText).toBe('"What exactly do you sell online?"')
+  })
+
+  it('leaves spokenText undefined for a bracket-only choice', () => {
+    const parsed = parseTopicsKnot(ink, 'spoken_text_topics')
+    const second = parsed.topics[1] as SimpleTopic
+    expect(second.spokenText).toBeUndefined()
+  })
+
+  it('round-trips a knot containing spokenText with zero edits', () => {
+    const parsed = parseTopicsKnot(ink, 'spoken_text_topics')
+    const rebuilt = serializeTopicsKnot('spoken_text_topics', parsed, parsed.topics)
+    const lines = ink.split('\n')
+    const originalBody = lines.slice(1).join('\n')
+    expect(rebuilt).toBe(originalBody)
+  })
+
+  it('serializes an edited spokenText back into the choice line', () => {
+    const parsed = parseTopicsKnot(ink, 'spoken_text_topics')
+    const edited = parsed.topics.map((t, i) => (i === 0 && t.kind === 'simple' ? { ...t, spokenText: '"New line."' } : t))
+    const updated = replaceTopicsInKnot(ink, 'spoken_text_topics', edited)
+    expect(updated).toContain('* [Sells online? # insight: ledger] "New line."')
+  })
+})
+
 describe('serializeTopicsKnot / replaceTopicsInKnot round-trip', () => {
   it('reproduces the exact original knot body for mei_hong_topics with zero edits', () => {
     const parsed = parseTopicsKnot(meiHongInk, 'mei_hong_topics')
@@ -95,14 +140,14 @@ describe('serializeTopicsKnot / replaceTopicsInKnot round-trip', () => {
 
   it('edits a simple topic in place', () => {
     const parsed = parseTopicsKnot(meiHongInk, 'mei_hong_topics')
-    const firstSimpleIndex = parsed.topics.findIndex((t) => t.kind === 'simple' && t.choiceText === 'Ask about her role here.')
+    const firstSimpleIndex = parsed.topics.findIndex((t) => t.kind === 'simple' && t.choiceText === 'Her role')
     const edited = parsed.topics.map((t, i) =>
       i === firstSimpleIndex && t.kind === 'simple'
-        ? { ...t, choiceText: 'Ask about her lab equipment.', responseText: 'New response text.' }
+        ? { ...t, choiceText: 'Her lab equipment', spokenText: undefined, responseText: 'New response text.' }
         : t,
     )
     const updated = replaceTopicsInKnot(meiHongInk, 'mei_hong_topics', edited)
-    expect(updated).toContain('* [Ask about her lab equipment. # insight: ledger]')
+    expect(updated).toContain('* [Her lab equipment # insight: ledger]')
     expect(updated).toContain('    New response text.')
     expect(updated).not.toContain('Operations. I keep the lights on and the paperwork honest')
   })
@@ -111,13 +156,14 @@ describe('serializeTopicsKnot / replaceTopicsInKnot round-trip', () => {
     const parsed = parseTopicsKnot(meiHongInk, 'mei_hong_topics')
     const withNewTopic: SimpleTopic = {
       kind: 'simple',
-      choiceText: 'Ask if she has family back home.',
+      choiceText: 'Family back home',
       insightTag: 'root',
+      spokenText: 'Do you have family back home?',
       responseText: "\"Not the kind you'd call.\" She goes quiet for a second.",
       speakerNpcId: 'meiHong',
     }
     const updated = replaceTopicsInKnot(meiHongInk, 'mei_hong_topics', [...parsed.topics, withNewTopic])
-    expect(updated).toContain('* [Ask if she has family back home. # insight: root]')
+    expect(updated).toContain('* [Family back home # insight: root] Do you have family back home?')
     expect(updated).toContain("    \"Not the kind you'd call.\" She goes quiet for a second. # speaker: npc:meiHong")
     expect(updated).toContain('    -> mei_hong_topics')
     expect(updated).toContain("End of Mei Hong's content")
@@ -127,7 +173,7 @@ describe('serializeTopicsKnot / replaceTopicsInKnot round-trip', () => {
     const parsed = parseTopicsKnot(meiHongInk, 'mei_hong_topics')
     const withoutFirst = parsed.topics.slice(1)
     const updated = replaceTopicsInKnot(meiHongInk, 'mei_hong_topics', withoutFirst)
-    expect(updated).not.toContain('Ask about her role here.')
-    expect(updated).toContain('Ask if she\'s worried about the investigation')
+    expect(updated).not.toContain('[Her role')
+    expect(updated).toContain('Are you worried about this investigation?')
   })
 })

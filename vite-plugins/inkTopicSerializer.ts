@@ -1,6 +1,9 @@
 // Parses/serializes the "simple topic" shape inside a topicsKnot loop
-// (docs/LIVE_TOPIC_EDITOR_SPEC.md) — one `* [choice text]` line, a plain
-// response, and a self-divert back to the knot, the exact shape
+// (docs/LIVE_TOPIC_EDITOR_SPEC.md) — one `* [choice text]` or
+// `* [choice text] spoken line.` line (GAME_GUIDE.md §5.2's topic-word
+// convention: the bracket is the short button label, anything after it is
+// the detective's own spoken line, added to the output by ink itself), a
+// plain response, and a self-divert back to the knot, the exact shape
 // `mei_hong_topics`/`lakshmi_avani_topics` (content/ink/district4/checkpoint.ink)
 // use. Anything else inside a topicsKnot (a roll_check call, a
 // conditional, a case grant, a precondition-gated choice) is a
@@ -16,6 +19,8 @@ export interface SimpleTopic {
   kind: 'simple'
   choiceText: string
   insightTag?: string
+  /** Text after the choice's closing bracket (GAME_GUIDE.md §5.2's topic-word convention) — ink adds it to the output the moment the choice is taken, so it reads as the detective's own spoken line, distinct from `choiceText`'s short button label. Omitted for a bracket-only choice. */
+  spokenText?: string
   responseText: string
   speakerNpcId?: string
 }
@@ -33,7 +38,9 @@ export interface ParsedTopicsKnot {
   trailerLines: string[]
 }
 
-const CHOICE_LINE = /^\* \[(.*)\]$/
+// Group 2 captures any spoken-line text after the closing bracket (empty for
+// a bracket-only choice) — see `SimpleTopic.spokenText`.
+const CHOICE_LINE = /^\* \[(.*)\](.*)$/
 // A choice block can start with `*` (once) or `+` (sticky, docs/GAME_GUIDE.md's
 // repeatable-topic convention) — either marks a new topic boundary here, even
 // though only a bare `* [...]` line (CHOICE_LINE above) is eligible to be
@@ -65,6 +72,9 @@ function classifyBlock(rawLines: string[], knotName: string): TopicBlock {
   const raw = rawLines.join('\n')
   const choiceMatch = CHOICE_LINE.exec(rawLines[0].trim())
   if (!choiceMatch) return { kind: 'complex', raw }
+
+  const spokenTextRaw = choiceMatch[2].trim()
+  const spokenText = spokenTextRaw.length > 0 ? spokenTextRaw : undefined
 
   const parts = choiceMatch[1].split('#').map((p) => p.trim())
   const choiceText = parts[0]
@@ -108,7 +118,7 @@ function classifyBlock(rawLines: string[], knotName: string): TopicBlock {
     cleanedLines.push(trimmed)
   }
 
-  return { kind: 'simple', choiceText, insightTag, responseText: cleanedLines.join('\n'), speakerNpcId }
+  return { kind: 'simple', choiceText, insightTag, spokenText, responseText: cleanedLines.join('\n'), speakerNpcId }
 }
 
 /**
@@ -168,7 +178,8 @@ function serializeTopic(topic: TopicBlock, knotName: string): string {
   if (topic.kind === 'complex') return topic.raw
 
   const tag = topic.insightTag ? ` # insight: ${topic.insightTag}` : ''
-  const choiceLine = `* [${topic.choiceText}${tag}]`
+  const spoken = topic.spokenText ? ` ${topic.spokenText}` : ''
+  const choiceLine = `* [${topic.choiceText}${tag}]${spoken}`
 
   const responseLines = topic.responseText.split('\n')
   const lastIndex = responseLines.length - 1
