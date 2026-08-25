@@ -52,8 +52,10 @@ Beat shape, in order:
 
 1. **Casual, deniable.** She opens like it's nothing — "stand somewhere
    photogenic and look mysterious for twenty minutes" register. This is
-   consistent with her established brattiness: attention is tribute she's
-   owed, so the ask starts as an entitlement, not a favor.
+   a lie of omission, not a different job: the plaza is public, so she
+   does not name the actual brief until the apartment. Consistent with
+   her established brattiness: attention is tribute she's owed, so the
+   ask starts as an entitlement, not a favor.
 2. **The real number, dropped like an accident.** She lets slip how bad
    the week's numbers actually are — the first crack, delivered like she
    resents having to say it out loud at all.
@@ -115,45 +117,46 @@ Pasteur Street Taproom / Tú Xương Clinic spurs) and a new small
 (Ophelia, `topicsKnot: 'ophelia_apartment_topics'`) and one `inspect` POI
 for atmosphere.
 
-Shape of the scene itself (unchanged from the original draft otherwise):
+Shape of the scene itself:
 
 - A small locked room, a ring light, a rented-looking backdrop doing its
   best to read as more glamorous than the building underneath it actually
-  is. Ophelia in full performance mode — the "online" Ophelia from the
-  character spec's "Public persona" section, not the Turtle Lake one.
-- The bit: she frames him as a "mystery guest," feeds the audience just
-  enough noir — a cop, off the record, here for reasons she won't confirm
-  — to be interesting without naming anything real about the case. This
-  keeps the tone in her established register (curated decadence, confession
-  sold as unscripted) rather than turning into explicit content — nothing
-  about the scene needs to depict the paid-intimacy work itself, only the
-  performance of proximity to it, which is enough per her existing content
-  (`ophelia_topics`'s "Sells online?" line already handles the specifics at
-  this same level of remove).
-- **One Red check** (one-shot, matches the stakes — this moment either
-  works or doesn't and the story should carry that): `roll_check('mask', 7,
-  'ophelia-stream-sell-it', 'red')`. TN 7 calibrated against the other Red
-  checks already authored (`checkpoint-mei-hong-leverage` and
-  `checkpoint-lakshmi-colleague` both use TN 7; District 3/5's White checks
-  sit at TN 6). Mask is the right Insight — it's already the lens the game
-  uses for reading/running performance (see the `mask >= 3` branches
-  throughout `turtleLakePlaza.ink` and `ophelia_intro`'s "rationing panic
-  with professional discipline" line).
-  - **Success:** he sells the bit. The stream visibly spikes, she's
-    genuinely delighted rather than performing delight, bigger affinity
-    gain (`adjust_affinity("ophelia", 2)`).
-  - **Failure:** he's stiff, over-formal, visibly a cop trying to be
-    charming — and it works anyway, in the "unpolished proof this is a
-    real person" way unscripted moments sometimes do for this kind of
-    audience. Smaller affinity gain (`adjust_affinity("ophelia", 1)`), not
-    a punishing outcome. No separate doubles-tier branch — `roll_check`
-    only ever returns a pass/fail boolean to ink (the ink↔TS boundary,
-    Architecture §6), so a natural-12/natural-2 distinction isn't available
-    to branch on here, same as every other check in the codebase.
-- Whatever the check result, the scene ends with the stream still running
-  and the detective clearly visible in it — that's the mechanism that
-  reaches the stalker, not the check outcome. The check governs tone and
-  affinity, not whether Scene 3 fires.
+  is. She is in the dress the camera likes. She is not in character yet —
+  the plaza ask was the polite version, and this is the actual brief.
+- The job, named in the room: she needs a stunt cock. Face off-frame
+  (identity stays out of the stills); cock on camera. He stands where she
+  puts him. He does not perform, talk, or look at the lens. She does the
+  rest, on camera, as labor — oral, talking to chat around him, finishing
+  him on her terms because that's the product. Fully explicit on the page;
+  still her voice; still "this is work," not a romantic beat. The
+  load-bearing aftermath line stays: "It's a favor. It is not a moment."
+- **Last chance to walk.** Agreeing at the plaza got him in the door.
+  Hearing the real brief is a second decision. Walking sets
+  `ophelia-stream-refused` (apartment stays unlocked — the address is
+  already spent) and Pattern completes secondhand on the next visit via
+  `ophelia_pattern_walked`. A Mask-tagged walk that names the fountain
+  sandbag gets the same +1 affinity as naming the sad-act at the plaza.
+  A clean walk has no affinity penalty.
+- **One Red check** (one-shot, on the "stand where she puts you" choice):
+  `roll_check('mask', 7, 'ophelia-stream-hold-still', 'red')`. TN 7
+  calibrated against the other Red checks already authored
+  (`checkpoint-mei-hong-leverage` and `checkpoint-lakshmi-colleague` both
+  use TN 7). Mask is the right Insight — the job is not to perform, it is
+  to stay a usable prop and not break her frame.
+  - **Success:** he holds. Breath, hands, eyes stay out of the shot. She
+    is actually pleased. Bigger affinity gain (`adjust_affinity("ophelia",
+    2)`).
+  - **Failure:** he looks at the lens, makes a sound, or treats it like a
+    scene he's in. She covers without stopping ("he's new, we're
+    workshopping him"), finishes the bit anyway. Smaller affinity gain
+    (`adjust_affinity("ophelia", 1)`), not a punishing outcome. No
+    separate doubles-tier branch — `roll_check` only ever returns a
+    pass/fail boolean to ink (the ink↔TS boundary, Architecture §6).
+- Whatever the check result, the scene ends with his body in the stream
+  and his face out of it — that's the mechanism that reaches the stalker,
+  not the check outcome. The check governs tone and affinity, not whether
+  Scene 3 fires. The stalker does not get a name or a rank from the
+  footage. He gets a body that isn't his, and he wants a name for it.
 
 ## Scene 3 — Pattern confirmed
 
@@ -167,20 +170,23 @@ actually fires, replacing the current unauthored/pending state described in
   objective not yet complete, so it naturally waits for the player to leave
   and come back, same as any other knot re-entry). The stalker has seen the
   stream. He doesn't just escalate in volume — he escalates in *target*. He
-  wanted to know who else was around her now (jealousy read as ownership,
-  matching the character spec's stalker-logic section: "money spent equals
-  emotional entitlement," now extended to "a rival for her attention"). This
-  is escalation ladder step 4 from `OPHELIA_CHARACTER_SPEC.md` ("he targets
-  people around her") arriving early and personally.
-- **Without Scene 2 (refused path):** fires at Turtle Lake instead (she
-  never relocates on this path), same objective completion, same new case
+  didn't get a face. He got a body, and he wanted a name for it (jealousy
+  read as ownership, matching the character spec's stalker-logic section:
+  "money spent equals emotional entitlement," now extended to "a rival for
+  her attention"). This is escalation ladder step 4 from
+  `OPHELIA_CHARACTER_SPEC.md` ("he targets people around her") arriving
+  early and personally.
+- **Without Scene 2 (refused at the plaza):** fires at Turtle Lake instead
+  (she never relocates on this path), same objective completion, same case
   note, but the detective learns about the escalation from Ophelia
   describing it after the fact rather than living through the audience
   reaction himself — a flatter, secondhand version of the same beat.
-  Consistent with "no ending should feel clean": declining to help doesn't
-  spare her the escalation, it just changes how the detective finds out
-  about it, which is arguably worse for him (he wasn't there to see it
-  happen).
+- **Without Scene 2 (walked at the apartment):** fires at the apartment on
+  the next visit (`ophelia_pattern_walked`). She did the stream without
+  him. Same objective, same note, colder texture — he already has the
+  address, and saying no in the room didn't buy her anything. Consistent
+  with "no ending should feel clean": declining to help doesn't spare her
+  the escalation, it just changes how the detective finds out about it.
 
 Both branches unlock the same new case note (next free id after `note-05`,
 so `note-06`) filed under `ophelia-stalker`, worded to hold up under either
@@ -205,9 +211,11 @@ whichever flags/affinity state resulted, feeding into
 | **Unlock the new `opheliaApartment` location** | New `LocationDefinition.unlocksOnFlag` field on `turtleLakePlaza`: `[{ flag: 'ophelia-stream-agreed', locationId: 'opheliaApartment' }]`, checked in `DialogueScreen.finalizeEndedScene` (`useCaseStore.getState().hasFlag(...)`) the same moment/place `unlocksOnComplete` already fires — additive, doesn't touch the unconditional case |
 | Turtle Lake stops offering her topic loop | Top-of-knot guard in `ophelia_topics`: `has_case_flag("ophelia-stream-agreed")` diverts to a short relocation line instead |
 | Scene 2 gate (don't replay the stream scene) | `has_case_flag("ophelia-stream-scene-done")` |
-| Scene 2 pivotal moment | `roll_check('mask', 7, 'ophelia-stream-sell-it', 'red')` — no doubles-tier branching in ink, since `roll_check` only ever returns pass/fail (Architecture's ink↔TS boundary) |
+| Scene 2 last-chance walk | `set_case_flag("ophelia-stream-refused")` in the apartment; stream scene also gated on `not has_case_flag("ophelia-stream-refused")` so it doesn't replay |
+| Scene 2 pivotal moment | `roll_check('mask', 7, 'ophelia-stream-hold-still', 'red')` — hold still, don't look at the lens; no doubles-tier branching in ink, since `roll_check` only ever returns pass/fail (Architecture's ink↔TS boundary) |
 | Scene 3 payoff (agreed path, at the Apartment) | Top-of-knot guard in `ophelia_apartment_topics`: `has_case_flag("ophelia-stream-scene-done") and not is_objective_complete(...)` → `complete_case_objective("ophelia-stalker","pattern")` + `unlock_note('note-06')` |
-| Scene 3 payoff (refused path, at Turtle Lake) | Same shape, guarded on `has_case_flag("ophelia-stream-refused")` instead |
+| Scene 3 payoff (refused at the plaza, at Turtle Lake) | Same shape, guarded on `has_case_flag("ophelia-stream-refused")` instead |
+| Scene 3 payoff (walked at the apartment) | `ophelia_pattern_walked`, same objective + note |
 | Affinity deltas | +1 (agree) / +1 or +2 (Scene 2 result) / 0 (refuse, clean) |
 
 No changes needed to `content/cases.ts`'s `CASE_IDS`/objectives array —
@@ -237,10 +245,12 @@ one new District 3 street POI, one new `GridHubDefinition`, and the
   sadness, invoking the fact that they know each other a little now — the
   player can always say no, cleanly, with no affinity penalty and no
   content dead-end. Nothing here should read as him losing agency.
-- Keep the on-stream content at the same level of remove her existing
-  dialogue already uses (`ophelia_topics`'s "Sells online?" answer) — mood
-  and persona, not depicted acts. The "spice" is his presence and the
-  noir-bit framing, not anything explicit.
+- The on-stream content is explicit and stays in her professional register:
+  she names the job, she does the work, he is a prop. Do not rewrite it as
+  romance, as her secretly enjoying danger, or as a noir mystery-guest bit.
+  The "spice" is the labor and the fact that his body is the product while
+  his face is not. "Don't make this weird. It's a favor. It is not a moment"
+  is load-bearing.
 - The guilt-trip tactic should be legible as a tactic — this is the same
   "brattiness is armor" character established in
   `OPHELIA_CHARACTER_SPEC.md`, escalated by genuine fear and genuine
@@ -260,20 +270,21 @@ one new District 3 street POI, one new `GridHubDefinition`, and the
 
 - ~~Exact Target Number~~ — set to 7, matching the existing Red-check
   calibration (`checkpoint-mei-hong-leverage`, `checkpoint-lakshmi-colleague`).
-- ~~Whether Scene 2 needs its own topics loop~~ — stayed linear: one choice,
-  one check, done. Matches the size of her other individual scenes.
+- ~~Whether Scene 2 needs its own topics loop~~ — stayed linear: the brief,
+  a last-chance walk, one check, done. Matches the size of her other
+  individual scenes.
 - ~~Refused-path Scene 3 timing~~ — resolved via the same knot-re-entry
   pacing as the agreed path: `ophelia_topics`'s top-of-knot guard only fires
   the secondhand escalation beat once the player leaves and comes back, not
   inline with the refusal itself.
-- ~~Note-06 wording~~ — finalized, worded to hold up under both the
-  agreed (he saw the stream) and refused (he heard about "someone new"
-  secondhand) versions of events.
+- ~~Note-06 wording~~ — finalized, worded to hold up under the agreed
+  path (he saw a body, wanted a name) and both refused/walked versions
+  (he heard about "someone new" secondhand).
 
 ## Recommendation
 
-Build Scenes 1–3 as described: forced-beat ask at Turtle Lake, on-camera
-scene at the new Ophelia's Apartment location gated behind agreement,
+Build Scenes 1–3 as described: forced-beat ask at Turtle Lake, explicit
+stunt-cock scene at the new Ophelia's Apartment location gated behind agreement,
 stalker escalation completing `pattern` either way. This is the smallest
 addition that (a) gives the player a real reason to end up in the stalker's
 crosshairs personally, (b) resolves the currently-unauthored `pattern`

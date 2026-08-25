@@ -169,10 +169,10 @@ Ophelia's already got her whole "casual" face on before you're within earshot â€
 }
 "Fine. It's a slightly bigger deal." The brat cracks half an inch. "Numbers are down. Badly. The kind of down where the maths on rent starts getting creative." She catches herself saying it out loud and visibly hates that she did. "I need something that reads as new. You, apparently, read as new." # speaker: npc:ophelia
 * [Ask what "helping" actually means. # insight: ledger]
-    "On camera. My camera, my script, my audience â€” you're the mystery guest, not the headline. Cop who won't say why he's there, off the record, all very noir." She shrugs like it's nothing. It is not nothing, and you both know it. # speaker: npc:ophelia
+    "On camera. My camera, my script, my audience. You're a presence, not the headline, and I am not walking you through the rest of it next to a fountain." She shrugs like it's nothing. It is not nothing, and you both know it. # speaker: npc:ophelia
     -> ophelia_stream_ask_decision
 * [Ask why she's asking you, specifically. # insight: root]
-    The brat drops for real this time. "Because I don't have a long list of people I'd trust to stand next to me on camera and not make it worse." She says it like it costs her something. "You're already the only cop who's treated this like it's actually happening to me. I'm not above using that." # speaker: npc:ophelia # portrait: guarded
+    The brat drops for real this time. "Because I don't have a long list of people I'd trust to be in the room for this and not make it worse." She says it like it costs her something. "You're already the only cop who's treated this like it's actually happening to me. I'm not above using that." # speaker: npc:ophelia # portrait: guarded
     -> ophelia_stream_ask_decision
 
 === ophelia_stream_ask_decision ===

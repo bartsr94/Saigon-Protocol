@@ -204,7 +204,7 @@ export const CASE_NOTES: Record<CaseNoteId, CaseNoteDefinition> = {
   'note-06': {
     id: 'note-06',
     heading: "Ophelia's Shadow, Confirmed",
-    body: "He reacted almost the moment the stream went up — not fan enthusiasm, something closer to a man cross-checking a file he already keeps. He wanted to know who else was around her now. That is not how a bad fan behaves. That is how someone tracks a rival.",
+    body: "He reacted almost the moment the stream went up — not fan enthusiasm, something closer to a man cross-checking a file he already keeps. He wanted a name for whoever else was in the frame, or in the room. That is not how a bad fan behaves. That is how someone tracks a rival.",
     caseId: 'ophelia-stalker',
     districtId: 'district3',
     tags: ['stalking', 'ophelia'],

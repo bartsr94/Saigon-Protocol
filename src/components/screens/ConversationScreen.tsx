@@ -16,10 +16,12 @@ import { useInsightStore } from '../../stores/insightStore'
 import { useStoryStore } from '../../stores/storyStore'
 import { useConversationStore } from '../../stores/conversationStore'
 import { useAudioStore } from '../../stores/audioStore'
+import { useCaseStore } from '../../stores/caseStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
+import { useNavigationStore } from '../../stores/navigationStore'
 import { useSaveStore } from '../../stores/saveStore'
 import { useUiStore } from '../../stores/uiStore'
-import { LOCATIONS } from '../../content/locations'
+import { LOCATIONS, type LocationId } from '../../content/locations'
 import { ARCHETYPES } from '../../content/archetypes'
 import { NPCS } from '../../content/npcs'
 import { INSIGHTS } from '../../content/insights'
@@ -70,8 +72,25 @@ export function ConversationScreen() {
   // returns to the hub — never calls choose()/advances the story itself,
   // so next visit resumes at exactly this point.
   function handleLeaveConversation() {
-    if (storyInstance && npcId) {
-      useConversationStore.getState().saveConversationState(npcId, storyInstance.state.ToJson(), currentLines)
+    if (storyInstance && npcId && activeStoryId) {
+      // activeStoryId only ever came from a real LocationId here — same
+      // convention DialogueScreen.handleReturnToHub relies on.
+      useConversationStore
+        .getState()
+        .saveConversationState(activeStoryId as LocationId, npcId, storyInstance.state.ToJson(), currentLines)
+    }
+    // Same unlocksOnFlag trigger point as DialogueScreen.finalizeEndedScene
+    // (src/content/locations.ts) — a topic-loop beat (e.g. Ophelia agreeing
+    // to the stream favor inside turtleLakePlaza.ink's ophelia_topics) can
+    // set a caseStore flag just as validly as a one-off scene can, so
+    // leaving the conversation has to check it too or the unlock never fires.
+    const selectedLocationId = useNavigationStore.getState().selectedLocationId
+    if (selectedLocationId) {
+      const hasFlag = useCaseStore.getState().hasFlag
+      const unlockLocation = useNavigationStore.getState().unlockLocation
+      for (const { flag, locationId } of LOCATIONS[selectedLocationId].unlocksOnFlag ?? []) {
+        if (hasFlag(flag)) unlockLocation(locationId)
+      }
     }
     resetStory()
     if (currentHubId && LOCATIONS[currentHubId]) {

@@ -1,6 +1,6 @@
 // Ophelia's Apartment (src/content/locations.ts, LocationId 'opheliaApartment')
 // — a small District 3 rental she starts actually living out of once
-// helping the detective with a stream makes staying findable worth the
+// agreeing to help with a stream makes staying findable worth the
 // risk. Locked on the Overworld until turtleLakePlaza.ink's
 // ophelia_stream_ask knot sets `ophelia-stream-agreed`
 // (docs/OPHELIA_LIVESTREAM_ARC_SPEC.md) — content/locations.ts's
@@ -22,16 +22,19 @@ VAR hustle = 0
 VAR affinity_ophelia = 0
 
 // Gates checked in order, same convention as turtleLakePlaza.ink's
-// ophelia_topics — the stream scene plays exactly once on first arrival,
-// the escalation beat plays exactly once on the visit after that, and only
-// once both are behind you does this settle into an ordinary repeat-topics
-// loop.
+// ophelia_topics — the stream scene plays exactly once on first arrival
+// unless they walk, the escalation beat plays exactly once on the visit
+// after that (lived-through or secondhand), and only once both are behind
+// you does this settle into an ordinary repeat-topics loop.
 === ophelia_apartment_topics ===
-{ not has_case_flag("ophelia-stream-scene-done"):
+{ not has_case_flag("ophelia-stream-scene-done") and not has_case_flag("ophelia-stream-refused"):
     -> ophelia_stream_scene
 }
 { has_case_flag("ophelia-stream-scene-done") and not is_objective_complete("ophelia-stalker", "pattern"):
     -> ophelia_pattern_livestream
+}
+{ has_case_flag("ophelia-stream-refused") and not is_objective_complete("ophelia-stalker", "pattern"):
+    -> ophelia_pattern_walked
 }
 { is_objective_complete("ophelia-stalker", "pattern") and not is_objective_complete("ophelia-stalker", "choice"):
     -> ophelia_choice_scene
@@ -78,27 +81,43 @@ VAR affinity_ophelia = 0
     -> END
 
 // Scene 2 (docs/OPHELIA_LIVESTREAM_ARC_SPEC.md) — plays exactly once, the
-// first time the detective walks in after agreeing to help.
+// first time the detective walks in after agreeing to help. The plaza ask
+// was the polite version; this is the actual job. Walking here sets
+// `ophelia-stream-refused` so Pattern still completes secondhand next visit.
 === ophelia_stream_scene ===
-Her apartment is smaller than the persona and lit better than it has any right to be — a ring light, a rented-looking velvet backdrop doing its best to cover for the water stain behind it, a laptop propped on what might be the only sturdy furniture in the room. Ophelia's already in character: the online Ophelia, not the Turtle Lake one, mouth set in something more curated than her usual sharpness. # speaker: npc:ophelia # portrait: performing
-"Stand there, don't look at the camera unless I tell you to, and for the love of God don't say your rank on mic." She's already counting down on her fingers. "We're live in ten." # speaker: npc:ophelia # portrait: performing
+Her apartment is smaller than the persona and lit better than it has any right to be — a ring light, a rented-looking velvet backdrop doing its best to cover for the water stain behind it, a laptop propped on what might be the only sturdy furniture in the room. Ophelia is in the dress the camera likes, not the one the plaza got. She does not sit you down. # speaker: npc:ophelia # background: opheliaApartment
+"Before you take another step. The fountain version was the polite version, and we're past polite." She tips her chin at the laptop. "I need a stunt cock. You stand where I put you. Face off-frame — I like your face, my audience doesn't get it. You don't perform. You don't talk. You don't look at the lens. I do the rest, on camera, with the part of you that reads as new." A beat, bratty on purpose. "You don't have to do anything. That's rather the point of a prop." # speaker: npc:ophelia
 { mask >= 3:
-    Mask clocks the tell under the performance — she's rationing nerves the same way she rationed panic at the fountain, just dressed better this time. # speaker: insight:mask
+    Mask isn't surprised. "Look mysterious" was never the brief. It was the version of the brief you can say next to a fountain. # speaker: insight:mask
+- else:
+    The plaza version and this version are not the same job. She waited until the door was locked to say so.
 }
-* [Sell the bit. # check: red]
-    ~ temp sellResult = roll_check("mask", 7, "ophelia-stream-sell-it", "red")
-    { sellResult:
-        You lean into it — clipped, unplaceable, exactly the kind of "off the record" a paid audience eats alive. Ophelia doesn't miss a beat, feeding you lines like she's done this with you a hundred times, and for a few minutes it's genuinely, uncomfortably fun. The numbers on her screen actually climb while you watch. # speaker: npc:ophelia # portrait: performing
+* [Stand where she puts you. # check: red]
+    She points you in — half a step off the backdrop, hips in the light, head out of it. The camera is already framed for a mouth and a cock and nothing a sergeant could identify in a still. "Live in ten. If you ruin my take I will never forgive you, and I am very good at not forgiving people." # speaker: npc:ophelia # portrait: performing
+    The performance snaps on like a switch: warmer, filthier, aimed at the lens. "Hi. No, you're not getting a name. You don't pay enough for a name. You get this." # speaker: npc:ophelia # portrait: performing
+    Her hand first — unfussy, checking the job is actually possible. Then she goes to the height the frame wants and takes you into her mouth with the competence of someone whose rent depends on looking like she's enjoying a choice. Heat, spit, the wet sound the laptop mic will sell as intimacy. She keeps a running line going around you — a hum, a pause, a look up at the chat and not at you — like you're a microphone she's using to talk to someone else. # speaker: npc:ophelia # portrait: performing
+    ~ temp holdResult = roll_check("mask", 7, "ophelia-stream-hold-still", "red")
+    { holdResult:
+        You hold. Breath, hands, eyes — none of it enters her shot. She takes you deeper when the numbers twitch, backs off when she wants a sentence, uses her hand on what her mouth isn't doing, and when she decides the bit needs an ending she finishes you into her mouth on camera like that's just another line she wrote. She swallows because the chat pays more if she does. The performance doesn't flicker. After, she sits back, wipes her mouth with her thumb, and only then looks at you, still in character for one more second. "See? You did nothing. I told you you were qualified." # speaker: npc:ophelia # portrait: performing
         ~ adjust_affinity("ophelia", 2)
     - else:
-        You are, it turns out, a terrible actor. Stiff, over-formal, visibly a man who has never once considered being charming for money. Ophelia covers for you smoothly enough that most of the audience reads it as bit — "he's new," she says, deadpan, "we're workshopping him" — and somehow that lands too. # speaker: npc:ophelia # portrait: performing
+        You look at the lens. Or you make a sound. Or your hand finds her hair like this is a scene you're in instead of a prop she's using. She doesn't stop. She turns her shoulder into the frame so your face dies in shadow and laughs around you, messy, selling it: "he's new. we're workshopping him." It costs her a stroke of the bit and she takes it out of you anyway — same ending, same swallow, slightly worse angle, numbers still climbing because unpolished reads as real to the kind of men who pay her. When she sits back her eyes are sharp. "I said don't look at the camera. That was the whole job." # speaker: npc:ophelia # portrait: performing
         ~ adjust_affinity("ophelia", 1)
     }
     ~ set_case_flag("ophelia-stream-scene-done")
     -> ophelia_stream_scene_wrap
+* [I'm not doing this. # insight: root]
+    "Forget it. Obviously it was a stupid thing to ask a cop." She's already turning toward the laptop, voice gone brisk and final, the sadness under it flickering for exactly one second before she buries it. "I'll do it without you. I always do." # speaker: npc:ophelia # portrait: guarded
+    ~ set_case_flag("ophelia-stream-refused")
+    -> END
+* [You sandbagged me. # insight: mask]
+    "The fountain version. I clocked it." She actually laughs, short and surprised, like she didn't expect you to say it out loud in the room where the lie ran out. "Fine. Guilty. Doesn't make the numbers less real, it just means you're annoyingly hard to work." She waves you at the door, more amused than stung. "No hard feelings, Detective. Mostly. Lock it." # speaker: npc:ophelia
+    ~ set_case_flag("ophelia-stream-refused")
+    ~ adjust_affinity("ophelia", 1)
+    -> END
 
 === ophelia_stream_scene_wrap ===
-She cuts the feed a few minutes later, and the performance drops off her like a coat coming off. "Don't make this weird," she says, though she's smiling despite herself. "It's a favor. It is not a moment." She's already checking the numbers again, and doesn't quite manage to hide that she's pleased with them. # speaker: npc:ophelia
+She cuts the feed, and the performance drops off her like a coat coming off. "Don't make this weird," she says, though she's smiling despite herself. "It's a favor. It is not a moment." She's already checking the numbers again, and doesn't quite manage to hide that she's pleased with them. # speaker: npc:ophelia
 -> END
 
 // Scene 3, agreed variant (docs/OPHELIA_LIVESTREAM_ARC_SPEC.md) — the visit
@@ -107,7 +126,19 @@ She cuts the feed a few minutes later, and the performance drops off her like a 
 // the player left and came back.
 === ophelia_pattern_livestream ===
 Ophelia's phone is already face-down on the counter when you walk in, which is its own answer. # background: opheliaApartment
-"He watched. Of course he watched." She doesn't bother with the brat voice this time. "And he didn't just watch — he wanted to know who you were. Specifically. By name, by rank, by whether I'd 'moved on' to a badge instead of him." She sets the phone down harder than it needs. "That's not a fan reacting to content, Detective. That's someone keeping a file." # speaker: npc:ophelia # portrait: guarded
+"He watched. Of course he watched." She doesn't bother with the brat voice this time. "Not the face — you kept that off-frame, I made sure — the rest of you. He wanted a name for that. Whether I'd 'replaced' him with a body he doesn't get to have." She sets the phone down harder than it needs. "That's not a fan reacting to content, Detective. That's someone keeping a file." # speaker: npc:ophelia # portrait: guarded
+~ complete_case_objective("ophelia-stalker", "pattern")
+~ unlock_note("note-06")
+-> ophelia_apartment_topics
+
+// Walked-at-the-door Pattern completion — she did the stream without you
+// after you saw the real ask and left. Same objective, colder texture,
+// apartment stays unlocked because the address is already spent.
+=== ophelia_pattern_walked ===
+Ophelia's doing a passable impression of fine, right up until she isn't. The ring light is off. The laptop isn't. "He sent something after the stream I did without you. Same as he always does when I go live. Coordinated. Real." Her voice stays level in a way that costs her visible effort. "Congratulations, you can stop pretending you weren't already sure. You can also stop looking at me like I owe you a softer version of the question I actually asked." # speaker: npc:ophelia # portrait: guarded
+{ mask >= 3:
+    The Mask reads underneath the bitterness easily enough — she's not actually angry at you for saying no in the room. She's furious that saying no didn't even buy her anything. # speaker: insight:mask
+}
 ~ complete_case_objective("ophelia-stalker", "pattern")
 ~ unlock_note("note-06")
 -> ophelia_apartment_topics
