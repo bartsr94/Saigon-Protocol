@@ -10,11 +10,16 @@ import type { SerializedCaseState } from './caseEngine'
 import type { SerializedConversationState } from './conversationEngine'
 import type { SerializedThoughtState } from './thoughtEngine'
 import type { SerializedRelationshipState } from './relationshipEngine'
+import type { SerializedCorruptionState } from './corruptionEngine'
 import type { StoryLine } from './storyEngine'
 import type { InsightId } from '../content/insights'
 import type { NpcId } from '../content/npcs'
 import { LOCATIONS, type DistrictId, type LocationId } from '../content/locations'
 
+// Bumped to 12 when the Corrupt Detective thought branch
+// (docs/CORRUPT_DETECTIVE_THOUGHTS_SPEC.md) added a top-level `corruption`
+// field (the marked-corrupt-action tally backing the "Everyone's Got a
+// Price" thought's multi-action unlock).
 // Bumped to 11 when `inkStateLines` was added alongside `inkStateJson` — a
 // mid-scene/mid-conversation save now also captures the `currentLines`
 // batch that was showing at save time, since restoring purely from ink's
@@ -24,7 +29,7 @@ import { LOCATIONS, type DistrictId, type LocationId } from '../content/location
 // added a top-level `relationship` field (per-NPC affinity score).
 // There is still no migration path; older saves are treated as absent
 // rather than partially restored.
-export const SAVE_FORMAT_VERSION = 11
+export const SAVE_FORMAT_VERSION = 12
 export const AUTOSAVE_SLOT_ID = 'autosave'
 export const SAVE_KEY_PREFIX = 'saigon-protocol:save:'
 
@@ -79,6 +84,8 @@ export interface SaveBlob {
   thought: SerializedThoughtState
   /** Relationship System's per-NPC affinity scores (SAIGON_PROTOCOL_ARCHITECTURE.md §14). */
   relationship: SerializedRelationshipState
+  /** Corrupt Detective thought branch's marked-corrupt-action tally (docs/CORRUPT_DETECTIVE_THOUGHTS_SPEC.md). */
+  corruption: SerializedCorruptionState
   /** Conversation View's met-NPC/per-NPC topic-state tracking (UI_PASS_SPEC.md §4.3). */
   conversation: SerializedConversationState
   /** null when saved with no active scene (e.g. standing on the Overworld). */

@@ -1,6 +1,7 @@
 // Mei Hong — Aveline District 4 Laboratory operations lead. INCLUDEd from
 // content/ink/district4/checkpoint.ink, which owns the shared EXTERNAL declarations
-// and the hustle/static/graft/ledger insight VARs this file reads.
+// and the hustle/static/graft/ledger insight VARs this file reads, plus
+// corruption_count (docs/CORRUPT_DETECTIVE_THOUGHTS_SPEC.md).
 
 // Mei Hong's repeat-visit topic loop (UI_PASS_SPEC.md §4) — a separate
 // entry point from checkpoint.ink's top-of-file flow, only ever reached via
@@ -38,6 +39,11 @@ Mei Hong gives you her attention again — patient, watchful, still deciding how
     { leverageResult:
         You lay it out: a patrol log that doesn't match its own route, and a colleague's private notes on an anomaly somebody called "handled." Mei Hong's composure doesn't crack so much as fold, quietly, like she's been waiting for someone to make her stop pretending. "Fine." She doesn't look relieved. "I'll get you past the inner door. But whatever's back there — you didn't hear it from me." # speaker: npc:meiHong
         ~ set_case_flag("checkpoint-inner-wing-unlocked")
+        ~ mark_corrupt_action("checkpoint-mei-hong-leverage")
+        ~ unlock_thought("leaned-on")
+        { corruption_count >= 2:
+            ~ unlock_thought("everyones-got-a-price")
+        }
     - else:
         She hears you out, arms crossed, and doesn't budge. "A log and somebody's notebook." Her voice is flat, final. "That's not leverage. That's a rumor with a timestamp." # speaker: npc:meiHong
     }

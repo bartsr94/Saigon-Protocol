@@ -28,6 +28,7 @@ import { SAVE_FORMAT_VERSION } from '../engine/saveEngine'
 import { serializeCaseState } from '../engine/caseEngine'
 import { serializeConversationState } from '../engine/conversationEngine'
 import { serializeThoughtState } from '../engine/thoughtEngine'
+import { serializeCorruptionState } from '../engine/corruptionEngine'
 import { useCaseStore } from './caseStore'
 import { useConversationStore } from './conversationStore'
 import { useGameplayStore } from './gameplayStore'
@@ -36,6 +37,7 @@ import { useNavigationStore } from './navigationStore'
 import { useStoryStore } from './storyStore'
 import { useThoughtStore } from './thoughtStore'
 import { useRelationshipStore } from './relationshipStore'
+import { useCorruptionStore } from './corruptionStore'
 
 interface SaveState {
   slots: SaveSlotMeta[]
@@ -84,6 +86,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
   const cases = useCaseStore.getState()
   const thought = useThoughtStore.getState()
   const relationship = useRelationshipStore.getState()
+  const corruption = useCorruptionStore.getState()
   const conversation = useConversationStore.getState()
   const gameplay = useGameplayStore.getState()
   const storyState = useStoryStore.getState()
@@ -126,6 +129,7 @@ function captureBlob(kind: SaveSlotKind, name: string): SaveBlob | null {
     cases: serializeCaseState(cases),
     thought: serializeThoughtState(thought),
     relationship: { ...relationship.affinity },
+    corruption: serializeCorruptionState(corruption),
     conversation: serializeConversationState(conversation),
     inkStateJson: story ? story.state.ToJson() : null,
     inkStateLines: story ? storyState.currentLines : null,
@@ -183,6 +187,7 @@ export const useSaveStore = create<SaveState>((set, get) => ({
     useCaseStore.getState().hydrate(blob.cases)
     useThoughtStore.getState().hydrate(blob.thought)
     useRelationshipStore.getState().hydrate(blob.relationship)
+    useCorruptionStore.getState().hydrate(blob.corruption)
     useConversationStore.getState().hydrate(blob.conversation)
     const storyJson = blob.activeStoryId ? resolveStoryJson(blob.activeStoryId) : null
     if (blob.inkStateJson && storyJson) {

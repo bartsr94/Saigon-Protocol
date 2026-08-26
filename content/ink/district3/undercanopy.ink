@@ -7,6 +7,11 @@
 // courier cubbies below, and Cò (talk).
 
 EXTERNAL adjust_affinity(npcId, amount)
+EXTERNAL unlock_thought(id)
+EXTERNAL has_thought(id)
+EXTERNAL mark_corrupt_action(actionId)
+EXTERNAL has_case_flag(flag)
+EXTERNAL set_case_flag(flag)
 
 VAR ledger = 0
 VAR hustle = 0
@@ -15,6 +20,7 @@ VAR mask = 0
 VAR root = 0
 VAR archetype = ""
 VAR affinity_co_fixer = 0
+VAR corruption_count = 0
 
 === undercanopy_courier_cubbies ===
 A wall of numbered lockboxes runs the length of the back hall, no two the same make, none of them labeled with anything a stranger could read. People come in, check a number against something on their sleeve, open one, take something out or put something in, and leave without a word to anyone at the bar. One runner palms off a strip of stim tabs before he hits the stairs. Another carries an insulated case against his chest like it matters more than he does. # background: undercanopy
@@ -74,6 +80,20 @@ The bar's real business happens at a corner booth, not behind the counter — a 
     -> co_fixer_topics
 * { archetype == "hustler" } [Ends up like him?] "How long before someone like me ends up running a booth like this?"
     Something in his face shifts, just slightly — recognition, not warmth. "You already know the answer, or you wouldn't have asked it that way." He lets that sit for a beat. "Long enough to hate it. Not long enough to find a cleaner trade." He doesn't say anything else on the subject, and you don't push it. # speaker: npc:coFixer
+    ~ adjust_affinity("coFixer", 2)
+    -> co_fixer_topics
+* { has_thought("envelope-test") } [Off the books # insight: hustle] "What does 'off the books' actually pay?"
+    Cò's mouth almost moves into something like respect. "Depends what you're offering to not notice. Sit with that question a while longer before you ask me for a number — I don't sell to cops who are still deciding." # speaker: npc:coFixer
+    ~ adjust_affinity("coFixer", 1)
+    -> co_fixer_topics
+* { not has_case_flag("undercanopy-corrupt-arrangement") } [Cut you in # insight: ledger] "What would it cost me to just not see any of this?"
+    Cò studies you for a beat longer than the question deserves. "Now that's an interesting question from a badge." He names a number — not for anything specific, just a standing arrangement: whatever you clocked on your way in, you didn't. "Half now. Half whenever you're back through." He doesn't write anything down. Neither does anyone who works this booth. # speaker: npc:coFixer
+    ~ set_case_flag("undercanopy-corrupt-arrangement")
+    ~ mark_corrupt_action("undercanopy-quiet-cut")
+    ~ unlock_thought("look-the-other-way")
+    { corruption_count >= 2:
+        ~ unlock_thought("everyones-got-a-price")
+    }
     ~ adjust_affinity("coFixer", 2)
     -> co_fixer_topics
 + [Leave the booth.]

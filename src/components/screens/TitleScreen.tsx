@@ -17,6 +17,7 @@ import { useInsightStore } from '../../stores/insightStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useThoughtStore } from '../../stores/thoughtStore'
 import { useRelationshipStore } from '../../stores/relationshipStore'
+import { useCorruptionStore } from '../../stores/corruptionStore'
 import { LOCATIONS } from '../../content/locations'
 
 export function TitleScreen() {
@@ -42,6 +43,7 @@ export function TitleScreen() {
     useConversationStore.getState().reset()
     useThoughtStore.getState().reset()
     useRelationshipStore.getState().reset()
+    useCorruptionStore.getState().reset()
     goToChargen()
   }
 

@@ -13,7 +13,7 @@ interface ThoughtState {
 
   isUnlocked: (id: ThoughtId) => boolean
   isEnabled: (id: ThoughtId) => boolean
-  /** Sum of insightBonus.amount across every enabled thought targeting this Insight (insightStore.rollCheck). */
+  /** Sum of insightBonuses[].amount across every enabled thought targeting this Insight (insightStore.rollCheck). */
   insightBonusFor: (insightId: InsightId) => number
 
   hydrate: (state: SerializedThoughtState) => void
@@ -54,7 +54,9 @@ export const useThoughtStore = create<ThoughtState>((set, get) => ({
     let bonus = 0
     for (const id of get().enabledThoughtIds) {
       const def = THOUGHTS[id]
-      if (def.insightBonus?.insightId === insightId) bonus += def.insightBonus.amount
+      for (const b of def.insightBonuses ?? []) {
+        if (b.insightId === insightId) bonus += b.amount
+      }
     }
     return bonus
   },

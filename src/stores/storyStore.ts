@@ -9,9 +9,11 @@ import type { Choice } from 'inkjs/engine/Choice'
 import {
   bindCaseFunctions,
   bindCheckFunctions,
+  bindCorruptionFunctions,
   bindRelationshipFunctions,
   bindThoughtFunctions,
   bindWellbeingFunctions,
+  syncCorruptionVariables,
   syncInsightVariables,
   syncRelationshipVariables,
   type StoryLine,
@@ -30,6 +32,7 @@ import { useInsightStore } from './insightStore'
 import { useCaseStore } from './caseStore'
 import { useThoughtStore } from './thoughtStore'
 import { useRelationshipStore } from './relationshipStore'
+import { useCorruptionStore } from './corruptionStore'
 
 export type { StoryLine } from '../engine/storyEngine'
 
@@ -113,6 +116,7 @@ interface StoryState {
 /** Not part of the reactive store state — there's only ever one active story, mirroring insightStore's singleton shape. */
 let unsubscribeInsight: (() => void) | null = null
 let unsubscribeRelationship: (() => void) | null = null
+let unsubscribeCorruption: (() => void) | null = null
 
 function advance(story: Story, set: (partial: Partial<StoryState>) => void): void {
   // Cleared before the pass so a turn with no check doesn't keep showing a
@@ -197,6 +201,7 @@ export const useStoryStore = create<StoryState>((set, get) => ({
   loadStory: (inkJson, savedStateJson, storyId, options) => {
     unsubscribeInsight?.()
     unsubscribeRelationship?.()
+    unsubscribeCorruption?.()
 
     // Overload resolution doesn't distribute over a union argument, so narrow explicitly.
     const story = typeof inkJson === 'string' ? new Story(inkJson) : new Story(inkJson)
@@ -234,6 +239,9 @@ export const useStoryStore = create<StoryState>((set, get) => ({
     bindRelationshipFunctions(story, {
       adjustAffinity: (npcId, amount) => useRelationshipStore.getState().adjustAffinity(npcId, amount),
     })
+    bindCorruptionFunctions(story, {
+      markCorruptAction: (actionId) => useCorruptionStore.getState().markCorruptAction(actionId),
+    })
 
     const insightState = useInsightStore.getState()
     syncInsightVariables(story, insightState.levels, insightState.archetype)
@@ -244,6 +252,11 @@ export const useStoryStore = create<StoryState>((set, get) => ({
     syncRelationshipVariables(story, useRelationshipStore.getState().affinity)
     unsubscribeRelationship = useRelationshipStore.subscribe((state) => {
       syncRelationshipVariables(story, state.affinity)
+    })
+
+    syncCorruptionVariables(story, useCorruptionStore.getState().corruptionCount())
+    unsubscribeCorruption = useCorruptionStore.subscribe((state) => {
+      syncCorruptionVariables(story, state.markedActionIds.size)
     })
 
     set({
@@ -276,6 +289,8 @@ export const useStoryStore = create<StoryState>((set, get) => ({
     unsubscribeInsight = null
     unsubscribeRelationship?.()
     unsubscribeRelationship = null
+    unsubscribeCorruption?.()
+    unsubscribeCorruption = null
     set({
       story: null,
       activeStoryId: null,

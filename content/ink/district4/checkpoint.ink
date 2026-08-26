@@ -19,11 +19,13 @@ EXTERNAL has_evidence(id)
 EXTERNAL has_note(id)
 EXTERNAL has_case_flag(flag)
 EXTERNAL set_case_flag(flag)
+EXTERNAL mark_corrupt_action(actionId)
 
 VAR hustle = 0
 VAR static = 0
 VAR graft = 0
 VAR ledger = 0
+VAR corruption_count = 0
 
 The checkpoint queue barely moves. A bored guard waves cars through two at a time, more interested in his handheld than your badge.
 { hustle >= 3:
@@ -66,6 +68,14 @@ Above the queue, a recruitment screen loops Terra Nova's pitch on a three-second
             ~ unlock_thought("checkpoint-improviser")
         - else:
             He doesn't even look up. "Back of the line."
+        }
+        -> done
+    * [Slip him a little extra to skip the questions.]
+        He doesn't even blink — folds the chit into his glove like it was always coming. The barrier lifts before you've finished saying "thanks."
+        ~ mark_corrupt_action("checkpoint-envelope")
+        ~ unlock_thought("envelope-test")
+        { corruption_count >= 2:
+            ~ unlock_thought("everyones-got-a-price")
         }
         -> done
     * [Just wait it out.]

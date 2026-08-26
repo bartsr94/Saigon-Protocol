@@ -57,6 +57,9 @@ function makeBlob(overrides: Partial<SaveBlob> = {}): SaveBlob {
       coFixer: 0,
       ophelia: 0,
     },
+    corruption: {
+      markedActionIds: ['checkpoint-envelope'],
+    },
     conversation: {
       metNpcIds: ['meiHong'],
       stateByNpc: { meiHong: { ink: '{"someConversationState":true}', lines: [] } },

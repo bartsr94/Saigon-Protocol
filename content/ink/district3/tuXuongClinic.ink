@@ -7,6 +7,7 @@
 // below, and Yến Lộc (talk).
 
 EXTERNAL adjust_affinity(npcId, amount)
+EXTERNAL has_thought(id)
 
 VAR ledger = 0
 VAR graft = 0
@@ -74,6 +75,10 @@ A beat later the iron lifts, the loupe flips up, and she actually looks at you �
 * [The parts # insight: static] "Where do the parts actually come from?"
     "Same place everything in this district that isn't nailed down comes from eventually — a broker who doesn't put his name on the invoice, because there isn't one." She doesn't elaborate further, and doesn't need to. # speaker: npc:yenLoc
     ~ adjust_affinity("yenLoc", 1)
+    -> yen_loc_topics
+* { has_thought("leaned-on") } [Lean on her] "You're going to want to tell me who's actually supplying this place."
+    Yến doesn't flinch, but something in her shifts — not fear exactly, recalibration, like she's re-filing you under a different heading. "You already decided what kind of cop you are before you walked in here." She gives you a name — not the real one, just the one that'll get you somewhere without pointing back at her table. "That's what it costs to make you leave." # speaker: npc:yenLoc
+    ~ adjust_affinity("yenLoc", -2)
     -> yen_loc_topics
 + [Let her get back to the arm on her table.]
     She's already dropped the loupe back over her eye, iron steady, like the conversation ended before you finished leaving. # speaker: npc:yenLoc
