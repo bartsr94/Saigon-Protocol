@@ -46,10 +46,10 @@ VAR affinity_ophelia = 0
         Ophelia doesn't look up from whatever she's scheduling. The warmth is still there, technically, filed somewhere she can access it on purpose instead of by accident. "Detective. I've got a booking in twenty. Say what you need to say." # speaker: npc:ophelia # portrait: guarded
     - else:
         { has_case_flag("ophelia-ending-public"):
-            Ophelia's reading her own comments with the specific weariness of someone who won that fight and is still counting the cost of it. "Half my subscribers think I'm braver than I am. The other half think I'm insufferable now. Somehow both audiences are still paying, so." # speaker: npc:ophelia
+            Ophelia's reading her own comments with the specific weariness of someone who won that fight and is still counting the cost of it. "Half my subscribers think I'm braver than I am. The other half think I'm insufferable now. Somehow both audiences are still paying, so." # speaker: npc:ophelia # portrait: tired
         - else:
             { has_case_flag("ophelia-ending-drawnout"):
-                Ophelia looks up at the door out of habit more than fear now — the flinch is fading, slower than she'd like to admit. "Detective. You're allowed to just visit occasionally, you know. It doesn't all have to be a debrief." # speaker: npc:ophelia
+                Ophelia looks up at the door out of habit more than fear now — the flinch is fading, slower than she'd like to admit. "Detective. You're allowed to just visit occasionally, you know. It doesn't all have to be a debrief." # speaker: npc:ophelia # portrait: tired
             - else:
                 { affinity_ophelia >= 3:
                     Ophelia doesn't bother with the performance the second you're through the door — this room only has one audience worth managing, and it isn't you. "You're early. Or I'm behind. Pick whichever makes me sound less disorganized." # speaker: npc:ophelia
@@ -69,11 +69,11 @@ VAR affinity_ophelia = 0
     ~ adjust_affinity("ophelia", 1)
     -> ophelia_apartment_topics
 * [Scared? # insight: static] "Does it worry you, him knowing you've got someone new around?"
-    The brat drops out entirely, just for a second. "Every day. I don't say that out loud very often, so don't make a thing of it." She busies her hands with the ring light's stand, more for something to do than because it needs adjusting. "You're the first thing in a while that isn't purely a liability, and that terrifies me more than I want it to." # speaker: npc:ophelia # portrait: guarded
+    The brat drops out entirely, just for a second. "Every day. I don't say that out loud very often, so don't make a thing of it." She busies her hands with the ring light's stand, more for something to do than because it needs adjusting. "You're the first thing in a while that isn't purely a liability, and that terrifies me more than I want it to." # speaker: npc:ophelia # portrait: unmasked
     ~ adjust_affinity("ophelia", 1)
     -> ophelia_apartment_topics
 * { affinity_ophelia >= 5 } [Why you trust me # insight: mask] "You didn't have to let me in here. Why did you?"
-    She's quiet a beat longer than the question should need. "Because everyone else who's ever been in this room paid to be here, one way or another. You didn't." A short, uncomfortable laugh. "I don't have a lot of practice with the other kind." # speaker: npc:ophelia # portrait: guarded
+    She's quiet a beat longer than the question should need. "Because everyone else who's ever been in this room paid to be here, one way or another. You didn't." A short, uncomfortable laugh. "I don't have a lot of practice with the other kind." # speaker: npc:ophelia # portrait: unmasked
     ~ adjust_affinity("ophelia", 2)
     -> ophelia_apartment_topics
 + [Head out.]

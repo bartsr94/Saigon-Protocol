@@ -342,10 +342,9 @@ under any of the four.
 
 ## Asset needs
 
-- portrait art for Ophelia, using the attached visual reference as the
-  baseline direction
-- at minimum a `neutral` portrait, with strong later candidates for
-  `guarded`, `performing`, `tired`, and `unmasked`
+- portrait art for Ophelia — done: `neutral`, `guarded`, `performing`,
+  `tired`, and `unmasked` variants are all live (`content/npcs.ts`), tagged
+  into `opheliaApartment.ink`/`turtleLakePlaza.ink` via `# portrait:`
 - likely District 3 background support:
   - Turtle Lake at night
   - Pasteur Street interior / back stair
