@@ -111,6 +111,10 @@ export const NPCS: Record<NpcId, NpcDefinition> = {
     name: 'Ophelia',
     portraits: {
       neutral: '/portraits/npcs/ophelia.png',
+      guarded: '/portraits/npcs/ophelia-guarded.png',
+      performing: '/portraits/npcs/ophelia-performing.png',
+      tired: '/portraits/npcs/ophelia-tired.png',
+      unmasked: '/portraits/npcs/ophelia-unmasked.png',
     },
   },
 }
