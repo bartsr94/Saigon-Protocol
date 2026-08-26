@@ -222,6 +222,29 @@ export function bindThoughtFunctions(story: Story, handlers: ThoughtHandlers): v
   story.BindExternalFunction('has_thought', (id: string) => handlers.isThoughtEnabled(assertThoughtId(id)))
 }
 
+/** Corrupt Detective thought branch (docs/CORRUPT_DETECTIVE_THOUGHTS_SPEC.md) — a general corrupt-action tally, dedup'd by action id store-side, backing any "did this enough times" thought unlock. */
+export interface CorruptionHandlers {
+  markCorruptAction: (actionId: string) => void
+}
+
+function assertActionId(value: unknown): string {
+  if (typeof value === 'string' && value.length > 0) return value
+  throw new Error(`mark_corrupt_action called with an invalid action id "${String(value)}"`)
+}
+
+/** Binds `mark_corrupt_action(actionId)` — ink declares a free-form marked action (same shape as `set_case_flag`); dedup happens store-side via Set membership. */
+export function bindCorruptionFunctions(story: Story, handlers: CorruptionHandlers): void {
+  story.BindExternalFunction('mark_corrupt_action', (actionId: string) => handlers.markCorruptAction(assertActionId(actionId)))
+}
+
+/** Pushes the live corruption tally into its synced ink global (`corruption_count`), same skip-if-undeclared behavior as syncInsightVariables below. */
+export function syncCorruptionVariables(story: Story, corruptionCount: number): void {
+  const vs = story.variablesState
+  if (vs.GlobalVariableExistsWithName('corruption_count')) {
+    vs.$('corruption_count', corruptionCount)
+  }
+}
+
 /** Relationship System (SAIGON_PROTOCOL_ARCHITECTURE.md §14) — per-NPC affinity EXTERNAL. */
 export interface RelationshipHandlers {
   adjustAffinity: (npcId: NpcId, amount: number) => void

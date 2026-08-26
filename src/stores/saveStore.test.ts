@@ -7,6 +7,7 @@ import { useCaseStore } from './caseStore'
 import { useGameplayStore } from './gameplayStore'
 import { useThoughtStore } from './thoughtStore'
 import { useRelationshipStore } from './relationshipStore'
+import { useCorruptionStore } from './corruptionStore'
 import { AUTOSAVE_SLOT_ID } from '../engine/saveEngine'
 import noodleStallJson from '../../content/ink/district5/noodleStall.json'
 import introStoryJson from '../../content/ink/intro.json'
@@ -43,6 +44,7 @@ describe('saveStore', () => {
     useGameplayStore.setState(useGameplayStore.getInitialState(), true)
     useThoughtStore.setState(useThoughtStore.getInitialState(), true)
     useRelationshipStore.setState(useRelationshipStore.getInitialState(), true)
+    useCorruptionStore.setState(useCorruptionStore.getInitialState(), true)
     useSaveStore.setState(useSaveStore.getInitialState(), true)
   })
 
@@ -93,6 +95,7 @@ describe('saveStore', () => {
     useThoughtStore.getState().unlockThought('checkpoint-improviser')
     useThoughtStore.getState().enableThought('checkpoint-improviser')
     useRelationshipStore.getState().adjustAffinity('lakshmiAvani', 3)
+    useCorruptionStore.getState().markCorruptAction('checkpoint-envelope')
     useSaveStore.getState().saveToSlot('Snapshot')
     const slotId = useSaveStore.getState().slots[0].id
 
@@ -106,6 +109,7 @@ describe('saveStore', () => {
     useThoughtStore.getState().enableThought('company-man-doubt')
     useThoughtStore.getState().disableThought('checkpoint-improviser')
     useRelationshipStore.getState().adjustAffinity('lakshmiAvani', -5)
+    useCorruptionStore.getState().markCorruptAction('undercanopy-quiet-cut')
 
     expect(useSaveStore.getState().loadSlot(slotId)).toBe(true)
     expect(useInsightStore.getState().playerName).toBe('Kade')
@@ -120,6 +124,7 @@ describe('saveStore', () => {
     expect(useThoughtStore.getState().isEnabled('checkpoint-improviser')).toBe(true)
     expect(useThoughtStore.getState().isUnlocked('company-man-doubt')).toBe(false)
     expect(useRelationshipStore.getState().affinity.lakshmiAvani).toBe(3)
+    expect(useCorruptionStore.getState().corruptionCount()).toBe(1)
 
     expect(useSaveStore.getState().loadSlot('does-not-exist')).toBe(false)
   })

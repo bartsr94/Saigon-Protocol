@@ -79,19 +79,24 @@ export function ThoughtCabinetOverlay() {
 
 function ThoughtRow({ id, description, action }: { id: ThoughtId; description: string; action: ReactNode }) {
   const def = THOUGHTS[id]
-  const bonus = def.insightBonus
+  const bonuses = def.insightBonuses ?? []
   return (
     <div className="flex items-start justify-between gap-4 border-l-2 border-chrome-primary pl-3">
       <div>
         <h4 className="font-display text-sm font-bold uppercase tracking-wide text-chrome-primary">{def.name}</h4>
         <p className="mt-1 font-body text-sm text-white/70">{description}</p>
-        {bonus && (
-          <span
-            className="mt-2 inline-block border px-1.5 py-0.5 font-display text-[0.65rem] uppercase tracking-widest"
-            style={{ color: INSIGHTS[bonus.insightId].color, borderColor: INSIGHTS[bonus.insightId].color }}
-          >
-            +{bonus.amount} {INSIGHTS[bonus.insightId].name}
-          </span>
+        {bonuses.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {bonuses.map((bonus) => (
+              <span
+                key={bonus.insightId}
+                className="inline-block border px-1.5 py-0.5 font-display text-[0.65rem] uppercase tracking-widest"
+                style={{ color: INSIGHTS[bonus.insightId].color, borderColor: INSIGHTS[bonus.insightId].color }}
+              >
+                {bonus.amount > 0 ? `+${bonus.amount}` : bonus.amount} {INSIGHTS[bonus.insightId].name}
+              </span>
+            ))}
+          </div>
         )}
       </div>
       <div className="shrink-0">{action}</div>

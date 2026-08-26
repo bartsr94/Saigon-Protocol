@@ -1092,3 +1092,40 @@ authored against it.
   same shape compiles fine with only var comparisons; nesting
   (`{ condA: ... - else: { condB: ... - else: ... } }`) is the workaround —
   see `docs/GAME_GUIDE.md` §5.4's new gotcha callout.
+- **Corrupt Detective thought branch + a general corruption tally (2026,
+  `docs/CORRUPT_DETECTIVE_THOUGHTS_SPEC.md`):** four new Thought Cabinet
+  entries (`envelope-test`/`everyones-got-a-price`/`leaned-on`/
+  `look-the-other-way`) are the Thought Cabinet's first content to actually
+  exercise `has_thought` for dialogue-gating (both shipped thoughts before
+  this were insight-bonus-only) and the first to need a multi-action unlock
+  rather than one `unlock_thought` call. `ThoughtDefinition.insightBonus`
+  (singular) became `insightBonuses?: ThoughtBonus[]` so a thought can carry
+  a paired gain/cost — all four new thoughts do, e.g. Envelope Test's `+1
+  hustle` / `-1 root` — unlike the two pure-upside originals, which just
+  migrated to a one-entry array; `ThoughtCabinetOverlay`'s bonus pill now
+  maps over the array instead of rendering one. The tally itself is its own
+  small system, same shape as the Relationship System (§14): a new
+  `stores/corruptionStore.ts` holds a `Set<string>` of marked corrupt-action
+  ids (Set membership, not a bare counter, so replaying the same corrupt
+  choice on a repeat visit doesn't inflate the count — same dedup shape
+  evidence/notes get for free), one new EXTERNAL `mark_corrupt_action(actionId)`
+  (`bindCorruptionFunctions`, free-form id like `set_case_flag`), and one new
+  synced ink global `corruption_count` (`syncCorruptionVariables`, same
+  skip-if-undeclared pattern as `syncInsightVariables`/
+  `syncRelationshipVariables`, wired into `storyStore.loadStory` the same
+  way). The unlock decision itself stays ink-side rather than a centralized
+  listener: each corrupt choice calls `mark_corrupt_action` then checks
+  `{ corruption_count >= 2: ~ unlock_thought("everyones-got-a-price") }`
+  inline, safe to re-check on every qualifying action since `unlockThought`
+  is already idempotent. Three content sites mark toward the tally —
+  `checkpoint.ink`'s new bribe choice, `meiHong.ink`'s existing
+  `checkpoint-mei-hong-leverage` Red-check success branch (zero new scene
+  content needed, just the new calls), and `undercanopy.ink`'s new
+  quiet-arrangement choice with Cò — so the payoff thought is reachable via
+  any two of the three. `tuXuongClinic.ink` reads `has_thought("leaned-on")`
+  for an intimidation-flavored choice but marks nothing itself. Deliberately
+  kept off Lakshmi Avani's warmth arc and the Aveline cover-up thread (both
+  already-shipped, carefully authored content) — the corrupt-branch dialogue
+  hooks route to District 3 vice-economy NPCs (Cò, Yến Lộc) instead.
+  `SaveBlob` gains a top-level `corruption: SerializedCorruptionState`
+  field; `SAVE_FORMAT_VERSION` bumped to 12.

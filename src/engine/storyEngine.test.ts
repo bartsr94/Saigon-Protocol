@@ -4,10 +4,12 @@ import type { Story } from 'inkjs'
 import {
   bindCaseFunctions,
   bindCheckFunctions,
+  bindCorruptionFunctions,
   bindRelationshipFunctions,
   bindThoughtFunctions,
   bindWellbeingFunctions,
   npcIdToAffinityVar,
+  syncCorruptionVariables,
   syncInsightVariables,
   syncRelationshipVariables,
 } from './storyEngine'
@@ -357,6 +359,51 @@ EXTERNAL unlock_thought(id)
     bindThoughtFunctions(story, { unlockThought: vi.fn(), isThoughtEnabled: vi.fn() })
 
     expect(() => runToEnd(story)).toThrow(/unknown thought id/)
+  })
+})
+
+describe('bindCorruptionFunctions', () => {
+  it('wires mark_corrupt_action to the given handler', () => {
+    const story = compile(`
+EXTERNAL mark_corrupt_action(actionId)
+~ mark_corrupt_action("checkpoint-envelope")
+Done.
+-> END
+`)
+    const markCorruptAction = vi.fn()
+    bindCorruptionFunctions(story, { markCorruptAction })
+
+    runToEnd(story)
+
+    expect(markCorruptAction).toHaveBeenCalledWith('checkpoint-envelope')
+  })
+
+  it('throws when ink passes an invalid action id', () => {
+    const story = compile(`
+EXTERNAL mark_corrupt_action(actionId)
+~ mark_corrupt_action("")
+-> END
+`)
+    bindCorruptionFunctions(story, { markCorruptAction: vi.fn() })
+
+    expect(() => runToEnd(story)).toThrow(/invalid action id/)
+  })
+})
+
+describe('syncCorruptionVariables', () => {
+  it('does not throw against a story with no declared variables', () => {
+    const story = compile(`Hello.\n-> END`)
+    expect(() => syncCorruptionVariables(story, 0)).not.toThrow()
+  })
+
+  it('pushes the declared corruption_count variable so ink conditionals can read it', () => {
+    const story = compile(`
+VAR corruption_count = 0
+{corruption_count >= 2: Enough.|Not yet.}
+-> END
+`)
+    syncCorruptionVariables(story, 2)
+    expect(runToEnd(story)).toContain('Enough.')
   })
 })
 
