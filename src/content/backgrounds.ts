@@ -30,12 +30,14 @@ export const BACKGROUNDS: Record<BackgroundId, BackgroundDefinition> = {
   },
   cholonMarket: {
     id: 'cholonMarket',
+    imageSrc: '/backgrounds/cholon-market.png',
   },
   cholonClinic: {
     id: 'cholonClinic',
   },
   district4FloodWall: {
     id: 'district4FloodWall',
+    imageSrc: '/backgrounds/district4-flood-wall.png',
   },
   turtleLakePlaza: {
     id: 'turtleLakePlaza',
