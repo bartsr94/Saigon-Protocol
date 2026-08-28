@@ -1,8 +1,9 @@
 // Title/Boot (docs/GAME_GUIDE.md §2.1). Continue loads the
 // most recently written save slot (Save/Persistence Layer, docs/GAME_GUIDE.md
 // §7) — disabled when none exists rather than faked.
-// No key art asset exists yet either (art direction is a separate pass);
-// the gradient below is a stand-in, not a claim of finished art.
+// Key art is a wide establishing shot of the SEZ skyline (same painterly
+// backdrop treatment as the intro's scene art), dimmed under the existing
+// radial-gradient wash so the menu text stays legible over it.
 
 import { useEffect } from 'react'
 import { CyberButton, GlitchText } from '../ui'
@@ -66,9 +67,12 @@ export function TitleScreen() {
 
   return (
     <div
-      className="relative flex min-h-svh flex-col items-center justify-center gap-16 p-8"
+      className="relative z-0 flex min-h-svh flex-col items-center justify-center gap-16 overflow-hidden p-8"
       style={{ background: 'radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--color-chrome-primary) 8%, transparent), var(--color-bg) 70%)' }}
     >
+      <img src="/backgrounds/title-key-art.png" alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-30" />
+      <div className="absolute inset-0 -z-10" style={{ background: 'color-mix(in srgb, var(--color-bg) 40%, transparent)' }} />
+
       {/* HUD corner-bracket accents (UI_PASS_SPEC.md §1) — decorative frame, pointer-events-none. */}
       <div className="pointer-events-none absolute left-5 top-5 h-24 w-24 border-l-2 border-t-2 border-chrome-primary/40 sm:h-36 sm:w-36" />
       <div className="pointer-events-none absolute bottom-5 right-5 h-24 w-24 border-b-2 border-r-2 border-chrome-primary/40 sm:h-36 sm:w-36" />
