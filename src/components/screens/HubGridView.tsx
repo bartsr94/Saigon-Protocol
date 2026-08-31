@@ -6,13 +6,14 @@
 // interaction list in the bottom action bar.
 
 import { useCallback, useMemo } from 'react'
-import type { BackgroundDefinition } from '../../content/backgrounds'
+import { BACKGROUNDS, type BackgroundDefinition } from '../../content/backgrounds'
 import type { GridHubDefinition, GridPosition, HubInteraction } from '../../content/locationHubs'
 import { NPCS, type NpcId } from '../../content/npcs'
 import { AMBIENT_FOG_RADIUS, doorAt, reachableTiles, tileKey, tileKindAt, tilesWithinRadius } from '../../engine/gridMovement'
 import { useCaseStore } from '../../stores/caseStore'
 import { useConversationStore } from '../../stores/conversationStore'
 import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
+import { useDebugTileIdStore } from '../../stores/debugTileIdStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useSettingsStore } from '../../stores/settingsStore'
 import { useUiStore } from '../../stores/uiStore'
@@ -98,6 +99,7 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
   const editingMap = useDebugMapEditStore((s) => s.editingMap)
   const openMapEditor = useDebugMapEditStore((s) => s.openMapEditor)
   const closeMapEditor = useDebugMapEditStore((s) => s.closeMapEditor)
+  const showTileIds = useDebugTileIdStore((s) => s.enabled)
 
   // Resolves a door tile's lock state from caseStore at the component
   // layer — gridMovement.ts stays store-agnostic (CLAUDE.md's simulation/UI
@@ -135,6 +137,20 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
   )
 
   const currentDoor = useMemo(() => doorAt(hub.grid, playerPosition), [hub.grid, playerPosition])
+  const currentBackgroundZone = useMemo(
+    () =>
+      hub.grid.backgroundZones?.find((zone) =>
+        zone.tiles.some((tile) => tile.x === playerPosition.x && tile.y === playerPosition.y),
+      ) ?? null,
+    [hub.grid.backgroundZones, playerPosition],
+  )
+  const activeBackground = currentPoi?.backgroundId
+    ? BACKGROUNDS[currentPoi.backgroundId]
+    : currentDoor?.backgroundId
+      ? BACKGROUNDS[currentDoor.backgroundId]
+    : currentBackgroundZone
+      ? BACKGROUNDS[currentBackgroundZone.backgroundId]
+      : background
 
   const discoveredPois = useMemo(
     () => hub.grid.pois.filter((poi) => revealedTiles.has(tileKey(poi.position))),
@@ -162,10 +178,10 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
   return (
     <>
     <div className="relative flex-1 overflow-hidden">
-      {background?.imageSrc && (
+      {activeBackground?.imageSrc && (
         <>
-          <img src={background.imageSrc} alt="" className="absolute inset-0 h-full w-full object-cover blur-sm" />
-          <div className="absolute inset-0 bg-black/70" />
+          <img src={activeBackground.imageSrc} alt="" className="absolute inset-0 h-full w-full object-cover blur-[4px]" />
+          <div className="absolute inset-0 bg-black/35" />
         </>
       )}
       {!background?.imageSrc && (
@@ -192,6 +208,7 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
         <Panel size="md" className="pointer-events-auto inline-flex max-w-xl flex-col gap-3 p-4">
           <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">Location Hub — AR Scan</span>
           <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{hub.name}</h1>
+          {showTileIds && <p className="font-display text-[10px] uppercase tracking-[0.3em] text-white/45">Square ID: {tileKey(playerPosition)}</p>}
           {squareBlurbIsHubBlurb ? (
             <EditableText className="font-body text-base leading-6 text-white/72" value={squareBlurb} file="locationHubs" field="blurb" />
           ) : (
@@ -326,6 +343,11 @@ export function HubGridView({ hub, background, onEnterInteraction, onReturnToMap
                         className="h-3 w-3 rotate-45"
                         style={{ background: 'var(--color-chrome-primary)', boxShadow: '0 0 10px var(--color-chrome-primary)' }}
                       />
+                    )}
+                    {showTileIds && (
+                      <span className="pointer-events-none absolute bottom-1 left-1 font-mono text-[9px] leading-none text-white/70">
+                        {key}
+                      </span>
                     )}
                   </div>
                 )

@@ -27,6 +27,7 @@ function doorToBuilderDoor(door: HubDoor): BuilderDoor {
     unlockFlag: door.unlockFlag,
     label: door.label,
     lockedReason: door.lockedReason,
+    backgroundId: door.backgroundId ?? '',
   }
 }
 
@@ -35,6 +36,7 @@ function hubPoiToBuilderPoi(poi: HubPoi): BuilderPoi {
     id: poi.id,
     x: poi.position.x,
     y: poi.position.y,
+    backgroundId: poi.backgroundId ?? '',
     interactions: poi.interactions.map((i) => ({
       id: i.id,
       type: i.type,
@@ -57,6 +59,7 @@ function streetPoiToBuilderPoi(poi: DistrictStreetPoi): BuilderPoi {
     id: poi.id,
     x: poi.position.x,
     y: poi.position.y,
+    backgroundId: '',
     interactions: [],
     locationId: poi.locationId,
     label: poi.label,

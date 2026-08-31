@@ -11,7 +11,8 @@ Zustand, Tailwind, and inkjs for branching narrative.
 - `docs/SAIGON_PROTOCOL_ARCHITECTURE.md` — as-built technical reference
   (store/engine structure, the ink↔TS boundary).
 - `docs/GAME_GUIDE.md` — practical reference for writing content and UI
-  (screen layout, visual style, ink tag vocabulary, save/audio conventions).
+  (screen layout, visual style, ink tag vocabulary, save/audio conventions,
+  and the current background-art workflow).
 - `docs/SEA_CYBERPUNK_GDD.md` — setting, lore, and narrative-design premise.
 
 ## Runtime Entry
@@ -37,3 +38,12 @@ Zustand, Tailwind, and inkjs for branching narrative.
 - `npm run lint` — run Oxlint
 - `npm run compile:ink` — compile Ink sources to JSON
 - `npm run audio:convert` — convert `.wav` assets to `.mp3` with `ffmpeg`
+
+## Background Art
+
+Scene backdrops and the title key art live under `public/backgrounds/` and
+are referenced from `src/content/backgrounds.ts`. The current house-style
+generation and refine workflow is documented in `docs/GAME_GUIDE.md` so new
+art passes stay visually consistent with the shipped Aveline exterior,
+Aveline interior/lounge/hallway set, Cholon street, and title screen
+backgrounds.

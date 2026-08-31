@@ -43,8 +43,8 @@ describe('gameplayStore', () => {
   })
 
   it('activePoiAt finds a POI in a grid hub and returns null for a cardList hub or empty tile', () => {
-    expect(useGameplayStore.getState().activePoiAt('checkpoint', { x: 2, y: 1 })?.id).toBe('checkpoint-mei-hong')
-    expect(useGameplayStore.getState().activePoiAt('checkpoint', { x: 1, y: 1 })).toBeNull()
+    expect(useGameplayStore.getState().activePoiAt('checkpoint', { x: 4, y: 1 })?.id).toBe('checkpoint-mei-hong')
+    expect(useGameplayStore.getState().activePoiAt('checkpoint', { x: 2, y: 1 })).toBeNull()
     expect(useGameplayStore.getState().activePoiAt('noodleStall', { x: 0, y: 0 })).toBeNull()
   })
 

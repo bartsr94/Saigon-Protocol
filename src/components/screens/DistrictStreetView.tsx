@@ -14,6 +14,7 @@ import type { GridPosition } from '../../content/locationHubs'
 import { AMBIENT_FOG_RADIUS, doorAt, reachableTiles, tileKey, tileKindAt, tilesWithinRadius } from '../../engine/gridMovement'
 import { useCaseStore } from '../../stores/caseStore'
 import { useDebugMapEditStore } from '../../stores/debugMapEditStore'
+import { useDebugTileIdStore } from '../../stores/debugTileIdStore'
 import { useGameplayStore } from '../../stores/gameplayStore'
 import { useNavigationStore } from '../../stores/navigationStore'
 import { useSettingsStore } from '../../stores/settingsStore'
@@ -63,6 +64,7 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
   const editingMap = useDebugMapEditStore((s) => s.editingMap)
   const openMapEditor = useDebugMapEditStore((s) => s.openMapEditor)
   const closeMapEditor = useDebugMapEditStore((s) => s.closeMapEditor)
+  const showTileIds = useDebugTileIdStore((s) => s.enabled)
 
   // Same store-agnostic-engine/component-resolves-flags split as
   // HubGridView's `isDoorUnlocked`.
@@ -117,8 +119,8 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
     <div className="relative flex-1 overflow-hidden">
       {background?.imageSrc && (
         <>
-          <img src={background.imageSrc} alt="" className="absolute inset-0 h-full w-full object-cover blur-sm" />
-          <div className="absolute inset-0 bg-black/70" />
+          <img src={background.imageSrc} alt="" className="absolute inset-0 h-full w-full object-cover blur-[4px]" />
+          <div className="absolute inset-0 bg-black/35" />
         </>
       )}
       {!background?.imageSrc && (
@@ -142,6 +144,7 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
         <Panel size="md" className="pointer-events-auto inline-flex max-w-xl flex-col gap-3 p-4">
           <span className="font-display text-[11px] uppercase tracking-[0.35em] text-chrome-primary/70">District Street — AR Scan</span>
           <h1 className="font-display text-2xl font-bold uppercase tracking-widest text-white">{street.name}</h1>
+          {showTileIds && <p className="font-display text-[10px] uppercase tracking-[0.3em] text-white/45">Square ID: {tileKey(playerPosition)}</p>}
           {squareBlurb.field ? (
             <EditableText className="font-body text-base leading-6 text-white/72" value={squareBlurb.value} file="districtStreets" field={squareBlurb.field} />
           ) : (
@@ -259,6 +262,11 @@ export function DistrictStreetView({ street, background, onReturnToMap, atEntry 
                         className="h-3 w-3 rotate-45"
                         style={{ background: 'var(--color-chrome-primary)', boxShadow: '0 0 10px var(--color-chrome-primary)' }}
                       />
+                    )}
+                    {showTileIds && (
+                      <span className="pointer-events-none absolute bottom-1 left-1 font-mono text-[9px] leading-none text-white/70">
+                        {key}
+                      </span>
                     )}
                   </div>
                 )

@@ -40,7 +40,7 @@ old files now just redirect here.*
 | Character (`character` overlay) | Overlay | Portrait, name, archetype + backstory, all seven Insights with pips/tagline/strength-weakness tag |
 | Cases (`cases` overlay) | Overlay | Multi-case quest log — case list (main/side, active/completed) + selected case's objectives checklist and Evidence/Items grid + Case Notes log |
 | Settings (`settings` overlay) | Overlay | Audio, text speed, accessibility, save/load — also serves as the pause/system menu (there's no separate Pause screen) |
-| Debug Console (`debug` overlay, dev-only) | Overlay | `import.meta.env.DEV`-gated corner button → Map Builder (grid/POI/door authoring, exports JSON) and Flags (`caseStore` flag toggle for testing) |
+| Debug Console (`debug` overlay, dev-only) | Overlay | `import.meta.env.DEV`-gated corner buttons → Map Builder (grid/POI/door authoring, exports JSON), Tile IDs (square-coordinate overlay for hub/street callouts), and Flags (`caseStore` flag toggle for testing) |
 
 Overlays render via `OverlayHost` on top of whatever full screen is
 active; `uiStore.activeOverlay` drives which one shows.
@@ -244,6 +244,44 @@ always recompile before testing a content change in the browser.
 5. (Optional) set `musicId`/`ambienceIds` on the location definition for a
    baseline mood, and `unlocksOnComplete` if finishing this scene should
    unlock another location.
+
+### 5.1.1 Adding or refreshing background art
+
+`background:` tags only point at ids; the actual art contract lives in
+`src/content/backgrounds.ts`, which maps a `BackgroundId` to a
+`/backgrounds/<file>.png` asset under `public/backgrounds/`. Replacing an
+existing backdrop is usually just an asset swap; a brand-new scene image
+needs both the png and the registry entry.
+
+Current house-style render recipe for exploratory passes:
+
+- model: `kreamania_variant1`
+- vae: `Krea 2/qwen_image_vae`
+- LoRAs: `Incase_Krea_v2_epoch_10` at `0.5`, `Jakub_Rozalski__Style__for_Krea_2_epoch_10` at `1.2`
+- base render: `1520x1040`, `8` steps, `cfg 1`, `euler`, `simple`
+
+Workflow:
+
+- Generate a few candidates first and pick the strongest composition before
+  spending time on refinement.
+- Once a seed is approved, rerun that exact image with the local `comfyui`
+  skill's final-pass refiner preset: `refinercontrolpercentage 0.2`,
+  `refinermethod PostApply`, `refinerupscale 2`,
+  `refinerupscalemethod pixel-lanczos`, `refinerdotiling false`.
+- Promote only the chosen refined image to the live
+  `public/backgrounds/<file>.png` asset; keep the registry path stable so
+  content ids and save data do not change.
+
+Prompting guardrails from the current visual pass:
+
+- Explicitly call out **2226 / far-future** vehicles, uniforms, signage,
+  street hardware, and architecture. If not stated, the model drifts toward
+  retro-present-day props.
+- Avoid readable text, logos, and billboard copy unless the scene truly
+  needs them; the model tends to hallucinate distracting pseudo-lettering.
+- Favor rain, haze, practical light sources, and dense civic clutter over
+  empty hero-shot compositions; these screens need to support dialogue UI,
+  not compete with it.
 
 ### 5.2 Tag vocabulary
 
@@ -451,7 +489,12 @@ ASCII grid below for anything bigger than a quick edit.
 4. Set `grid.entryTile` (where the player spawns from the Overworld/street)
    and, if the default "+"-shaped 1-tile vision radius isn't right for this
    room, `grid.visionRadius`.
-5. Movement is WASD/arrow keys, one tile per press; walls block movement
+5. Optional: add `grid.backgroundZones` when one subsection of a walkable
+   hub should swap to a different backdrop without requiring a dedicated POI
+   tile. Each zone is `{ id, backgroundId, tiles[] }`; if the player is
+   standing on one of those tiles, the zone background beats the hub-wide
+   default unless a POI on that exact tile defines its own `backgroundId`.
+6. Movement is WASD/arrow keys, one tile per press; walls block movement
    outright, and a locked door can be stepped onto but not walked past (see
    "Locked doors" below). Standing on a POI tile opens its interaction list
    in a bottom action bar. The AR-scan panel's blurb line describes
@@ -489,6 +532,11 @@ doesn't call it yet: its `lockedReason` ("enough leverage to force the
 issue") describes a real Case 1 investigation-progress gate that hasn't
 been designed, so the Debug Console's Flags tool remains the only way to
 open it for now.
+
+**Tile-ID overlay:** the dev HUD now has a `Tile IDs` toggle that overlays
+each currently visible hub/street square with its `x,y` key and adds the
+current square readout to the AR-scan panel. Use this when calling out map
+edits or assigning new interaction/background zones.
 
 Whichever layout, launching an interaction (`talk`/`inspect`) is the same
 `selectLocation` → `loadStory` → `enterLocation` (audio) → `autosave`

@@ -21,8 +21,8 @@ const SEED: BuilderSeed = {
     ['floor', 'floor'],
     ['floor', 'floor'],
   ],
-  pois: [{ id: 'poi-1', x: 0, y: 0, interactions: [], locationId: '', label: '', description: '', lockedReason: '' }],
-  doors: [{ id: 'door-1', x: 1, y: 0, unlockFlag: '', label: '', lockedReason: '' }],
+  pois: [{ id: 'poi-1', x: 0, y: 0, backgroundId: '', interactions: [], locationId: '', label: '', description: '', lockedReason: '' }],
+  doors: [{ id: 'door-1', x: 1, y: 0, unlockFlag: '', label: '', lockedReason: '', backgroundId: '' }],
   entryTile: { x: 0, y: 0 },
 }
 
