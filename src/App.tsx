@@ -3,6 +3,7 @@ import { useUiStore } from './stores/uiStore'
 import { useSettingsStore } from './stores/settingsStore'
 import { useDebugTextEditStore } from './stores/debugTextEditStore'
 import { useDebugMapEditStore } from './stores/debugMapEditStore'
+import { useDebugTileIdStore } from './stores/debugTileIdStore'
 import { useGameplayStore } from './stores/gameplayStore'
 import { useStoryStore } from './stores/storyStore'
 import { useAudioStore } from './stores/audioStore'
@@ -88,6 +89,7 @@ function App() {
           alone leaves open (UI_PASS_SPEC.md §3). */}
       {import.meta.env.DEV && !editingMap && (
         <div className="fixed bottom-3 right-3 z-40 flex items-center gap-2">
+          <TileIdToggle />
           <MapEditToggle />
           <TextEditToggle />
           <DebugButton />
@@ -130,6 +132,24 @@ function TextEditToggle() {
       }`}
     >
       Edit Text: {enabled ? 'On' : 'Off'}
+    </button>
+  )
+}
+
+function TileIdToggle() {
+  const enabled = useDebugTileIdStore((s) => s.enabled)
+  const toggle = useDebugTileIdStore((s) => s.toggle)
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      className={`border px-2 py-1 font-display text-[0.6rem] uppercase tracking-widest outline-none ${
+        enabled
+          ? 'border-chrome-secondary bg-chrome-secondary/15 text-chrome-secondary'
+          : 'border-white/30 bg-black/70 text-white/50 hover:border-chrome-secondary hover:text-chrome-secondary'
+      }`}
+    >
+      Tile IDs: {enabled ? 'On' : 'Off'}
     </button>
   )
 }

@@ -46,10 +46,31 @@ describe('hubToBuilderState', () => {
     expect(meiHong!.interactions[0].storyLocationId).toBe('checkpoint')
   })
 
-  it('defaults a missing npcId/lockedReason to empty string rather than undefined (form inputs need a string)', () => {
+  it('defaults a missing npcId/lockedReason/backgroundId to empty string rather than undefined (form inputs need a string)', () => {
     const scanner = seed.pois.find((p) => p.id === 'checkpoint-access-scanner')!
     expect(scanner.interactions[0].npcId).toBe('')
     expect(scanner.interactions[0].lockedReason).toBe('')
+    expect(scanner.backgroundId).toBe('')
+  })
+
+  it('preserves a POI-specific background override', () => {
+    const lakshmi = seed.pois.find((p) => p.id === 'checkpoint-lakshmi-avani')!
+    expect(lakshmi.backgroundId).toBe('avelineEmployeeLounge')
+  })
+
+  it('keeps the checkpoint lounge background zone authored as a 12-tile side room', () => {
+    const loungeZone = hub.grid.backgroundZones?.find((zone) => zone.id === 'checkpoint-lounge-zone')
+    expect(loungeZone).toBeDefined()
+    expect(loungeZone?.backgroundId).toBe('avelineEmployeeLounge')
+    expect(loungeZone?.tiles).toHaveLength(12)
+  })
+
+  it('preserves the checkpoint hallway ring and sealed inner-door background overrides', () => {
+    const hallwayZone = hub.grid.backgroundZones?.find((zone) => zone.id === 'checkpoint-hallway-zone')
+    const innerDoor = seed.doors.find((d) => d.id === 'checkpoint-inner-door')
+    expect(hallwayZone).toBeDefined()
+    expect(hallwayZone?.backgroundId).toBe('avelineLabHallway')
+    expect(innerDoor?.backgroundId).toBe('avelineLabInnerDoor')
   })
 
   it('carries every door through with its real id, position, and lock data intact', () => {

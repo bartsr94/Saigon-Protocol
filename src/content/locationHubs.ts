@@ -94,6 +94,8 @@ export interface HubInteraction {
 export interface HubPoi {
   id: string
   position: GridPosition
+  /** Optional local backdrop override for this spot, e.g. a side room off the main hub. */
+  backgroundId?: BackgroundId
   interactions: HubInteraction[]
 }
 
@@ -113,6 +115,15 @@ export interface HubDoor {
   label: string
   /** Shown while locked, e.g. as a tile tooltip. */
   lockedReason: string
+  /** Optional local backdrop override for this threshold. */
+  backgroundId?: BackgroundId
+}
+
+/** A contiguous visual sub-area inside one hub that swaps the backdrop while the player stands there. */
+export interface HubBackgroundZone {
+  id: string
+  backgroundId: BackgroundId
+  tiles: GridPosition[]
 }
 
 /**
@@ -134,6 +145,8 @@ export interface HubGridDefinition {
   entryTile: GridPosition
   layoutRows: HubLayoutRows
   pois: HubPoi[]
+  /** Optional tile-based backdrop sub-areas, e.g. a side room off the main hub. */
+  backgroundZones?: HubBackgroundZone[]
   /** Locked doors gating parts of this hub's floor plan. Defaults to none. */
   doors?: HubDoor[]
   /** Tiles revealed around the player's position on move. Defaults to 1 (a "+" shape) when omitted. */
@@ -170,7 +183,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
     id: 'checkpoint',
     name: 'Aveline District 4 Laboratory',
     blurb: 'The front lab is sealed, watched, and pretending to be calmer than it is — mask seals checked at the door same as the street outside, modification papers checked just as carefully for anyone without an Aveline badge. Aveline staff and the Constabulary are both trying to control the first impression.',
-    backgroundId: 'avelineLabExterior',
+    backgroundId: 'avelineLabHallway',
     layout: 'grid',
     grid: {
       width: 13,
@@ -202,6 +215,27 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
         '  #.o.#  '.padEnd(13, ' '),
         '  #####  '.padEnd(13, ' '),
       ],
+      backgroundZones: [
+        {
+          id: 'checkpoint-hallway-zone',
+          backgroundId: 'avelineLabHallway',
+          tiles: [
+            { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 5, y: 1 }, { x: 6, y: 1 }, { x: 7, y: 1 },
+            { x: 1, y: 2 }, { x: 7, y: 2 },
+            { x: 1, y: 3 }, { x: 7, y: 3 },
+            { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }, { x: 5, y: 4 }, { x: 6, y: 4 }, { x: 7, y: 4 },
+          ],
+        },
+        {
+          id: 'checkpoint-lounge-zone',
+          backgroundId: 'avelineEmployeeLounge',
+          tiles: [
+            { x: 9, y: 1 }, { x: 10, y: 1 }, { x: 11, y: 1 }, { x: 12, y: 1 },
+            { x: 9, y: 2 }, { x: 10, y: 2 }, { x: 11, y: 2 }, { x: 12, y: 2 },
+            { x: 9, y: 3 }, { x: 10, y: 3 }, { x: 11, y: 3 }, { x: 12, y: 3 },
+          ],
+        },
+      ],
       doors: [
         {
           id: 'checkpoint-inner-door',
@@ -209,12 +243,14 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
           unlockFlag: 'checkpoint-inner-wing-unlocked',
           label: 'Sealed Inner Door',
           lockedReason: 'The inner wing stays sealed until you gather enough leverage to force the issue.',
+          backgroundId: 'avelineLabInnerDoor',
         },
       ],
       pois: [
         {
           id: 'checkpoint-mei-hong',
-          position: { x: 2, y: 1 },
+          position: { x: 4, y: 1 },
+          backgroundId: 'avelineLabInterior',
           interactions: [
             {
               id: 'checkpoint-talk-mei-hong',
@@ -276,6 +312,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
         {
           id: 'checkpoint-lakshmi-avani',
           position: { x: 10, y: 1 },
+          backgroundId: 'avelineEmployeeLounge',
           interactions: [
             {
               id: 'checkpoint-talk-lakshmi-avani',
@@ -293,6 +330,7 @@ export const LOCATION_HUBS: Record<HubId, HubDefinition> = {
         {
           id: 'checkpoint-lounge-roster-wall',
           position: { x: 11, y: 3 },
+          backgroundId: 'avelineEmployeeLounge',
           interactions: [
             {
               id: 'checkpoint-inspect-lounge-roster-wall',

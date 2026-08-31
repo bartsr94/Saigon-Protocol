@@ -60,7 +60,7 @@ The investigation should move across all four, but not necessarily in one rigid 
 
 #### Asset needs
 
-- existing Aveline exterior background can remain
+- refreshed Aveline exterior background already exists in the current house style
 - ambient rain / industrial hush / flood-wall infrastructure
 
 ### 2. Aveline Intake / Front Lab Floor
@@ -87,6 +87,7 @@ The investigation should move across all four, but not necessarily in one rigid 
 #### Asset needs
 
 - generic lab interior or front-lab background
+- a secondary generic hallway pass for connective Aveline scenes
 - controlled medical-industrial ambience
 
 ### 2a. Aveline Faculty Lounge
@@ -116,6 +117,7 @@ The investigation should move across all four, but not necessarily in one rigid 
 #### Asset needs
 
 - lounge interior background (breakroom furniture, vending machine, shift-roster wall)
+- in the current playable hub, Lakshmi's room now reads as a 12-tile lounge zone rather than a single background-switch square
 - low chatter / vending-machine hum ambience
 
 ### 3. Flood-Wall Service Road
@@ -323,7 +325,7 @@ The investigation should move across all four, but not necessarily in one rigid 
 
 #### Asset needs
 
-- dense Cholon street or tea-house background
+- current Cholon street background can carry the exterior/social pass; a tea-house interior may still be needed later
 - crowd / cookware / layered languages ambience
 
 ### 11. Former Employee Safe Flat
@@ -529,7 +531,7 @@ Highest priority new backgrounds:
 
 - inner Aveline lab / containment area
 - CID office
-- Cholon street / social interior
+- Cholon clinic / tea-house interior
 - gray clinic
 - District 2 final confrontation space
 

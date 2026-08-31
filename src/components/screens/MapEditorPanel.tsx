@@ -34,6 +34,8 @@ export interface BuilderPoi {
   id: string
   x: number
   y: number
+  /** Hub-mode optional local backdrop override. */
+  backgroundId: string
   /** Hub-mode payload. */
   interactions: BuilderInteraction[]
   /** Street-mode payload. */
@@ -51,6 +53,7 @@ export interface BuilderDoor {
   unlockFlag: string
   label: string
   lockedReason: string
+  backgroundId: string
 }
 
 /** Everything needed to seed the editor from an existing hub/street record — see mapEditorSeed.ts. */
@@ -127,6 +130,7 @@ function makePoi(x: number, y: number): BuilderPoi {
     id: `poi-${nextPoiSeq++}`,
     x,
     y,
+    backgroundId: '',
     interactions: [],
     locationId: '',
     label: '',
@@ -156,6 +160,7 @@ function makeDoor(x: number, y: number): BuilderDoor {
     unlockFlag: '',
     label: '',
     lockedReason: '',
+    backgroundId: '',
   }
 }
 
@@ -294,6 +299,7 @@ export function MapEditorPanel({ initialMode = 'hub', allowModeSwitch = true, in
       unlockFlag: d.unlockFlag,
       label: d.label,
       lockedReason: d.lockedReason,
+      backgroundId: d.backgroundId || undefined,
     }))
 
     if (mode === 'hub') {
@@ -312,6 +318,7 @@ export function MapEditorPanel({ initialMode = 'hub', allowModeSwitch = true, in
           pois: pois.map((p) => ({
             id: p.id,
             position: { x: p.x, y: p.y },
+            backgroundId: p.backgroundId || undefined,
             interactions: p.interactions.map((i) => ({
               id: i.id,
               type: i.type,
@@ -557,6 +564,13 @@ export function MapEditorPanel({ initialMode = 'hub', allowModeSwitch = true, in
               rows={2}
               className={INPUT_CLASS}
             />
+            <input
+              list="map-builder-bg-ids"
+              value={selectedDoor.backgroundId}
+              onChange={(e) => updateDoor(selectedDoor.id, { backgroundId: e.target.value })}
+              placeholder="door backgroundId (optional)"
+              className={INPUT_CLASS}
+            />
           </div>
         )}
 
@@ -607,6 +621,13 @@ export function MapEditorPanel({ initialMode = 'hub', allowModeSwitch = true, in
               </>
             ) : (
               <>
+                <input
+                  list="map-builder-bg-ids"
+                  value={selectedPoi.backgroundId}
+                  onChange={(e) => updatePoi(selectedPoi.id, { backgroundId: e.target.value })}
+                  placeholder="poi backgroundId (optional)"
+                  className={INPUT_CLASS}
+                />
                 <div className="flex items-center justify-between">
                   <span className="font-body text-xs text-white/50">Interactions</span>
                   <CyberButton className="!px-3 !py-1.5 !text-xs" onClick={() => addInteraction(selectedPoi)}>
